@@ -1,0 +1,180 @@
+services:
+    # --------------------
+    # Databases
+    # --------------------
+    portfolio-db:
+        image: postgres:17
+        container_name: portfolio-db
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: portfolio_db
+            POSTGRES_USER: portfolio_user
+            POSTGRES_PASSWORD: portfolio_pass
+        ports:
+            - "5433:5432"
+        volumes:
+            - portfolio_db_data:/var/lib/postgresql/data
+        networks:
+            - portfolio-net
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U portfolio_user -d portfolio_db"]
+            interval: 5s
+            timeout: 5s
+            retries: 10
+            start_period: 10s
+
+    auth-db:
+        image: postgres:17
+        container_name: auth-db
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: auth_db
+            POSTGRES_USER: auth_user
+            POSTGRES_PASSWORD: auth_pass
+        ports:
+            - "5434:5432"
+        volumes:
+            - auth_db_data:/var/lib/postgresql/data
+        networks:
+            - portfolio-net
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U auth_user -d auth_db"]
+            interval: 5s
+            timeout: 5s
+            retries: 10
+            start_period: 10s
+
+    # --------------------
+    # Backend (Nest.js API)
+    # --------------------
+    backend:
+        build:
+            context: ./backend
+            dockerfile: Dockerfile
+        container_name: backend
+        restart: unless-stopped
+        env_file:
+            - .env
+        environment:
+            NODE_ENV: development
+            DATABASE_URL: postgresql://portfolio_user:portfolio_pass@portfolio-db:5432/portfolio_db
+
+            # JWT validation (must match auth-service)
+            AUTH_JWT_SECRET: ${AUTH_JWT_SECRET}
+
+            # CORS configuration
+            CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+
+            # Auth service URL (for token verification)
+            AUTH_SERVICE_URL: http://auth-service:3001
+        depends_on:
+            portfolio-db:
+                condition: service_healthy
+        ports:
+            - "3003:3003"
+        networks:
+            - portfolio-net
+
+    # --------------------
+    # Auth service (Better Auth, Node/Next)
+    # --------------------
+    auth-service:
+        build:
+            context: ./auth-service
+            dockerfile: Dockerfile
+        container_name: auth-service
+        restart: unless-stopped
+        env_file:
+            - .env
+        environment:
+            NODE_ENV: development
+
+            # DB for auth / Better Auth
+            DATABASE_URL: postgres://auth_user:auth_pass@auth-db:5432/auth_db
+            POSTGRES_USER: auth_user
+            POSTGRES_PASSWORD: auth_pass
+            POSTGRES_DB: auth_db
+
+            # Better Auth configuration
+            BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+            BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3001}
+
+            # JWT issuing (shared secret)
+            BETTER_AUTH_JWT_SECRET: ${AUTH_JWT_SECRET}
+
+            # CORS configuration
+            CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+
+            # Google OAuth (optional)
+            GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+            GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+
+            # Frontend URL
+            FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+        depends_on:
+            auth-db:
+                condition: service_healthy
+        ports:
+            - "3001:3001"
+        networks:
+            - portfolio-net
+
+    # --------------------
+    # Frontend (Next.js - Public Portfolio + Admin)
+    # --------------------
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        container_name: frontend
+        restart: unless-stopped
+        env_file:
+            - .env
+        environment:
+            NODE_ENV: development
+            # Client-side (browser) uses localhost
+            NEXT_PUBLIC_API_URL: http://localhost:3003
+            NEXT_PUBLIC_AUTH_SERVICE_URL: http://localhost:3001
+            # Server-side (SSR) uses service names
+            API_URL: http://backend:3003
+            AUTH_SERVICE_URL: http://auth-service:3001
+        depends_on:
+            - backend
+            - auth-service
+        ports:
+            - "3000:3000"
+        networks:
+            - portfolio-net
+
+    # --------------------
+    # Database Admin (pgAdmin) - Development Only
+    # Use: docker compose --profile pgadmin up -d
+    # --------------------
+    pgadmin:
+        profiles: ["pgadmin"]
+        image: dpage/pgadmin4:8.8
+        container_name: pgadmin
+        restart: unless-stopped
+        env_file:
+            - .env
+        environment:
+            PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@portfolio.com}
+            PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+            PGADMIN_CONFIG_SERVER_MODE: "False"
+        ports:
+            - "5050:80"
+        volumes:
+            - pgadmin_data:/var/lib/pgadmin
+        networks:
+            - portfolio-net
+        depends_on:
+            - portfolio-db
+            - auth-db
+
+networks:
+    portfolio-net:
+
+volumes:
+    portfolio_db_data:
+    auth_db_data:
+    pgadmin_data:

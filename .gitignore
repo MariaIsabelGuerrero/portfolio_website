@@ -1,0 +1,60 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.npm
+.yarn/
+.next/
+next-env.d.ts
+out/
+dist/
+build/
+.vercel
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+*.iml
+.project
+.settings/
+
+# Docker
+*.log
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.cache
+
+# Prisma
+prisma/*.db
+prisma/*.db-journal
+
+# Testing
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+.playwright/
+
+# Uploads (if storing locally)
+uploads/
+
+# Digital Ocean App Spec
+.do/

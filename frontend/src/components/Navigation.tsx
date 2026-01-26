@@ -15,52 +15,61 @@ export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0a192f]/90 backdrop-blur-sm">
-      <div className="max-w-7xl mx-auto px-6 lg:px-12">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0C1B31]/95 backdrop-blur-sm">
+      <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
         <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <Link href="/" className="text-[#64ffda] text-2xl font-bold">
+          {/* Logo - Left */}
+          <Link href="/" className="flex items-center lg:-ml-[200px] group">
             <svg
-              width="42"
-              height="42"
-              viewBox="0 0 42 42"
+              width="36"
+              height="36"
+              viewBox="0 0 36 36"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <polygon
-                points="21,2 40,12 40,32 21,42 2,32 2,12"
-                stroke="#64ffda"
-                strokeWidth="2"
+              <circle
+                cx="18"
+                cy="18"
+                r="16"
+                stroke="#4876CE"
+                strokeWidth="3"
                 fill="transparent"
+                className="group-hover:fill-[#4876CE] transition-all duration-300"
               />
               <text
-                x="21"
-                y="27"
+                x="18"
+                y="23"
                 textAnchor="middle"
-                fill="#64ffda"
-                fontSize="18"
-                fontFamily="monospace"
+                fill="#4876CE"
+                fontSize="16"
+                fontWeight="bold"
+                fontFamily="Open Sans, sans-serif"
+                className="group-hover:!fill-[#0C1B31] transition-all duration-300"
               >
-                D
+                M
               </text>
             </svg>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          {/* Desktop Navigation - Center */}
+          <div className="hidden md:flex items-center justify-center gap-8">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
-                className="text-[#ccd6f6] hover:text-[#64ffda] transition-colors text-sm"
+                className="text-white hover:text-[#4876CE] transition-colors font-['Radio_Canada'] text-[14px]"
               >
-                <span className="text-[#64ffda] mr-1">{link.number}</span>
+                <span className="text-[#4876CE] mr-1">{link.number}</span>
                 {link.name}
               </Link>
             ))}
+          </div>
+
+          {/* Resume Button - Right */}
+          <div className="hidden md:block lg:-mr-16">
             <Link
               href="/resume.pdf"
-              className="btn-primary text-sm"
+              className="bg-[#4876CE] text-white px-8 py-3 rounded-xl font-['Radio_Canada'] text-[14px] font-medium hover:bg-[#5a85d6] transition-all"
               target="_blank"
             >
               Resume
@@ -69,7 +78,7 @@ export default function Navigation() {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden text-[#64ffda] p-2"
+            className="md:hidden ml-auto text-[#4876CE] p-2"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -91,22 +100,22 @@ export default function Navigation() {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden bg-[#112240] border-t border-[#233554]">
+        <div className="md:hidden bg-[#112240] border-t border-[#4876CE]/30">
           <div className="px-6 py-4 space-y-4">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
-                className="block text-[#ccd6f6] hover:text-[#64ffda] transition-colors"
+                className="block text-white hover:text-[#4876CE] transition-colors font-['Radio_Canada']"
                 onClick={() => setIsMenuOpen(false)}
               >
-                <span className="text-[#64ffda] mr-2">{link.number}</span>
+                <span className="text-[#4876CE] mr-2">{link.number}</span>
                 {link.name}
               </Link>
             ))}
             <Link
               href="/resume.pdf"
-              className="inline-block btn-primary text-sm mt-4"
+              className="inline-block bg-[#4876CE] text-white px-6 py-2 rounded-xl font-['Radio_Canada'] text-sm font-medium mt-4"
               target="_blank"
             >
               Resume

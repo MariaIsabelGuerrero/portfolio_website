@@ -4,22 +4,20 @@
 
 :root {
   /* Primary Colors */
-  --color-background: #0a192f;
+  --color-background: #0C1B31;
   --color-background-light: #112240;
   --color-background-lighter: #1d3a5f;
 
   /* Accent Colors */
-  --color-accent: #64ffda;
-  --color-accent-hover: #4cd9b4;
+  --color-accent: #4876CE;
 
   /* Text Colors */
-  --color-text-primary: #ccd6f6;
-  --color-text-secondary: #8892b0;
-  --color-text-heading: #e6f1ff;
+  --color-text-primary: #FFFFFF;
+  --color-text-heading: #FBFAFA;
+  --color-text-secondary: #7E7E7E;
 
-  /* Other */
-  --color-highlight: #233554;
-  --color-border: #233554;
+  /* Line */
+  --color-line: #4876CE;
 }
 
 * {
@@ -35,7 +33,6 @@ html {
 body {
   background-color: var(--color-background);
   color: var(--color-text-primary);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.6;
 }
 
@@ -72,23 +69,24 @@ body {
   background: linear-gradient(90deg, var(--color-accent) 0%, transparent 100%);
 }
 
-/* Button styles */
-.btn-primary {
-  @apply px-6 py-3 border border-[#64ffda] text-[#64ffda] rounded hover:bg-[#64ffda]/10 transition-all duration-300;
+/* Button outline style - Check my resume */
+.btn-outline {
+  @apply px-6 py-3 border border-[#4876CE] text-[#4876CE] rounded bg-[#0C1B31] hover:bg-[#4876CE]/10 transition-all duration-300 font-semibold;
 }
 
+/* Button filled style - Resume navbar */
 .btn-filled {
-  @apply px-6 py-3 bg-[#64ffda] text-[#0a192f] rounded font-medium hover:bg-[#4cd9b4] transition-all duration-300;
+  @apply px-5 py-2 bg-[#4876CE] text-white rounded font-medium hover:bg-[#5a85d6] transition-all duration-300;
 }
 
 /* Tech tag */
 .tech-tag {
-  @apply flex items-center gap-2 text-[#8892b0] text-sm;
+  @apply flex items-center gap-2 text-[#7E7E7E] text-sm;
 }
 
 .tech-tag::before {
   content: '▹';
-  color: #64ffda;
+  color: #4876CE;
 }
 
 /* Card hover effect */
@@ -96,7 +94,41 @@ body {
   @apply transition-all duration-300 hover:translate-y-[-4px];
 }
 
-/* Link hover effect */
-.link-hover {
-  @apply relative after:content-[''] after:absolute after:w-0 after:h-[1px] after:bottom-0 after:left-0 after:bg-[#64ffda] after:transition-all after:duration-300 hover:after:w-full;
+/* Font classes */
+.font-open-sans {
+  font-family: 'Open Sans', sans-serif;
+}
+
+.font-radio-canada {
+  font-family: 'Radio Canada', sans-serif;
+}
+
+/* Typography - Headings */
+.heading-primary {
+  @apply text-5xl md:text-6xl lg:text-7xl font-bold text-[#FBFAFA] font-['Open_Sans'] leading-tight;
+}
+
+.heading-secondary {
+  @apply text-3xl md:text-4xl lg:text-5xl font-bold text-white font-['Radio_Canada'] leading-tight;
+}
+
+.heading-section {
+  @apply text-2xl md:text-3xl font-semibold text-[#F9F9F9] font-['Open_Sans'];
+}
+
+/* Typography - Text */
+.text-intro {
+  @apply text-[#4876CE] font-['Open_Sans'] text-2xl md:text-3xl font-semibold;
+}
+
+.text-description {
+  @apply text-[#7E7E7E] font-['Open_Sans'] text-base md:text-lg font-semibold;
+}
+
+.text-body {
+  @apply text-[#E2DDDD] font-['Open_Sans'] font-normal text-sm md:text-base leading-relaxed;
+}
+
+.text-tech {
+  @apply text-white font-['Open_Sans'] font-semibold text-sm md:text-base;
 }

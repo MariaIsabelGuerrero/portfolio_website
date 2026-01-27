@@ -1,19 +1,14 @@
-'use client';
-
 export default function Footer() {
   return (
-    <footer className="py-8 text-center">
-      <p className="text-[#8892b0] text-sm font-mono">
-        Designed & Built by{' '}
-        <a
-          href="https://github.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-[#64ffda] hover:underline"
-        >
-          Dianne Russell
-        </a>
-      </p>
+    <footer className="py-8 border-t border-[#5227FF]/30 bg-[#0f0520]">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <p className="text-[#B19EEF] text-sm">
+            Designed & Built by{" "}
+            <span className="text-[#FF9FFC] hover:underline cursor-pointer">Maria Isabel Guerrero</span>
+          </p>
+        </div>
+      </div>
     </footer>
   );
 }

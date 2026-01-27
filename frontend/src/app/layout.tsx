@@ -1,35 +1,56 @@
-import type { Metadata } from 'next';
-import { Open_Sans } from 'next/font/google';
-import './globals.css';
+import React from "react"
+import type { Metadata } from 'next'
 
-const openSans = Open_Sans({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-open-sans',
-});
+import { Analytics } from '@vercel/analytics/next'
+import './globals.css'
+import { Open_Sans, Radio_Canada } from 'next/font/google'
+
+// Initialize fonts
+const openSans = Open_Sans({ 
+  subsets: ['latin'], 
+  weight: ["300","400","500","600","700","800"],
+  variable: '--font-sans'
+})
+const radioCanada = Radio_Canada({ 
+  subsets: ['latin'], 
+  weight: ["300","400","500","600","700"],
+  variable: '--font-display'
+})
 
 export const metadata: Metadata = {
-  title: 'Maria Isabel Guerrero | Full-Stack Developer',
-  description: 'A Full-Stack developer specializing in building microservices and modern web applications.',
-  keywords: ['Full-Stack Developer', 'Java', 'Spring Boot', 'React', 'Microservices', 'Portfolio'],
-};
+  title: 'Maria Isabel Guerrero | Front-End Developer',
+  description: 'Front-End developer specializing in building single page web applications',
+  generator: 'v0.app',
+  icons: {
+    icon: [
+      {
+        url: '/icon-light-32x32.png',
+        media: '(prefers-color-scheme: light)',
+      },
+      {
+        url: '/icon-dark-32x32.png',
+        media: '(prefers-color-scheme: dark)',
+      },
+      {
+        url: '/icon.svg',
+        type: 'image/svg+xml',
+      },
+    ],
+    apple: '/apple-icon.png',
+  },
+}
 
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode;
-}) {
+}: Readonly<{
+  children: React.ReactNode
+}>) {
   return (
-    <html lang="en" className="scroll-smooth">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Radio+Canada:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className={openSans.className}>{children}</body>
+    <html lang="en">
+      <body className={`${openSans.variable} ${radioCanada.variable} font-sans antialiased`}>
+        {children}
+        <Analytics />
+      </body>
     </html>
-  );
+  )
 }

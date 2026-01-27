@@ -1,0 +1,392 @@
+"use client";
+
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Mail, 
+  Search, 
+  Trash2, 
+  Eye, 
+  X, 
+  Clock,
+  User,
+  Phone,
+  CheckCircle,
+  Circle,
+  Filter
+} from "lucide-react";
+
+interface Message {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  message: string;
+  date: string;
+  read: boolean;
+}
+
+// Mock data for messages
+const initialMessages: Message[] = [
+  {
+    id: "1",
+    firstName: "John",
+    lastName: "Smith",
+    email: "john.smith@example.com",
+    phone: "+1 (555) 123-4567",
+    message: "Hi Maria! I came across your portfolio and I'm really impressed with your work. I'd love to discuss a potential collaboration on an upcoming project. Would you be available for a quick call this week?",
+    date: "2024-01-15T10:30:00",
+    read: false,
+  },
+  {
+    id: "2",
+    firstName: "Sarah",
+    lastName: "Johnson",
+    email: "sarah.j@techcorp.com",
+    phone: "+1 (555) 987-6543",
+    message: "Hello! We're looking for a talented developer to join our team. Your skills in Spring Boot and React are exactly what we need. Please let me know if you'd be interested in learning more about this opportunity.",
+    date: "2024-01-14T15:45:00",
+    read: true,
+  },
+  {
+    id: "3",
+    firstName: "Michael",
+    lastName: "Chen",
+    email: "m.chen@startup.io",
+    phone: "+1 (555) 456-7890",
+    message: "Hey Maria, I'm the founder of a startup and we need help building our MVP. Your portfolio shows great work with microservices architecture. Can we schedule a meeting to discuss?",
+    date: "2024-01-13T09:15:00",
+    read: true,
+  },
+  {
+    id: "4",
+    firstName: "Emily",
+    lastName: "Davis",
+    email: "emily.davis@agency.com",
+    phone: "+1 (555) 321-0987",
+    message: "Hi there! I'm reaching out from a digital agency. We have several clients who could benefit from your expertise. Would you be open to freelance work?",
+    date: "2024-01-12T14:20:00",
+    read: false,
+  },
+];
+
+export default function MessagesPage() {
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState<"all" | "read" | "unread">("all");
+  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+  const filteredMessages = messages.filter(msg => {
+    const matchesSearch = 
+      msg.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      msg.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      msg.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      msg.message.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesFilter = 
+      filterStatus === "all" ||
+      (filterStatus === "read" && msg.read) ||
+      (filterStatus === "unread" && !msg.read);
+    
+    return matchesSearch && matchesFilter;
+  });
+
+  const markAsRead = (id: string) => {
+    setMessages(messages.map(msg => 
+      msg.id === id ? { ...msg, read: true } : msg
+    ));
+  };
+
+  const markAsUnread = (id: string) => {
+    setMessages(messages.map(msg => 
+      msg.id === id ? { ...msg, read: false } : msg
+    ));
+  };
+
+  const deleteMessage = (id: string) => {
+    setMessages(messages.filter(msg => msg.id !== id));
+    setDeleteConfirm(null);
+    if (selectedMessage?.id === id) {
+      setSelectedMessage(null);
+    }
+  };
+
+  const openMessage = (message: Message) => {
+    setSelectedMessage(message);
+    if (!message.read) {
+      markAsRead(message.id);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const unreadCount = messages.filter(m => !m.read).length;
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Messages</h1>
+          <p className="text-[#B19EEF] mt-1">
+            {unreadCount} unread message{unreadCount !== 1 ? "s" : ""}
+          </p>
+        </div>
+      </div>
+
+      {/* Search and Filter */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B19EEF]" />
+          <input
+            type="text"
+            placeholder="Search messages..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 bg-[#0f0520] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC] transition-colors"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Filter className="w-5 h-5 text-[#B19EEF]" />
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value as "all" | "read" | "unread")}
+            className="px-4 py-3 bg-[#0f0520] border border-[#5227FF]/30 rounded-xl text-white focus:outline-none focus:border-[#FF9FFC] transition-colors"
+          >
+            <option value="all">All Messages</option>
+            <option value="unread">Unread</option>
+            <option value="read">Read</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Messages List */}
+      <div className="bg-[#0f0520] border border-[#5227FF]/30 rounded-2xl overflow-hidden">
+        {filteredMessages.length === 0 ? (
+          <div className="p-12 text-center">
+            <Mail className="w-12 h-12 text-[#5227FF]/50 mx-auto mb-4" />
+            <p className="text-[#B19EEF]">No messages found</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-[#5227FF]/20">
+            {filteredMessages.map((message) => (
+              <motion.div
+                key={message.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className={`p-4 sm:p-6 hover:bg-[#5227FF]/10 transition-colors cursor-pointer ${
+                  !message.read ? "bg-[#5227FF]/5" : ""
+                }`}
+                onClick={() => openMessage(message)}
+              >
+                <div className="flex items-start gap-4">
+                  {/* Read Status Indicator */}
+                  <div className="pt-1">
+                    {message.read ? (
+                      <CheckCircle className="w-5 h-5 text-[#5227FF]/50" />
+                    ) : (
+                      <Circle className="w-5 h-5 text-[#FF9FFC] fill-[#FF9FFC]" />
+                    )}
+                  </div>
+
+                  {/* Message Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-4 mb-1">
+                      <h3 className={`font-semibold truncate ${!message.read ? "text-white" : "text-[#B19EEF]"}`}>
+                        {message.firstName} {message.lastName}
+                      </h3>
+                      <span className="text-xs text-[#B19EEF]/70 whitespace-nowrap flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {formatDate(message.date)}
+                      </span>
+                    </div>
+                    <p className="text-sm text-[#B19EEF]/70 mb-1">{message.email}</p>
+                    <p className={`text-sm truncate ${!message.read ? "text-white/80" : "text-[#B19EEF]/60"}`}>
+                      {message.message}
+                    </p>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    <button
+                      onClick={() => openMessage(message)}
+                      className="p-2 rounded-lg hover:bg-[#5227FF]/20 text-[#B19EEF] hover:text-white transition-colors"
+                      title="View message"
+                    >
+                      <Eye className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => setDeleteConfirm(message.id)}
+                      className="p-2 rounded-lg hover:bg-red-500/20 text-[#B19EEF] hover:text-red-400 transition-colors"
+                      title="Delete message"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Message Detail Modal */}
+      <AnimatePresence>
+        {selectedMessage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setSelectedMessage(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#0f0520] border border-[#5227FF]/30 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="p-6 border-b border-[#5227FF]/30 flex items-center justify-between">
+                <h2 className="text-xl font-bold text-white">Message Details</h2>
+                <button
+                  onClick={() => setSelectedMessage(null)}
+                  className="p-2 rounded-lg hover:bg-[#5227FF]/20 text-[#B19EEF] hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-6 space-y-6">
+                {/* Sender Info */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3 p-4 bg-[#5227FF]/10 rounded-xl">
+                    <User className="w-5 h-5 text-[#FF9FFC]" />
+                    <div>
+                      <p className="text-xs text-[#B19EEF]">Name</p>
+                      <p className="text-white font-medium">{selectedMessage.firstName} {selectedMessage.lastName}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 bg-[#5227FF]/10 rounded-xl">
+                    <Mail className="w-5 h-5 text-[#FF9FFC]" />
+                    <div>
+                      <p className="text-xs text-[#B19EEF]">Email</p>
+                      <p className="text-white font-medium">{selectedMessage.email}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 bg-[#5227FF]/10 rounded-xl">
+                    <Phone className="w-5 h-5 text-[#FF9FFC]" />
+                    <div>
+                      <p className="text-xs text-[#B19EEF]">Phone</p>
+                      <p className="text-white font-medium">{selectedMessage.phone}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 bg-[#5227FF]/10 rounded-xl">
+                    <Clock className="w-5 h-5 text-[#FF9FFC]" />
+                    <div>
+                      <p className="text-xs text-[#B19EEF]">Received</p>
+                      <p className="text-white font-medium">{formatDate(selectedMessage.date)}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Message */}
+                <div>
+                  <p className="text-sm text-[#B19EEF] mb-2">Message</p>
+                  <div className="p-4 bg-[#5227FF]/10 rounded-xl">
+                    <p className="text-white leading-relaxed">{selectedMessage.message}</p>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    onClick={() => {
+                      if (selectedMessage.read) {
+                        markAsUnread(selectedMessage.id);
+                        setSelectedMessage({ ...selectedMessage, read: false });
+                      } else {
+                        markAsRead(selectedMessage.id);
+                        setSelectedMessage({ ...selectedMessage, read: true });
+                      }
+                    }}
+                    className="px-4 py-2 bg-[#5227FF]/20 border border-[#5227FF]/50 rounded-xl text-[#B19EEF] hover:text-white hover:border-[#FF9FFC] transition-colors"
+                  >
+                    Mark as {selectedMessage.read ? "Unread" : "Read"}
+                  </button>
+                  <a
+                    href={`mailto:${selectedMessage.email}`}
+                    className="px-4 py-2 bg-[#5227FF] rounded-xl text-white hover:bg-[#5227FF]/80 transition-colors"
+                  >
+                    Reply via Email
+                  </a>
+                  <button
+                    onClick={() => {
+                      setDeleteConfirm(selectedMessage.id);
+                    }}
+                    className="px-4 py-2 bg-red-500/20 border border-red-500/50 rounded-xl text-red-400 hover:bg-red-500/30 transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deleteConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setDeleteConfirm(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#0f0520] border border-[#5227FF]/30 rounded-2xl p-6 w-full max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-xl font-bold text-white mb-2">Delete Message?</h3>
+              <p className="text-[#B19EEF] mb-6">
+                This action cannot be undone. The message will be permanently removed.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeleteConfirm(null)}
+                  className="flex-1 px-4 py-3 bg-[#5227FF]/20 border border-[#5227FF]/50 rounded-xl text-white hover:border-[#FF9FFC] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => deleteMessage(deleteConfirm)}
+                  className="flex-1 px-4 py-3 bg-red-500 rounded-xl text-white hover:bg-red-600 transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

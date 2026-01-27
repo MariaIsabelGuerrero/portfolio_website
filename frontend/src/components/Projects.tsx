@@ -1,244 +1,213 @@
-'use client';
+"use client";
+
+import Image from "next/image";
+import { Github, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 
 const featuredProjects = [
   {
-    id: 1,
-    title: 'Digikala Clone',
-    description: 'A full-featured e-commerce platform clone with product listings, cart functionality, user authentication, and payment integration. Built with modern web technologies for optimal performance.',
-    technologies: ['React', 'Material UI', 'React Query'],
-    github: 'https://github.com',
-    live: 'https://example.com',
-    image: '/projects/digikala.png',
-    align: 'right',
+    title: "Passion Sports Jerseys",
+    description:
+      "E-commerce platform for sports jerseys built with Spring Boot microservices. Led backend development featuring secure payments, inventory management, and responsive storefront.",
+    technologies: ["Spring Boot", "Microservices", "Java", "PostgreSQL"],
+    github: "#",
+    live: "#",
+    image: "/images/robot-developer.jpg",
+    featured: true,
   },
   {
-    id: 2,
-    title: 'Portfolio',
-    description: 'A personal portfolio website showcasing projects, skills, and experience. Features smooth animations, responsive design, and dark mode support.',
-    technologies: ['TypeScript', 'Next.js', 'Tailwind CSS'],
-    github: 'https://github.com',
-    live: 'https://example.com',
-    image: '/projects/portfolio.png',
-    align: 'left',
-  },
-  {
-    id: 3,
-    title: 'Aparat Clone',
-    description: 'A video sharing platform clone with video upload, streaming, comments, and user interactions. Implements lazy loading and optimized video delivery.',
-    technologies: ['React', 'Material UI', 'React Query'],
-    github: 'https://github.com',
-    live: 'https://example.com',
-    image: '/projects/aparat.png',
-    align: 'right',
+    title: "Pet Clinic Microservices",
+    description:
+      "Veterinary clinic management system built collaboratively using Spring Boot and React. Implemented services for appointments, billing, inventory, and customer management.",
+    technologies: ["Spring Boot", "React", "Microservices", "MySQL"],
+    github: "#",
+    live: "#",
+    image: "/images/robot-developer.jpg",
+    featured: true,
   },
 ];
 
 const otherProjects = [
   {
-    id: 1,
-    title: 'Netflix Clone',
-    description: 'A streaming platform UI clone with responsive design and smooth animations.',
-    technologies: ['React', 'Firebase', 'TMDB API'],
-    github: 'https://github.com',
-    live: 'https://example.com',
+    title: "Task Manager App",
+    description: "Full-stack task management application with user authentication and real-time updates.",
+    technologies: ["Next.js", "TypeScript", "Prisma"],
   },
   {
-    id: 2,
-    title: 'Weather App',
-    description: 'Real-time weather application with location-based forecasts and beautiful UI.',
-    technologies: ['Vue.js', 'OpenWeather API', 'CSS'],
-    github: 'https://github.com',
-    live: 'https://example.com',
+    title: "Weather Dashboard",
+    description: "Interactive weather dashboard with location-based forecasts and data visualization.",
+    technologies: ["React", "Chart.js", "API Integration"],
   },
   {
-    id: 3,
-    title: 'Task Manager',
-    description: 'A productivity app for managing tasks with drag-and-drop functionality.',
-    technologies: ['React', 'Redux', 'Node.js'],
-    github: 'https://github.com',
-    live: 'https://example.com',
+    title: "Chat Application",
+    description: "Real-time messaging application with WebSocket support and user presence indicators.",
+    technologies: ["Node.js", "Socket.io", "MongoDB"],
   },
 ];
 
 export default function Projects() {
   return (
-    <section id="projects" className="py-24 lg:py-32">
-      <div className="max-w-7xl mx-auto px-6 lg:px-12">
+    <section id="projects" className="py-20 lg:py-32">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full lg:ml-24">
         {/* Section Header */}
-        <div className="flex items-center gap-4 mb-12">
-          <span className="section-number">3</span>
-          <div className="flex-1">
-            <h2 className="text-2xl md:text-3xl font-bold text-[#e6f1ff] mb-2">
-              Some things I&apos;ve built
+        <motion.div 
+          className="flex items-end mb-12"
+          initial={{ opacity: 0, x: -30 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          {/* Number 4 - SVG with rounded corners and drop shadow */}
+          <svg 
+            width="76" 
+            height="93" 
+            viewBox="0 0 76 93" 
+            fill="none" 
+            xmlns="http://www.w3.org/2000/svg"
+            className="-mr-2"
+          >
+            <g filter="url(#filter0_d_4_projects)">
+              <path d="M4 60.4165C4 60.065 4.0926 59.7198 4.26848 59.4156L36.3025 3.99908C36.6599 3.38079 37.3198 3 38.034 3H56.6C57.7046 3 58.6 3.89543 58.6 5V54.28C58.6 55.3846 59.4954 56.28 60.6 56.28H67.64C68.7446 56.28 69.64 57.1754 69.64 58.28V68.92C69.64 70.0246 68.7446 70.92 67.64 70.92H60.6C59.4954 70.92 58.6 71.8154 58.6 72.92V83.8C58.6 84.9046 57.7046 85.8 56.6 85.8H43.92C42.8154 85.8 41.92 84.9046 41.92 83.8V72.92C41.92 71.8154 41.0246 70.92 39.92 70.92H6C4.89543 70.92 4 70.0246 4 68.92V60.4165ZM18.7869 59.7855C18.0245 61.1141 16.1126 61.1275 15.3317 59.8097L15.0294 59.2996C14.2393 57.9664 15.2003 56.28 16.75 56.28H39.92C41.0246 56.28 41.92 55.3846 41.92 54.28V14.0595C41.92 13.0928 42.8518 12.3995 43.7777 12.6773C44.6681 12.9444 45.0773 13.9714 44.6146 14.7777L18.7869 59.7855Z" fill="#5227FF"/>
+              <path d="M56.5996 2.5C57.9803 2.5 59.0996 3.61929 59.0996 5V54.2803C59.0998 55.1084 59.7715 55.7801 60.5996 55.7803H67.6396C69.0204 55.7803 70.1396 56.8996 70.1396 58.2803V68.9199C70.1396 70.3006 69.0204 71.4199 67.6396 71.4199H60.5996C59.7714 71.4201 59.0997 72.0917 59.0996 72.9199V83.7998C59.0996 85.1805 57.9803 86.2998 56.5996 86.2998H43.9199C42.5392 86.2998 41.4199 85.1805 41.4199 83.7998V72.9199C41.4199 72.0915 40.7483 71.4199 39.9199 71.4199H6C4.61929 71.4199 3.5 70.3006 3.5 68.9199V60.416C3.50008 59.9769 3.61617 59.5452 3.83594 59.165L35.8691 3.74902C36.3159 2.97617 37.1415 2.5 38.0342 2.5H56.5996ZM21.6621 55.7803H39.9199C40.7483 55.7803 41.4198 55.1086 41.4199 54.2803V21.3477L21.6621 55.7803Z" stroke="#B19EEF"/>
+            </g>
+            <defs>
+              <filter id="filter0_d_4_projects" x="0" y="0" width="75.64" height="92.8" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+                <feFlood floodOpacity="0" result="BackgroundImageFix"/>
+                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+                <feOffset dx="1" dy="2"/>
+                <feGaussianBlur stdDeviation="2"/>
+                <feComposite in2="hardAlpha" operator="out"/>
+                <feColorMatrix type="matrix" values="0 0 0 0 0.282353 0 0 0 0 0.462745 0 0 0 0 0.807843 0 0 0 1 0"/>
+                <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_4_projects"/>
+                <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_4_projects" result="shape"/>
+              </filter>
+            </defs>
+          </svg>
+          {/* Title text with line */}
+          <div className="flex items-start mb-1 -mt-4">
+            <h2 className="font-sans font-semibold text-[32px] leading-none tracking-[-0.02em] text-[#F9F9F9] whitespace-nowrap ml-2">
+              Some things I&apos;ve build
             </h2>
-            <div className="accent-line w-full max-w-xs"></div>
+            {/* Line */}
+            <div className="w-[300px] h-[1px] bg-[#5227FF]/50 hidden lg:block ml-3 mt-[16px]" />
           </div>
-        </div>
+        </motion.div>
 
         {/* Featured Projects */}
         <div className="space-y-24">
-          {featuredProjects.map((project) => (
-            <div
-              key={project.id}
-              className={`relative grid lg:grid-cols-12 gap-4 items-center ${
-                project.align === 'left' ? 'lg:text-left' : 'lg:text-right'
-              }`}
+          {featuredProjects.map((project, index) => (
+            <motion.div 
+              key={index} 
+              className="relative"
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              viewport={{ once: true, margin: "-50px" }}
             >
-              {/* Project Image */}
+              <p className="text-accent text-sm mb-2">Featured project</p>
+              <h3 className="text-2xl sm:text-3xl font-bold text-foreground mb-6">{project.title}</h3>
+
               <div
-                className={`lg:col-span-7 ${
-                  project.align === 'left' ? 'lg:order-2 lg:col-start-6' : 'lg:order-1'
+                className={`grid lg:grid-cols-2 gap-8 items-center ${
+                  index % 2 === 1 ? "lg:grid-flow-dense" : ""
                 }`}
               >
-                <a
-                  href={project.live}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block relative group"
-                >
-                  <div className="absolute inset-0 bg-[#64ffda]/20 group-hover:bg-transparent transition-all duration-300 rounded-lg z-10"></div>
-                  <div className="relative aspect-video bg-[#112240] rounded-lg overflow-hidden">
-                    {/* Placeholder for project image */}
-                    <div className="w-full h-full bg-gradient-to-br from-[#112240] to-[#1d3a5f] flex items-center justify-center">
-                      <span className="text-[#64ffda]/30 text-6xl font-bold">
-                        {project.title.charAt(0)}
-                      </span>
+                {/* Project Image */}
+                {project.image && (
+                  <div className={`${index % 2 === 1 ? "lg:col-start-2" : ""}`}>
+                    <div className="relative aspect-video rounded-lg overflow-hidden bg-card border border-border">
+                      <Image
+                        src={project.image || "/placeholder.svg"}
+                        alt={project.title}
+                        fill
+                        className="object-cover opacity-80 hover:opacity-100 transition-opacity"
+                      />
                     </div>
                   </div>
-                </a>
-              </div>
+                )}
 
-              {/* Project Content */}
-              <div
-                className={`lg:col-span-6 ${
-                  project.align === 'left'
-                    ? 'lg:order-1 lg:col-start-1'
-                    : 'lg:order-2 lg:col-start-7'
-                } relative z-20`}
-              >
-                <p className="text-[#64ffda] font-mono text-sm mb-2">Featured Project</p>
-                <h3 className="text-2xl font-bold text-[#e6f1ff] mb-4">
-                  <a
-                    href={project.live}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-[#64ffda] transition-colors"
-                  >
-                    {project.title}
-                  </a>
-                </h3>
-                <div className="bg-[#112240] p-6 rounded-lg shadow-xl mb-4">
-                  <p className="text-[#8892b0]">{project.description}</p>
-                </div>
-                <ul
-                  className={`flex flex-wrap gap-4 mb-4 font-mono text-sm text-[#8892b0] ${
-                    project.align === 'left' ? 'lg:justify-start' : 'lg:justify-end'
-                  }`}
-                >
-                  {project.technologies.map((tech) => (
-                    <li key={tech}>{tech}</li>
-                  ))}
-                </ul>
-                <div
-                  className={`flex gap-4 ${
-                    project.align === 'left' ? 'lg:justify-start' : 'lg:justify-end'
-                  }`}
-                >
-                  <a
-                    href={project.github}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#e6f1ff] hover:text-[#64ffda] transition-colors"
-                    aria-label="GitHub"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-                    </svg>
-                  </a>
-                  <a
-                    href={project.live}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#e6f1ff] hover:text-[#64ffda] transition-colors"
-                    aria-label="External Link"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                      <polyline points="15 3 21 3 21 9" />
-                      <line x1="10" y1="14" x2="21" y2="3" />
-                    </svg>
-                  </a>
+                {/* Project Info */}
+                <div className={`space-y-4 ${index % 2 === 1 ? "lg:col-start-1 lg:row-start-1" : ""}`}>
+                  <div className="bg-card p-6 rounded-lg border border-border">
+                    <p className="text-muted-foreground leading-relaxed">{project.description}</p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-3">
+                    {project.technologies.map((tech, idx) => (
+                      <span key={idx} className="text-muted-foreground text-sm">
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-border text-foreground hover:border-accent hover:text-accent bg-transparent"
+                    >
+                      <Github className="w-4 h-4 mr-2" />
+                      GitHub
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-border text-foreground hover:border-accent hover:text-accent bg-transparent"
+                    >
+                      <ExternalLink className="w-4 h-4 mr-2" />
+                      Link
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
 
         {/* Other Noteworthy Projects */}
         <div className="mt-32">
-          <h3 className="text-2xl font-bold text-[#e6f1ff] text-center mb-12">
+          <h3 className="text-2xl sm:text-3xl font-bold text-foreground text-center mb-12">
             Other Noteworthy Projects
           </h3>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {otherProjects.map((project) => (
-              <div
-                key={project.id}
-                className="bg-[#112240] rounded-lg p-6 card-hover group"
+
+<div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {otherProjects.map((project, index) => (
+              <motion.div
+                key={index}
+                className="bg-card p-6 rounded-lg border border-border hover:border-accent transition-colors group"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+                viewport={{ once: true, margin: "-50px" }}
+                whileHover={{ y: -5 }}
               >
-                {/* Header */}
-                <div className="flex items-center justify-between mb-6">
-                  <svg
-                    className="text-[#64ffda]"
-                    width="40"
-                    height="40"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-                  </svg>
-                  <div className="flex gap-4">
-                    <a
-                      href={project.github}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#8892b0] hover:text-[#64ffda] transition-colors"
-                    >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-                      </svg>
-                    </a>
-                    <a
-                      href={project.live}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#8892b0] hover:text-[#64ffda] transition-colors"
-                    >
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                        <polyline points="15 3 21 3 21 9" />
-                        <line x1="10" y1="14" x2="21" y2="3" />
-                      </svg>
-                    </a>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex gap-2">
+                    <div className="w-8 h-8 rounded bg-secondary flex items-center justify-center">
+                      <span className="text-accent text-xs">{"</>"}</span>
+                    </div>
+                    <div className="w-8 h-8 rounded bg-secondary flex items-center justify-center">
+                      <span className="text-accent text-xs">M</span>
+                    </div>
                   </div>
                 </div>
 
-                {/* Content */}
-                <h4 className="text-xl font-bold text-[#e6f1ff] mb-2 group-hover:text-[#64ffda] transition-colors">
+                <h4 className="text-lg font-semibold text-foreground mb-2 group-hover:text-accent transition-colors">
                   {project.title}
                 </h4>
-                <p className="text-[#8892b0] text-sm mb-6">{project.description}</p>
+                <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+                  {project.description}
+                </p>
 
-                {/* Technologies */}
-                <ul className="flex flex-wrap gap-3 font-mono text-xs text-[#8892b0]">
-                  {project.technologies.map((tech) => (
-                    <li key={tech}>{tech}</li>
+                <div className="flex flex-wrap gap-3">
+                  {project.technologies.map((tech, idx) => (
+                    <span key={idx} className="text-muted-foreground text-xs">
+                      {tech}
+                    </span>
                   ))}
-                </ul>
-              </div>
+                </div>
+              </motion.div>
             ))}
           </div>
         </div>

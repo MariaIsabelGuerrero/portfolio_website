@@ -1,134 +1,94 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Primary Colors */
-  --color-background: #0C1B31;
-  --color-background-light: #112240;
-  --color-background-lighter: #1d3a5f;
-
-  /* Accent Colors */
-  --color-accent: #4876CE;
-
-  /* Text Colors */
-  --color-text-primary: #FFFFFF;
-  --color-text-heading: #FBFAFA;
-  --color-text-secondary: #7E7E7E;
-
-  /* Line */
-  --color-line: #4876CE;
+  --background: #0f0520;
+  --foreground: #FBFAFA;
+  --card: #1a0a2e;
+  --card-foreground: #FBFAFA;
+  --popover: #1a0a2e;
+  --popover-foreground: #FBFAFA;
+  --primary: #5227FF;
+  --primary-foreground: #FFFFFF;
+  --secondary: #2d1b4e;
+  --secondary-foreground: #FFFFFF;
+  --muted: #2d1b4e;
+  --muted-foreground: #B19EEF;
+  --accent: #FF9FFC;
+  --accent-foreground: #0f0520;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #5227FF;
+  --input: #2d1b4e;
+  --ring: #FF9FFC;
+  --chart-1: #8b5cf6;
+  --chart-2: #06b6d4;
+  --chart-3: #22c55e;
+  --chart-4: #f59e0b;
+  --chart-5: #ef4444;
+  --chart-6: #ec4899;
+  --chart-7: #3b82f6;
+  --chart-8: #14b8a6;
+  --radius: 0.625rem;
+  --sidebar: #0f172a;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #3b82f6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1e293b;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #1e3a5f;
+  --sidebar-ring: #3b82f6;
 }
 
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
+@theme inline {
+  --font-sans: 'Open Sans', 'Open Sans Fallback';
+  --font-display: 'Radio Canada', 'Radio Canada Fallback';
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  background-color: var(--color-background);
-  color: var(--color-text-primary);
-  line-height: 1.6;
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-background);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-background-lighter);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-accent);
-}
-
-/* Section numbering style */
-.section-number {
-  font-size: 6rem;
-  font-weight: 700;
-  color: var(--color-background-lighter);
-  opacity: 0.5;
-  line-height: 1;
-}
-
-/* Accent line */
-.accent-line {
-  height: 1px;
-  background: linear-gradient(90deg, var(--color-accent) 0%, transparent 100%);
-}
-
-/* Button outline style - Check my resume */
-.btn-outline {
-  @apply px-6 py-3 border border-[#4876CE] text-[#4876CE] rounded bg-[#0C1B31] hover:bg-[#4876CE]/10 transition-all duration-300 font-semibold;
-}
-
-/* Button filled style - Resume navbar */
-.btn-filled {
-  @apply px-5 py-2 bg-[#4876CE] text-white rounded font-medium hover:bg-[#5a85d6] transition-all duration-300;
-}
-
-/* Tech tag */
-.tech-tag {
-  @apply flex items-center gap-2 text-[#7E7E7E] text-sm;
-}
-
-.tech-tag::before {
-  content: '▹';
-  color: #4876CE;
-}
-
-/* Card hover effect */
-.card-hover {
-  @apply transition-all duration-300 hover:translate-y-[-4px];
-}
-
-/* Font classes */
-.font-open-sans {
-  font-family: 'Open Sans', sans-serif;
-}
-
-.font-radio-canada {
-  font-family: 'Radio Canada', sans-serif;
-}
-
-/* Typography - Headings */
-.heading-primary {
-  @apply text-5xl md:text-6xl lg:text-7xl font-bold text-[#FBFAFA] font-['Open_Sans'] leading-tight;
-}
-
-.heading-secondary {
-  @apply text-3xl md:text-4xl lg:text-5xl font-bold text-white font-['Radio_Canada'] leading-tight;
-}
-
-.heading-section {
-  @apply text-2xl md:text-3xl font-semibold text-[#F9F9F9] font-['Open_Sans'];
-}
-
-/* Typography - Text */
-.text-intro {
-  @apply text-[#4876CE] font-['Open_Sans'] text-2xl md:text-3xl font-semibold;
-}
-
-.text-description {
-  @apply text-[#7E7E7E] font-['Open_Sans'] text-base md:text-lg font-semibold;
-}
-
-.text-body {
-  @apply text-[#E2DDDD] font-['Open_Sans'] font-normal text-sm md:text-base leading-relaxed;
-}
-
-.text-tech {
-  @apply text-white font-['Open_Sans'] font-semibold text-sm md:text-base;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }

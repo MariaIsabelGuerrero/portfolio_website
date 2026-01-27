@@ -1,0 +1,354 @@
+"use client";
+
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Quote, 
+  Search, 
+  Trash2, 
+  Check, 
+  X, 
+  Clock,
+  User,
+  Briefcase,
+  Filter,
+  CheckCircle,
+  XCircle,
+  AlertCircle
+} from "lucide-react";
+
+type TestimonialStatus = "pending" | "approved" | "rejected";
+
+interface Testimonial {
+  id: string;
+  name: string;
+  role: string;
+  company: string;
+  content: string;
+  date: string;
+  status: TestimonialStatus;
+  avatar?: string;
+}
+
+// Mock data for testimonials
+const initialTestimonials: Testimonial[] = [
+  {
+    id: "1",
+    name: "David Wilson",
+    role: "Senior Developer",
+    company: "Tech Solutions Inc.",
+    content: "Maria is an exceptional developer with a keen eye for detail. Her work on our e-commerce platform exceeded all expectations. She delivered clean, maintainable code and was always proactive in suggesting improvements.",
+    date: "2024-01-15T10:30:00",
+    status: "pending",
+  },
+  {
+    id: "2",
+    name: "Jennifer Martinez",
+    role: "Project Manager",
+    company: "Digital Agency Co.",
+    content: "Working with Maria was a pleasure. She communicated effectively throughout the project and delivered everything on time. Her expertise in Spring Boot and microservices architecture was invaluable.",
+    date: "2024-01-12T14:20:00",
+    status: "approved",
+  },
+  {
+    id: "3",
+    name: "Robert Thompson",
+    role: "CTO",
+    company: "StartupXYZ",
+    content: "Maria helped us build our MVP from scratch. Her full-stack skills and understanding of business requirements made her an essential part of our team. Highly recommended!",
+    date: "2024-01-10T09:15:00",
+    status: "approved",
+  },
+  {
+    id: "4",
+    name: "Amanda Lee",
+    role: "Product Owner",
+    company: "Enterprise Corp",
+    content: "Outstanding work on the veterinary clinic system. Maria demonstrated excellent problem-solving skills and delivered a robust, scalable solution.",
+    date: "2024-01-08T16:45:00",
+    status: "pending",
+  },
+  {
+    id: "5",
+    name: "Test User",
+    role: "Anonymous",
+    company: "Unknown",
+    content: "This is a spam testimonial that should be rejected.",
+    date: "2024-01-05T11:00:00",
+    status: "rejected",
+  },
+];
+
+const statusConfig = {
+  pending: {
+    label: "Pending",
+    color: "text-yellow-400",
+    bgColor: "bg-yellow-400/20",
+    borderColor: "border-yellow-400/50",
+    icon: AlertCircle,
+  },
+  approved: {
+    label: "Approved",
+    color: "text-green-400",
+    bgColor: "bg-green-400/20",
+    borderColor: "border-green-400/50",
+    icon: CheckCircle,
+  },
+  rejected: {
+    label: "Rejected",
+    color: "text-red-400",
+    bgColor: "bg-red-400/20",
+    borderColor: "border-red-400/50",
+    icon: XCircle,
+  },
+};
+
+export default function TestimonialsPage() {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>(initialTestimonials);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState<"all" | TestimonialStatus>("all");
+  const [selectedTestimonial, setSelectedTestimonial] = useState<Testimonial | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+  const filteredTestimonials = testimonials.filter(t => {
+    const matchesSearch = 
+      t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      t.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      t.content.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesFilter = filterStatus === "all" || t.status === filterStatus;
+    
+    return matchesSearch && matchesFilter;
+  });
+
+  const updateStatus = (id: string, status: TestimonialStatus) => {
+    setTestimonials(testimonials.map(t => 
+      t.id === id ? { ...t, status } : t
+    ));
+    if (selectedTestimonial?.id === id) {
+      setSelectedTestimonial({ ...selectedTestimonial, status });
+    }
+  };
+
+  const deleteTestimonial = (id: string) => {
+    setTestimonials(testimonials.filter(t => t.id !== id));
+    setDeleteConfirm(null);
+    if (selectedTestimonial?.id === id) {
+      setSelectedTestimonial(null);
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  const pendingCount = testimonials.filter(t => t.status === "pending").length;
+  const approvedCount = testimonials.filter(t => t.status === "approved").length;
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Testimonials</h1>
+          <p className="text-[#B19EEF] mt-1">
+            {pendingCount} pending review | {approvedCount} approved
+          </p>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-[#0f0520] border border-yellow-400/30 rounded-xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-yellow-400/20 flex items-center justify-center">
+              <AlertCircle className="w-5 h-5 text-yellow-400" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-white">{pendingCount}</p>
+              <p className="text-sm text-[#B19EEF]">Pending</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-[#0f0520] border border-green-400/30 rounded-xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-green-400/20 flex items-center justify-center">
+              <CheckCircle className="w-5 h-5 text-green-400" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-white">{approvedCount}</p>
+              <p className="text-sm text-[#B19EEF]">Approved</p>
+            </div>
+          </div>
+        </div>
+        <div className="bg-[#0f0520] border border-red-400/30 rounded-xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-red-400/20 flex items-center justify-center">
+              <XCircle className="w-5 h-5 text-red-400" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-white">{testimonials.filter(t => t.status === "rejected").length}</p>
+              <p className="text-sm text-[#B19EEF]">Rejected</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Search and Filter */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B19EEF]" />
+          <input
+            type="text"
+            placeholder="Search testimonials..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 bg-[#0f0520] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC] transition-colors"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Filter className="w-5 h-5 text-[#B19EEF]" />
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value as "all" | TestimonialStatus)}
+            className="px-4 py-3 bg-[#0f0520] border border-[#5227FF]/30 rounded-xl text-white focus:outline-none focus:border-[#FF9FFC] transition-colors"
+          >
+            <option value="all">All Testimonials</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Testimonials List */}
+      <div className="space-y-4">
+        {filteredTestimonials.length === 0 ? (
+          <div className="bg-[#0f0520] border border-[#5227FF]/30 rounded-2xl p-12 text-center">
+            <Quote className="w-12 h-12 text-[#5227FF]/50 mx-auto mb-4" />
+            <p className="text-[#B19EEF]">No testimonials found</p>
+          </div>
+        ) : (
+          filteredTestimonials.map((testimonial) => {
+            const status = statusConfig[testimonial.status];
+            const StatusIcon = status.icon;
+            
+            return (
+              <motion.div
+                key={testimonial.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-[#0f0520] border border-[#5227FF]/30 rounded-2xl p-6 hover:border-[#5227FF]/50 transition-colors"
+              >
+                <div className="flex flex-col lg:flex-row lg:items-start gap-4">
+                  {/* Avatar */}
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#5227FF] to-[#FF9FFC] flex items-center justify-center flex-shrink-0">
+                    <span className="text-white font-semibold text-lg">
+                      {testimonial.name.charAt(0)}
+                    </span>
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-3 mb-2">
+                      <h3 className="font-semibold text-white">{testimonial.name}</h3>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${status.bgColor} ${status.color}`}>
+                        <StatusIcon className="w-3 h-3" />
+                        {status.label}
+                      </span>
+                    </div>
+                    <p className="text-sm text-[#B19EEF] mb-3 flex items-center gap-2">
+                      <Briefcase className="w-4 h-4" />
+                      {testimonial.role} at {testimonial.company}
+                    </p>
+                    <p className="text-[#B19EEF]/80 mb-4 line-clamp-3">
+                      &ldquo;{testimonial.content}&rdquo;
+                    </p>
+                    <div className="flex items-center gap-2 text-xs text-[#B19EEF]/60">
+                      <Clock className="w-3 h-3" />
+                      Submitted {formatDate(testimonial.date)}
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex flex-wrap lg:flex-col gap-2">
+                    {testimonial.status !== "approved" && (
+                      <button
+                        onClick={() => updateStatus(testimonial.id, "approved")}
+                        className="flex items-center gap-2 px-4 py-2 bg-green-500/20 border border-green-500/50 rounded-xl text-green-400 hover:bg-green-500/30 transition-colors"
+                      >
+                        <Check className="w-4 h-4" />
+                        <span className="text-sm">Approve</span>
+                      </button>
+                    )}
+                    {testimonial.status !== "rejected" && (
+                      <button
+                        onClick={() => updateStatus(testimonial.id, "rejected")}
+                        className="flex items-center gap-2 px-4 py-2 bg-red-500/20 border border-red-500/50 rounded-xl text-red-400 hover:bg-red-500/30 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                        <span className="text-sm">Reject</span>
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setDeleteConfirm(testimonial.id)}
+                      className="flex items-center gap-2 px-4 py-2 bg-[#5227FF]/20 border border-[#5227FF]/50 rounded-xl text-[#B19EEF] hover:text-white hover:border-[#FF9FFC] transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      <span className="text-sm">Delete</span>
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deleteConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setDeleteConfirm(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#0f0520] border border-[#5227FF]/30 rounded-2xl p-6 w-full max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-xl font-bold text-white mb-2">Delete Testimonial?</h3>
+              <p className="text-[#B19EEF] mb-6">
+                This action cannot be undone. The testimonial will be permanently removed.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeleteConfirm(null)}
+                  className="flex-1 px-4 py-3 bg-[#5227FF]/20 border border-[#5227FF]/50 rounded-xl text-white hover:border-[#FF9FFC] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => deleteTestimonial(deleteConfirm)}
+                  className="flex-1 px-4 py-3 bg-red-500 rounded-xl text-white hover:bg-red-600 transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}

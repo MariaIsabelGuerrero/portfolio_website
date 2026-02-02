@@ -2,10 +2,12 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { personalInfo } from "@/config/portfolio";
+import { sectionTitles } from "@/lib/constants";
 
 export default function About() {
   return (
-    <section id="about" className="py-20 lg:py-32 bg-[#0f0520] overflow-hidden">
+    <section id="about" className="py-20 lg:py-32 bg-background overflow-hidden">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 w-full lg:ml-24">
         <div className="relative">
           {/* Left Content */}
@@ -46,28 +48,24 @@ export default function About() {
               </svg>
               {/* About me text with line */}
               <div className="flex items-start mb-1">
-                <h2 className="font-sans font-semibold text-[32px] leading-none tracking-[-0.02em] text-[#F9F9F9] whitespace-nowrap ml-2">
-                  About me
+                <h2 className="font-sans font-semibold text-[32px] leading-none tracking-[-0.02em] text-foreground whitespace-nowrap ml-2">
+                  {sectionTitles.about}
                 </h2>
                 {/* Line - aligned to top of About me text */}
-                <div className="w-[417px] h-[1px] bg-[#5227FF]/50 hidden lg:block ml-3 mt-[16px]" />
+                <div className="w-[417px] h-px bg-primary/50 hidden lg:block ml-3 mt-[16px]" />
               </div>
             </motion.div>
 
             {/* Bio Text with left border - aligned under "About me" text, width matches About me + line */}
-            <motion.div 
-              className="max-w-[620px] border-l-2 border-[#5227FF]/50 pl-6 ml-[70px]"
+            <motion.div
+              className="max-w-[620px] border-l-2 border-primary/50 pl-6 ml-[70px]"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               viewport={{ once: true, margin: "-100px" }}
             >
-              <p className="font-sans font-normal text-[16px] leading-[140%] tracking-[-0.02em] text-[#B19EEF]">
-                Hi, I&apos;m Maria, a Full-Stack Developer and Computer Science student at Champlain College. 
-                I specialize in building scalable backend systems and modern web applications using Java, 
-                Spring Boot, and React. I enjoy solving complex problems with clean, efficient code and have 
-                a strong passion for learning new technologies and helping others grow. Beyond coding, I work 
-                as a Programming Tutor and coach gymnastics. Let&apos;s build something amazing together!
+              <p className="font-sans font-normal text-[16px] leading-[140%] tracking-[-0.02em] text-muted-foreground">
+                {personalInfo.bio}
               </p>
             </motion.div>
           </div>

@@ -1,9 +1,26 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useState } from "react";
+
+interface Testimonial {
+  name: string;
+  role: string;
+  company: string;
+  text: string;
+}
 
 export default function Testimonials() {
-  const testimonials = [
+  const [showForm, setShowForm] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    role: "",
+    company: "",
+    text: "",
+  });
+  const [submitted, setSubmitted] = useState(false);
+
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([
     {
       name: "John Doe",
       role: "Project Manager",
@@ -22,7 +39,23 @@ export default function Testimonials() {
       company: "Dev Studio",
       text: "Maria's technical abilities and dedication to learning make her a valuable team member. I highly recommend her for any development project.",
     },
-  ];
+  ]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formData.name && formData.role && formData.company && formData.text) {
+      setTestimonials((prev) => [...prev, formData]);
+      setFormData({ name: "", role: "", company: "", text: "" });
+      setShowForm(false);
+      setSubmitted(true);
+      setTimeout(() => setSubmitted(false), 3000);
+    }
+  };
 
   return (
     <section id="testimonials" className="py-20 lg:py-32 bg-[#0f0520]">
@@ -35,42 +68,16 @@ export default function Testimonials() {
           transition={{ duration: 0.6 }}
           viewport={{ once: true, margin: "-100px" }}
         >
-          {/* Number 6 - SVG with text-based approach */}
-          <svg 
-            width="75.64" 
-            height="92.8" 
-            viewBox="0 0 75.64 92.8" 
-            fill="none" 
-            xmlns="http://www.w3.org/2000/svg"
-            className="-mr-2"
+          {/* Number 6 - Styled text to match design */}
+          <span
+            className="font-sans font-bold text-[80px] leading-none text-[#5227FF] -mr-2"
+            style={{
+              WebkitTextStroke: '1px #B19EEF',
+              textShadow: '1px 2px 4px rgba(82, 39, 255, 0.5)',
+            }}
           >
-            <g filter="url(#filter0_d_6_testimonials)">
-              <text 
-                x="3" 
-                y="82" 
-                fill="#5227FF" 
-                stroke="#B19EEF" 
-                strokeWidth="1" 
-                fontFamily="Radio Canada, system-ui, sans-serif" 
-                fontSize="80" 
-                fontWeight="bold"
-              >
-                6
-              </text>
-            </g>
-            <defs>
-              <filter id="filter0_d_6_testimonials" x="0" y="0" width="75.64" height="92.8" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-                <feFlood floodOpacity="0" result="BackgroundImageFix"/>
-                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-                <feOffset dx="1" dy="2"/>
-                <feGaussianBlur stdDeviation="2"/>
-                <feComposite in2="hardAlpha" operator="out"/>
-                <feColorMatrix type="matrix" values="0 0 0 0 0.322 0 0 0 0 0.153 0 0 0 0 1 0 0 0 1 0"/>
-                <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_6_testimonials"/>
-                <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_6_testimonials" result="shape"/>
-              </filter>
-            </defs>
-          </svg>
+            6
+          </span>
           {/* Title text with line */}
           <div className="flex items-start mb-1 -mt-4">
             <h2 className="font-sans font-semibold text-[32px] leading-none tracking-[-0.02em] text-[#F9F9F9] whitespace-nowrap ml-2">
@@ -83,8 +90,8 @@ export default function Testimonials() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 ml-[90px]">
           {testimonials.map((testimonial, index) => (
-            <motion.div 
-              key={index} 
+            <motion.div
+              key={index}
               className="bg-[#1a0a2e] border-l-4 border-[#5227FF] p-6"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -106,6 +113,132 @@ export default function Testimonials() {
             </motion.div>
           ))}
         </div>
+
+        {/* Add Testimonial Section */}
+        <motion.div
+          className="mt-12 ml-[90px]"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          viewport={{ once: true }}
+        >
+          {submitted && (
+            <motion.div
+              className="mb-4 p-4 bg-[#5227FF]/20 border border-[#5227FF] text-[#F9F9F9] text-sm"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+            >
+              Thank you for your testimonial!
+            </motion.div>
+          )}
+
+          {!showForm ? (
+            <button
+              onClick={() => setShowForm(true)}
+              className="px-6 py-3 bg-[#5227FF] text-[#F9F9F9] font-sans font-semibold text-sm hover:bg-[#6B3FFF] transition-colors"
+            >
+              Add Your Testimonial
+            </button>
+          ) : (
+            <motion.form
+              onSubmit={handleSubmit}
+              className="bg-[#1a0a2e] border-l-4 border-[#5227FF] p-6 max-w-xl"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              transition={{ duration: 0.3 }}
+            >
+              <h3 className="text-[#F9F9F9] font-sans font-semibold text-lg mb-4">
+                Share Your Experience
+              </h3>
+
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="name" className="block text-[#B19EEF] font-sans text-sm mb-1">
+                    Name *
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-2 bg-[#0f0520] border border-[#5227FF]/50 text-[#F9F9F9] font-sans text-sm focus:outline-none focus:border-[#5227FF] transition-colors"
+                    placeholder="Your name"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="role" className="block text-[#B19EEF] font-sans text-sm mb-1">
+                      Role *
+                    </label>
+                    <input
+                      type="text"
+                      id="role"
+                      name="role"
+                      value={formData.role}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-2 bg-[#0f0520] border border-[#5227FF]/50 text-[#F9F9F9] font-sans text-sm focus:outline-none focus:border-[#5227FF] transition-colors"
+                      placeholder="Your role"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="company" className="block text-[#B19EEF] font-sans text-sm mb-1">
+                      Company *
+                    </label>
+                    <input
+                      type="text"
+                      id="company"
+                      name="company"
+                      value={formData.company}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-2 bg-[#0f0520] border border-[#5227FF]/50 text-[#F9F9F9] font-sans text-sm focus:outline-none focus:border-[#5227FF] transition-colors"
+                      placeholder="Company name"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="text" className="block text-[#B19EEF] font-sans text-sm mb-1">
+                    Your Testimonial *
+                  </label>
+                  <textarea
+                    id="text"
+                    name="text"
+                    value={formData.text}
+                    onChange={handleInputChange}
+                    required
+                    rows={4}
+                    className="w-full px-4 py-2 bg-[#0f0520] border border-[#5227FF]/50 text-[#F9F9F9] font-sans text-sm focus:outline-none focus:border-[#5227FF] transition-colors resize-none"
+                    placeholder="Share your experience working with Maria..."
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    type="submit"
+                    className="px-6 py-2 bg-[#5227FF] text-[#F9F9F9] font-sans font-semibold text-sm hover:bg-[#6B3FFF] transition-colors"
+                  >
+                    Submit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForm(false);
+                      setFormData({ name: "", role: "", company: "", text: "" });
+                    }}
+                    className="px-6 py-2 bg-transparent border border-[#5227FF]/50 text-[#B19EEF] font-sans font-semibold text-sm hover:border-[#5227FF] transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </motion.form>
+          )}
+        </motion.div>
       </div>
     </section>
   );

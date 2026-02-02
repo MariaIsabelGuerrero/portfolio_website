@@ -23,6 +23,10 @@
   --border: #5227FF;
   --input: #2d1b4e;
   --ring: #FF9FFC;
+  --text-light: #E2DDDD;
+  --primary-gradient-end: #8B5CF6;
+  --primary-shadow: rgba(82, 39, 255, 0.39);
+  --primary-glow: rgba(82, 39, 255, 0.5);
   --chart-1: #8b5cf6;
   --chart-2: #06b6d4;
   --chart-3: #22c55e;

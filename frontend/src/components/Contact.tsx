@@ -67,42 +67,16 @@ export default function Contact() {
           transition={{ duration: 0.6 }}
           viewport={{ once: true, margin: "-100px" }}
         >
-          {/* Number 8 - SVG with text-based approach */}
-          <svg 
-            width="75.64" 
-            height="92.8" 
-            viewBox="0 0 75.64 92.8" 
-            fill="none" 
-            xmlns="http://www.w3.org/2000/svg"
-            className="-mr-2"
+          {/* Number 8 - Styled text to match design */}
+          <span
+            className="font-sans font-bold text-[80px] leading-none text-[#5227FF] -mr-2"
+            style={{
+              WebkitTextStroke: '1px #B19EEF',
+              textShadow: '1px 2px 4px rgba(82, 39, 255, 0.5)',
+            }}
           >
-            <g filter="url(#filter0_d_8_contact)">
-              <text 
-                x="3" 
-                y="82" 
-                fill="#5227FF" 
-                stroke="#B19EEF" 
-                strokeWidth="1" 
-                fontFamily="Radio Canada, system-ui, sans-serif" 
-                fontSize="80" 
-                fontWeight="bold"
-              >
-                8
-              </text>
-            </g>
-            <defs>
-              <filter id="filter0_d_8_contact" x="0" y="0" width="75.64" height="92.8" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
-                <feFlood floodOpacity="0" result="BackgroundImageFix"/>
-                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-                <feOffset dx="1" dy="2"/>
-                <feGaussianBlur stdDeviation="2"/>
-                <feComposite in2="hardAlpha" operator="out"/>
-                <feColorMatrix type="matrix" values="0 0 0 0 0.322 0 0 0 0 0.153 0 0 0 0 1 0 0 0 1 0"/>
-                <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_8_contact"/>
-                <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_8_contact" result="shape"/>
-              </filter>
-            </defs>
-          </svg>
+            8
+          </span>
           {/* Title text with line */}
           <div className="flex items-start mb-1 -mt-4">
             <h2 className="font-sans font-semibold text-[32px] leading-none tracking-[-0.02em] text-[#F9F9F9] whitespace-nowrap ml-2">

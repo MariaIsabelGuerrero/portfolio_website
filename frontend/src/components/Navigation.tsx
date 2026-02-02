@@ -1,21 +1,10 @@
 "use client";
 
-import React from "react"
-
+import React from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { Menu, X, Globe, User } from "lucide-react";
-
-const navLinks = [
-  { name: "About", href: "#about" },
-  { name: "Experience", href: "#experience" },
-  { name: "Education", href: "#education" },
-  { name: "Projects", href: "#projects" },
-  { name: "Hobbies", href: "#hobbies" },
-  { name: "Testimonials", href: "#testimonials" },
-  { name: "Skills", href: "#skills" },
-  { name: "Contact", href: "#contact" },
-];
+import { navLinks, buttons } from "@/lib/constants";
 
 interface NavigationProps {
   onLogoClick?: () => void;
@@ -94,7 +83,7 @@ export default function Navigation({ onLogoClick }: NavigationProps) {
                 boxShadow: "0 4px 14px 0 rgba(82, 39, 255, 0.39), inset 0 1px 0 0 rgba(255,255,255,0.2)"
               }}
             >
-              Resume
+              {buttons.resume}
             </button>
           </div>
 
@@ -131,7 +120,7 @@ export default function Navigation({ onLogoClick }: NavigationProps) {
                     boxShadow: "0 4px 14px 0 rgba(82, 39, 255, 0.39), inset 0 1px 0 0 rgba(255,255,255,0.2)"
                   }}
                 >
-                  Resume
+                  {buttons.resume}
                 </button>
               </div>
             </div>

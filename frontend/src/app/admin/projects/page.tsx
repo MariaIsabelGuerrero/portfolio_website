@@ -2,51 +2,13 @@
 
 import React from "react"
 
-import { useState } from "react";
-import { Plus, Pencil, Trash2, X, Search, ExternalLink, Github } from "lucide-react";
-
-interface Project {
-  id: string;
-  title: string;
-  description: string;
-  technologies: string[];
-  github: string;
-  live: string;
-  featured: boolean;
-}
-
-const initialProjects: Project[] = [
-  {
-    id: "1",
-    title: "Passion Sports Jerseys",
-    description: "E-commerce platform for sports jerseys built with Spring Boot microservices. Led backend development featuring secure payments, inventory management, and responsive storefront.",
-    technologies: ["Spring Boot", "Microservices", "Java", "PostgreSQL"],
-    github: "#",
-    live: "#",
-    featured: true,
-  },
-  {
-    id: "2",
-    title: "Pet Clinic Microservices",
-    description: "Veterinary clinic management system built collaboratively using Spring Boot and React. Implemented services for appointments, billing, inventory, and customer management.",
-    technologies: ["Spring Boot", "React", "Microservices", "MySQL"],
-    github: "#",
-    live: "#",
-    featured: true,
-  },
-  {
-    id: "3",
-    title: "Task Manager App",
-    description: "Full-stack task management application with user authentication and real-time updates.",
-    technologies: ["Next.js", "TypeScript", "Prisma"],
-    github: "#",
-    live: "#",
-    featured: false,
-  },
-];
+import { useState, useEffect, useCallback, useRef } from "react";
+import { Plus, Pencil, Trash2, X, Search, ExternalLink, Github, Loader2, Upload } from "lucide-react";
+import { fetchProjects as apiFetchProjects, createProject, updateProject, deleteProject as apiDeleteProject, uploadProjectImage, type Project } from "@/lib/api-client";
 
 export default function ProjectsManagement() {
-  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterFeatured, setFilterFeatured] = useState<"all" | "featured" | "other">("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -54,12 +16,28 @@ export default function ProjectsManagement() {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
+    img: "",
     technologies: "",
     github: "",
     live: "",
     featured: false,
   });
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const loadProjects = useCallback(async () => {
+    try {
+      const res = await apiFetchProjects();
+      setProjects(res.data);
+    } catch (err) {
+      console.error("Failed to load projects:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadProjects(); }, [loadProjects]);
 
   const filteredProjects = projects.filter((project) => {
     const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase());
@@ -75,6 +53,7 @@ export default function ProjectsManagement() {
     setFormData({
       title: "",
       description: "",
+      img: "",
       technologies: "",
       github: "",
       live: "",
@@ -88,6 +67,7 @@ export default function ProjectsManagement() {
     setFormData({
       title: project.title,
       description: project.description,
+      img: project.img || "",
       technologies: project.technologies.join(", "),
       github: project.github,
       live: project.live,
@@ -96,35 +76,63 @@ export default function ProjectsManagement() {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const res = await uploadProjectImage(file);
+      setFormData((prev) => ({ ...prev, img: res.url }));
+    } catch (err) {
+      console.error("Failed to upload project image:", err);
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const projectData = {
       title: formData.title,
       description: formData.description,
+      img: formData.img,
       technologies: formData.technologies.split(",").map((t) => t.trim()).filter(Boolean),
       github: formData.github,
       live: formData.live,
       featured: formData.featured,
     };
 
-    if (editingProject) {
-      setProjects(projects.map((p) => 
-        p.id === editingProject.id ? { ...p, ...projectData } : p
-      ));
-    } else {
-      const newProject: Project = {
-        id: Date.now().toString(),
-        ...projectData,
-      };
-      setProjects([...projects, newProject]);
+    try {
+      if (editingProject) {
+        await updateProject(editingProject.id, projectData);
+      } else {
+        await createProject(projectData);
+      }
+      setIsModalOpen(false);
+      await loadProjects();
+    } catch (err) {
+      console.error("Failed to save project:", err);
     }
-    setIsModalOpen(false);
   };
 
-  const handleDelete = (id: string) => {
-    setProjects(projects.filter((p) => p.id !== id));
-    setDeleteConfirm(null);
+  const handleDelete = async (id: string) => {
+    try {
+      await apiDeleteProject(id);
+      setDeleteConfirm(null);
+      await loadProjects();
+    } catch (err) {
+      console.error("Failed to delete project:", err);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 text-[#5227FF] animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -275,6 +283,48 @@ export default function ProjectsManagement() {
                   className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC] resize-none"
                   placeholder="Describe your project"
                 />
+              </div>
+              <div>
+                <label className="block text-[#B19EEF] text-sm mb-2">Project Image</label>
+                {formData.img && (
+                  <div className="mb-3 flex items-center gap-3 p-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl">
+                    <img src={formData.img} alt="Project preview" className="w-16 h-10 object-cover rounded" />
+                    <span className="text-[#B19EEF] text-sm truncate flex-1">{formData.img.split("/").pop()}</span>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, img: "" })}
+                      className="p-1 rounded hover:bg-red-500/20 text-red-400"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".png,.jpg,.jpeg,.webp,.svg"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-dashed border-[#5227FF]/50 rounded-xl text-[#B19EEF] hover:border-[#FF9FFC] hover:text-[#FF9FFC] transition-colors disabled:opacity-50"
+                >
+                  {uploading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4" />
+                      {formData.img ? "Replace Image" : "Upload Image"}
+                    </>
+                  )}
+                </button>
+                <p className="text-[#B19EEF]/50 text-xs mt-1">PNG, JPG, WebP, or SVG (max 5MB)</p>
               </div>
               <div>
                 <label className="block text-[#B19EEF] text-sm mb-2">Technologies (comma-separated)</label>

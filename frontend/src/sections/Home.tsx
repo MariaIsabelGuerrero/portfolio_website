@@ -4,9 +4,10 @@ import React, { useState, useEffect, useCallback, memo } from "react"
 import { Github, Linkedin, Mail, ExternalLink, Instagram, Sparkles } from "lucide-react"
 import AOS from 'aos'
 import 'aos/dist/aos.css'
+import { useLanguage } from '@/lib/i18n'
 
 // Memoized Components
-const StatusBadge = memo(function StatusBadge() {
+const StatusBadge = memo(function StatusBadge({ label }: { label: string }) {
   return (
     <div className="inline-block animate-float lg:mx-0" data-aos="zoom-in" data-aos-delay="400">
       <div className="relative group">
@@ -14,7 +15,7 @@ const StatusBadge = memo(function StatusBadge() {
         <div className="relative px-5 sm:px-8 py-3 rounded-full bg-black/40 backdrop-blur-xl border border-white/10">
           <span className="bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-transparent bg-clip-text text-base sm:text-lg font-medium flex items-center">
             <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-blue-400" />
-            Ready to Innovate
+            {label}
           </span>
         </div>
       </div>
@@ -22,21 +23,21 @@ const StatusBadge = memo(function StatusBadge() {
   );
 });
 
-const MainTitle = memo(function MainTitle() {
+const MainTitle = memo(function MainTitle({ line1, line2 }: { line1: string; line2: string }) {
   return (
     <div className="space-y-2" data-aos="fade-up" data-aos-delay="600">
       <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-bold leading-tight">
         <span className="relative inline-block">
           <span className="absolute -inset-2 bg-gradient-to-r from-[#6366f1] to-[#a855f7] blur-2xl opacity-20"></span>
           <span className="relative bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent">
-            Frontend
+            {line1}
           </span>
         </span>
         <br />
         <span className="relative inline-block mt-2">
           <span className="absolute -inset-2 bg-gradient-to-r from-[#6366f1] to-[#a855f7] blur-2xl opacity-20"></span>
           <span className="relative bg-gradient-to-r from-[#6366f1] to-[#a855f7] bg-clip-text text-transparent">
-            Developer
+            {line2}
           </span>
         </span>
       </h1>
@@ -88,15 +89,17 @@ const SocialLink = memo(function SocialLink({ icon: Icon, link }: { icon: React.
 const TYPING_SPEED = 100;
 const ERASING_SPEED = 50;
 const PAUSE_DURATION = 2000;
-const WORDS = ["Network & Telecom Student", "Tech Enthusiast"];
+const WORDS_EN = ["Computer Science Student & Full-Stack Developer", "Tech Enthusiast"];
+const WORDS_FR = ["Etudiante en informatique & Developpeuse Full-Stack", "Passionnee de technologie"];
 const TECH_STACK = ["React", "Javascript", "Node.js", "Tailwind"];
 const SOCIAL_LINKS = [
-  { icon: Github, link: "https://github.com/EkiZR" },
-  { icon: Linkedin, link: "https://www.linkedin.com/in/ekizr/" },
-  { icon: Instagram, link: "https://www.instagram.com/ekizr._/?hl=id" }
+  { icon: Github, link: "https://github.com/MariaIsabelGuerrero" },
+  { icon: Linkedin, link: "https://www.linkedin.com/in/maria-isabel-guerrero-754114303/" },
 ];
 
 const Home = () => {
+  const { t, language } = useLanguage()
+  const WORDS = language === "fr" ? WORDS_FR : WORDS_EN
   const [text, setText] = useState("")
   const [isTyping, setIsTyping] = useState(true)
   const [wordIndex, setWordIndex] = useState(0)
@@ -122,6 +125,14 @@ const Home = () => {
     setIsLoaded(true);
     return () => setIsLoaded(false);
   }, []);
+
+  // Reset typing when language changes
+  useEffect(() => {
+    setText("");
+    setCharIndex(0);
+    setWordIndex(0);
+    setIsTyping(true);
+  }, [language]);
 
   // Optimize typing effect
   const handleTyping = useCallback(() => {
@@ -161,8 +172,8 @@ const Home = () => {
               data-aos="fade-right"
               data-aos-delay="200">
               <div className="space-y-4">
-                <StatusBadge />
-                <MainTitle />
+                <StatusBadge label={t("Ready to Innovate", "Prete a innover")} />
+                <MainTitle line1={t("Full Stack", "Full Stack")} line2={t("Developer", "Developpeuse")} />
 
                 {/* Typing Effect */}
                 <div className="h-12 flex items-center" data-aos="fade-up" data-aos-delay="800">
@@ -176,7 +187,7 @@ const Home = () => {
                 <p className="text-xl sm:text-2xl lg:text-3xl text-gray-400 max-w-2xl leading-relaxed font-light"
                   data-aos="fade-up"
                   data-aos-delay="1000">
-                  Menciptakan Website Yang Inovatif, Fungsional, dan User-Friendly untuk Solusi Digital.
+                  {t("Building scalable, clean, and production-ready systems for real-world solutions.", "Construire des systemes evolutifs, propres et prets pour la production.")}
                 </p>
 
                 {/* Tech Stack */}
@@ -188,7 +199,7 @@ const Home = () => {
 
                 {/* CTA Buttons */}
                 <div className="flex flex-row gap-3 w-full justify-start" data-aos="fade-up" data-aos-delay="1400">
-                  <CTAButton href="#Portofolio" text="Projects" icon={ExternalLink} />
+                  <CTAButton href="#Portofolio" text={t("Projects", "Projets")} icon={ExternalLink} />
                   <CTAButton href="#Contact" text="Contact" icon={Mail} />
                 </div>
 

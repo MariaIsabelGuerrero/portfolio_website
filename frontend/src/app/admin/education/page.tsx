@@ -2,55 +2,47 @@
 
 import React from "react"
 
-import { useState } from "react";
-import { Plus, Pencil, Trash2, X, Search, GraduationCap } from "lucide-react";
-
-interface Education {
-  id: string;
-  degree: string;
-  school: string;
-  period: string;
-  description: string;
-}
-
-const initialEducation: Education[] = [
-  {
-    id: "1",
-    degree: "Master of Science in Computer Science",
-    school: "University of Technology",
-    period: "2020 - 2022",
-    description: "Specialized in Software Engineering and Distributed Systems. Graduated with honors.",
-  },
-  {
-    id: "2",
-    degree: "Bachelor of Science in Computer Science",
-    school: "State University",
-    period: "2016 - 2020",
-    description: "Focus on programming fundamentals, data structures, and algorithms.",
-  },
-];
+import { useState, useEffect, useCallback } from "react";
+import { Plus, Pencil, Trash2, X, Search, GraduationCap, Loader2 } from "lucide-react";
+import { fetchEducation as apiFetchEducation, createEducation, updateEducation, deleteEducation as apiDeleteEducation, type Education } from "@/lib/api-client";
 
 export default function EducationManagement() {
-  const [educations, setEducations] = useState<Education[]>(initialEducation);
+  const [educations, setEducations] = useState<Education[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEducation, setEditingEducation] = useState<Education | null>(null);
   const [formData, setFormData] = useState({
     degree: "",
-    school: "",
+    institution: "",
+    location: "",
     period: "",
     description: "",
+    achievements: "",
   });
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
+  const loadEducation = useCallback(async () => {
+    try {
+      const res = await apiFetchEducation();
+      setEducations(res.data);
+    } catch (err) {
+      console.error("Failed to load education:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadEducation(); }, [loadEducation]);
+
   const filteredEducation = educations.filter((edu) =>
     edu.degree.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    edu.school.toLowerCase().includes(searchTerm.toLowerCase())
+    edu.institution.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const openAddModal = () => {
     setEditingEducation(null);
-    setFormData({ degree: "", school: "", period: "", description: "" });
+    setFormData({ degree: "", institution: "", location: "", period: "", description: "", achievements: "" });
     setIsModalOpen(true);
   };
 
@@ -58,30 +50,56 @@ export default function EducationManagement() {
     setEditingEducation(edu);
     setFormData({
       degree: edu.degree,
-      school: edu.school,
+      institution: edu.institution,
+      location: edu.location || "",
       period: edu.period,
       description: edu.description,
+      achievements: (edu.achievements || []).join("\n"),
     });
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingEducation) {
-      setEducations(educations.map((e) =>
-        e.id === editingEducation.id ? { ...e, ...formData } : e
-      ));
-    } else {
-      const newEdu: Education = { id: Date.now().toString(), ...formData };
-      setEducations([...educations, newEdu]);
+    const eduData = {
+      degree: formData.degree,
+      institution: formData.institution,
+      location: formData.location,
+      period: formData.period,
+      description: formData.description,
+      achievements: formData.achievements.split("\n").filter(Boolean),
+    };
+
+    try {
+      if (editingEducation) {
+        await updateEducation(editingEducation.id, eduData);
+      } else {
+        await createEducation(eduData);
+      }
+      setIsModalOpen(false);
+      await loadEducation();
+    } catch (err) {
+      console.error("Failed to save education:", err);
     }
-    setIsModalOpen(false);
   };
 
-  const handleDelete = (id: string) => {
-    setEducations(educations.filter((e) => e.id !== id));
-    setDeleteConfirm(null);
+  const handleDelete = async (id: string) => {
+    try {
+      await apiDeleteEducation(id);
+      setDeleteConfirm(null);
+      await loadEducation();
+    } catch (err) {
+      console.error("Failed to delete education:", err);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 text-[#5227FF] animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -126,9 +144,20 @@ export default function EducationManagement() {
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold text-white">{edu.degree}</h3>
-                  <p className="text-[#FF9FFC]">{edu.school}</p>
+                  <p className="text-[#FF9FFC]">{edu.institution}</p>
                   <p className="text-[#B19EEF] text-sm mt-1">{edu.period}</p>
+                  {edu.location && <p className="text-[#B19EEF]/70 text-sm">{edu.location}</p>}
                   <p className="text-[#B19EEF]/80 text-sm mt-3">{edu.description}</p>
+                  {edu.achievements && edu.achievements.length > 0 && (
+                    <ul className="mt-3 space-y-1">
+                      {edu.achievements.map((a: string, idx: number) => (
+                        <li key={idx} className="text-[#B19EEF]/70 text-sm flex items-start gap-2">
+                          <span className="text-[#5227FF] mt-1.5">•</span>
+                          {a}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -184,14 +213,24 @@ export default function EducationManagement() {
                 />
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">School/University</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">Institution</label>
                 <input
                   type="text"
-                  value={formData.school}
-                  onChange={(e) => setFormData({ ...formData, school: e.target.value })}
+                  value={formData.institution}
+                  onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
                   required
                   className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
                   placeholder="University Name"
+                />
+              </div>
+              <div>
+                <label className="block text-[#B19EEF] text-sm mb-2">Location</label>
+                <input
+                  type="text"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
+                  placeholder="City, Country"
                 />
               </div>
               <div>
@@ -213,6 +252,16 @@ export default function EducationManagement() {
                   rows={3}
                   className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC] resize-none"
                   placeholder="Brief description of your studies..."
+                />
+              </div>
+              <div>
+                <label className="block text-[#B19EEF] text-sm mb-2">Achievements (one per line)</label>
+                <textarea
+                  value={formData.achievements}
+                  onChange={(e) => setFormData({ ...formData, achievements: e.target.value })}
+                  rows={3}
+                  className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC] resize-none"
+                  placeholder="Focused on Front-End Development&#10;Completed multiple projects&#10;..."
                 />
               </div>
               <div className="flex gap-3 pt-4">

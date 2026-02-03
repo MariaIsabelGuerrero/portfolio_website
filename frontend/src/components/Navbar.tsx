@@ -3,22 +3,23 @@
 import React, { useState, useEffect } from "react";
 import { Menu, X, Globe } from "lucide-react";
 import Link from "next/link";
+import { useLanguage } from "@/lib/i18n";
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [activeSection, setActiveSection] = useState("Home");
-    const [language, setLanguage] = useState<'en' | 'fr'>('en');
+    const { language, setLanguage, t } = useLanguage();
 
     const navItems = [
-        { href: "#Home", label: language === 'en' ? "Home" : "Accueil" },
-        { href: "#About", label: language === 'en' ? "About" : "A propos" },
+        { href: "#Home", label: t("Home", "Accueil") },
+        { href: "#About", label: t("About", "A propos") },
         { href: "#Portofolio", label: "Portfolio" },
         { href: "#Contact", label: "Contact" },
     ];
 
     const toggleLanguage = () => {
-        setLanguage(prev => prev === 'en' ? 'fr' : 'en');
+        setLanguage(language === 'en' ? 'fr' : 'en');
     };
 
     useEffect(() => {
@@ -92,7 +93,7 @@ const Navbar = () => {
                             onClick={(e) => scrollToSection(e, "#Home")}
                             className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-[#a855f7] to-[#6366f1] bg-clip-text text-transparent"
                         >
-                            Ekizr
+                            Maria
                         </a>
                     </div>
 

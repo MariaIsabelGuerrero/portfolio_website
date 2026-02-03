@@ -1,35 +1,12 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { GraduationCap, Calendar, MapPin } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { GraduationCap, Calendar, MapPin, Loader2 } from 'lucide-react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import { getEducation, type EducationData } from '@/lib/public-api';
 
-interface EducationItem {
-  degree: string;
-  institution: string;
-  location: string;
-  period: string;
-  description: string;
-  achievements?: string[];
-}
-
-const educationData: EducationItem[] = [
-  {
-    degree: "Computer Network & Telecommunications Engineering",
-    institution: "SMK Negeri 1 Cimahi",
-    location: "Cimahi, Indonesia",
-    period: "2021 - 2024",
-    description: "Specialized in network infrastructure, telecommunications systems, and web development fundamentals.",
-    achievements: [
-      "Focused on Front-End Development",
-      "Completed multiple web development projects",
-      "Strong foundation in networking and telecommunications"
-    ]
-  }
-];
-
-const EducationCard = ({ education, index }: { education: EducationItem; index: number }) => {
+const EducationCard = ({ education, index }: { education: EducationData; index: number }) => {
   return (
     <div
       className="relative"
@@ -71,15 +48,19 @@ const EducationCard = ({ education, index }: { education: EducationItem; index: 
               <Calendar className="w-5 h-5 text-[#6366f1]" />
               <span className="text-lg">{education.period}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-[#6366f1]" />
-              <span className="text-lg">{education.location}</span>
-            </div>
+            {education.location && (
+              <div className="flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-[#6366f1]" />
+                <span className="text-lg">{education.location}</span>
+              </div>
+            )}
           </div>
 
-          <p className="text-gray-300 text-lg leading-relaxed mb-4">
-            {education.description}
-          </p>
+          {education.description && (
+            <p className="text-gray-300 text-lg leading-relaxed mb-4">
+              {education.description}
+            </p>
+          )}
 
           {education.achievements && education.achievements.length > 0 && (
             <div className="mt-4">
@@ -101,11 +82,36 @@ const EducationCard = ({ education, index }: { education: EducationItem; index: 
 };
 
 const Education = () => {
-  useEffect(() => {
-    AOS.init({
-      once: false,
-    });
+  const [educationData, setEducationData] = useState<EducationData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadData = useCallback(async () => {
+    try {
+      const res = await getEducation();
+      setEducationData(res.data);
+    } catch (err) {
+      console.error('Failed to load education:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    AOS.init({ once: false });
+    loadData();
+  }, [loadData]);
+
+  if (loading) {
+    return (
+      <section className="py-20 px-[5%] sm:px-[5%] lg:px-[10%] bg-[#030014]" id="Education">
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 text-[#6366f1] animate-spin" />
+        </div>
+      </section>
+    );
+  }
+
+  if (educationData.length === 0) return null;
 
   return (
     <section className="py-20 px-[5%] sm:px-[5%] lg:px-[10%] bg-[#030014]" id="Education">
@@ -128,7 +134,7 @@ const Education = () => {
 
       <div className="max-w-4xl mx-auto space-y-8">
         {educationData.map((education, index) => (
-          <EducationCard key={index} education={education} index={index} />
+          <EducationCard key={education.id} education={education} index={index} />
         ))}
       </div>
     </section>

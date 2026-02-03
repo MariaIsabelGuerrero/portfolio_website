@@ -1,83 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Quote, 
-  Search, 
-  Trash2, 
-  Check, 
-  X, 
+import {
+  Quote,
+  Search,
+  Trash2,
+  Check,
+  X,
   Clock,
-  User,
   Briefcase,
+  Pin,
   Filter,
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from "lucide-react";
+import { fetchTestimonials as apiFetchTestimonials, updateTestimonialStatus as apiUpdateStatus, updateTestimonialPin as apiUpdatePin, deleteTestimonial as apiDeleteTestimonial, type Testimonial } from "@/lib/api-client";
 
 type TestimonialStatus = "pending" | "approved" | "rejected";
-
-interface Testimonial {
-  id: string;
-  name: string;
-  role: string;
-  company: string;
-  content: string;
-  date: string;
-  status: TestimonialStatus;
-  avatar?: string;
-}
-
-// Mock data for testimonials
-const initialTestimonials: Testimonial[] = [
-  {
-    id: "1",
-    name: "David Wilson",
-    role: "Senior Developer",
-    company: "Tech Solutions Inc.",
-    content: "Maria is an exceptional developer with a keen eye for detail. Her work on our e-commerce platform exceeded all expectations. She delivered clean, maintainable code and was always proactive in suggesting improvements.",
-    date: "2024-01-15T10:30:00",
-    status: "pending",
-  },
-  {
-    id: "2",
-    name: "Jennifer Martinez",
-    role: "Project Manager",
-    company: "Digital Agency Co.",
-    content: "Working with Maria was a pleasure. She communicated effectively throughout the project and delivered everything on time. Her expertise in Spring Boot and microservices architecture was invaluable.",
-    date: "2024-01-12T14:20:00",
-    status: "approved",
-  },
-  {
-    id: "3",
-    name: "Robert Thompson",
-    role: "CTO",
-    company: "StartupXYZ",
-    content: "Maria helped us build our MVP from scratch. Her full-stack skills and understanding of business requirements made her an essential part of our team. Highly recommended!",
-    date: "2024-01-10T09:15:00",
-    status: "approved",
-  },
-  {
-    id: "4",
-    name: "Amanda Lee",
-    role: "Product Owner",
-    company: "Enterprise Corp",
-    content: "Outstanding work on the veterinary clinic system. Maria demonstrated excellent problem-solving skills and delivered a robust, scalable solution.",
-    date: "2024-01-08T16:45:00",
-    status: "pending",
-  },
-  {
-    id: "5",
-    name: "Test User",
-    role: "Anonymous",
-    company: "Unknown",
-    content: "This is a spam testimonial that should be rejected.",
-    date: "2024-01-05T11:00:00",
-    status: "rejected",
-  },
-];
 
 const statusConfig = {
   pending: {
@@ -104,11 +46,25 @@ const statusConfig = {
 };
 
 export default function TestimonialsPage() {
-  const [testimonials, setTestimonials] = useState<Testimonial[]>(initialTestimonials);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | TestimonialStatus>("all");
   const [selectedTestimonial, setSelectedTestimonial] = useState<Testimonial | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+  const loadTestimonials = useCallback(async () => {
+    try {
+      const res = await apiFetchTestimonials(true);
+      setTestimonials(res.data);
+    } catch (err) {
+      console.error("Failed to load testimonials:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadTestimonials(); }, [loadTestimonials]);
 
   const filteredTestimonials = testimonials.filter(t => {
     const matchesSearch = 
@@ -121,22 +77,47 @@ export default function TestimonialsPage() {
     return matchesSearch && matchesFilter;
   });
 
-  const updateStatus = (id: string, status: TestimonialStatus) => {
-    setTestimonials(testimonials.map(t => 
-      t.id === id ? { ...t, status } : t
-    ));
-    if (selectedTestimonial?.id === id) {
-      setSelectedTestimonial({ ...selectedTestimonial, status });
+  const updateStatus = async (id: string, status: TestimonialStatus) => {
+    try {
+      await apiUpdateStatus(id, status);
+      setTestimonials(testimonials.map(t => t.id === id ? { ...t, status } : t));
+      if (selectedTestimonial?.id === id) {
+        setSelectedTestimonial({ ...selectedTestimonial, status });
+      }
+    } catch (err) {
+      console.error("Failed to update status:", err);
     }
   };
 
-  const deleteTestimonial = (id: string) => {
-    setTestimonials(testimonials.filter(t => t.id !== id));
-    setDeleteConfirm(null);
-    if (selectedTestimonial?.id === id) {
-      setSelectedTestimonial(null);
+  const deleteTestimonial = async (id: string) => {
+    try {
+      await apiDeleteTestimonial(id);
+      setTestimonials(testimonials.filter(t => t.id !== id));
+      setDeleteConfirm(null);
+      if (selectedTestimonial?.id === id) {
+        setSelectedTestimonial(null);
+      }
+    } catch (err) {
+      console.error("Failed to delete testimonial:", err);
     }
   };
+
+  const togglePin = async (id: string, isPinned: boolean) => {
+    try {
+      await apiUpdatePin(id, isPinned);
+      setTestimonials(testimonials.map(t => t.id === id ? { ...t, isPinned } : t));
+    } catch (err) {
+      console.error("Failed to toggle pin:", err);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 text-[#5227FF] animate-spin" />
+      </div>
+    );
+  }
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -261,10 +242,16 @@ export default function TestimonialsPage() {
                         <StatusIcon className="w-3 h-3" />
                         {status.label}
                       </span>
+                      {testimonial.isPinned && (
+                        <span className="px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 bg-[#FF9FFC]/20 text-[#FF9FFC]">
+                          <Pin className="w-3 h-3" />
+                          Pinned
+                        </span>
+                      )}
                     </div>
                     <p className="text-sm text-[#B19EEF] mb-3 flex items-center gap-2">
                       <Briefcase className="w-4 h-4" />
-                      {testimonial.role} at {testimonial.company}
+                      {testimonial.position} at {testimonial.company}
                     </p>
                     <p className="text-[#B19EEF]/80 mb-4 line-clamp-3">
                       &ldquo;{testimonial.content}&rdquo;
@@ -295,6 +282,17 @@ export default function TestimonialsPage() {
                         <span className="text-sm">Reject</span>
                       </button>
                     )}
+                    <button
+                      onClick={() => togglePin(testimonial.id, !testimonial.isPinned)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
+                        testimonial.isPinned
+                          ? "bg-[#FF9FFC]/20 border border-[#FF9FFC]/50 text-[#FF9FFC]"
+                          : "bg-[#5227FF]/20 border border-[#5227FF]/50 text-[#B19EEF] hover:text-white hover:border-[#FF9FFC]"
+                      }`}
+                    >
+                      <Pin className="w-4 h-4" />
+                      <span className="text-sm">{testimonial.isPinned ? "Unpin" : "Pin"}</span>
+                    </button>
                     <button
                       onClick={() => setDeleteConfirm(testimonial.id)}
                       className="flex items-center gap-2 px-4 py-2 bg-[#5227FF]/20 border border-[#5227FF]/50 rounded-xl text-[#B19EEF] hover:text-white hover:border-[#FF9FFC] transition-colors"

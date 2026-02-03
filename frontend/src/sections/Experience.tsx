@@ -1,52 +1,12 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { Briefcase, Calendar, MapPin, Building2 } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Briefcase, Calendar, MapPin, Building2, Loader2 } from 'lucide-react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import { getExperience, type ExperienceData } from '@/lib/public-api';
 
-interface ExperienceItem {
-  title: string;
-  company: string;
-  location: string;
-  period: string;
-  type: string;
-  description: string;
-  responsibilities?: string[];
-}
-
-const experienceData: ExperienceItem[] = [
-  {
-    title: "Front-End Developer",
-    company: "Freelance",
-    location: "Remote",
-    period: "2023 - Present",
-    type: "Freelance",
-    description: "Building modern, responsive web applications using React, Next.js, and Tailwind CSS for various clients.",
-    responsibilities: [
-      "Developed custom web applications with React and Next.js",
-      "Implemented responsive designs using Tailwind CSS",
-      "Collaborated with clients to deliver user-friendly solutions",
-      "Optimized website performance and SEO"
-    ]
-  },
-  {
-    title: "Web Developer Intern",
-    company: "Tech Company",
-    location: "Cimahi, Indonesia",
-    period: "2023",
-    type: "Internship",
-    description: "Gained hands-on experience in web development, working on real-world projects and learning industry best practices.",
-    responsibilities: [
-      "Assisted in developing front-end features",
-      "Learned version control with Git",
-      "Participated in code reviews and team meetings",
-      "Built responsive UI components"
-    ]
-  }
-];
-
-const ExperienceCard = ({ experience, index }: { experience: ExperienceItem; index: number }) => {
+const ExperienceCard = ({ experience, index }: { experience: ExperienceData; index: number }) => {
   const isEven = index % 2 === 0;
 
   return (
@@ -64,9 +24,11 @@ const ExperienceCard = ({ experience, index }: { experience: ExperienceItem; ind
         <div className={`flex-1 ${isEven ? 'lg:text-right lg:pr-12' : 'lg:text-left lg:pl-12'}`}>
           <div className={`bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 md:p-8 hover:bg-white/10 transition-all duration-300 group ${isEven ? 'lg:mr-4' : 'lg:ml-4'}`}>
             {/* Type badge */}
-            <span className="inline-block px-4 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-[#6366f1]/20 to-[#a855f7]/20 text-[#a855f7] border border-[#a855f7]/30 mb-4">
-              {experience.type}
-            </span>
+            {experience.type && (
+              <span className="inline-block px-4 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-[#6366f1]/20 to-[#a855f7]/20 text-[#a855f7] border border-[#a855f7]/30 mb-4">
+                {experience.type}
+              </span>
+            )}
 
             <h3 className="text-2xl md:text-3xl font-bold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-[#6366f1] group-hover:to-[#a855f7] transition-all duration-300">
               {experience.title}
@@ -84,15 +46,19 @@ const ExperienceCard = ({ experience, index }: { experience: ExperienceItem; ind
                 <Calendar className="w-4 h-4 text-[#6366f1]" />
                 <span>{experience.period}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-[#6366f1]" />
-                <span>{experience.location}</span>
-              </div>
+              {experience.location && (
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-[#6366f1]" />
+                  <span>{experience.location}</span>
+                </div>
+              )}
             </div>
 
-            <p className="text-gray-300 text-lg leading-relaxed mb-4">
-              {experience.description}
-            </p>
+            {experience.description && (
+              <p className="text-gray-300 text-lg leading-relaxed mb-4">
+                {experience.description}
+              </p>
+            )}
 
             {experience.responsibilities && experience.responsibilities.length > 0 && (
               <div className="mt-4">
@@ -125,11 +91,36 @@ const ExperienceCard = ({ experience, index }: { experience: ExperienceItem; ind
 };
 
 const Experience = () => {
-  useEffect(() => {
-    AOS.init({
-      once: false,
-    });
+  const [experienceData, setExperienceData] = useState<ExperienceData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadData = useCallback(async () => {
+    try {
+      const res = await getExperience();
+      setExperienceData(res.data);
+    } catch (err) {
+      console.error('Failed to load experience:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    AOS.init({ once: false });
+    loadData();
+  }, [loadData]);
+
+  if (loading) {
+    return (
+      <section className="py-20 px-[5%] sm:px-[5%] lg:px-[10%] bg-[#030014]" id="Experience">
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 text-[#6366f1] animate-spin" />
+        </div>
+      </section>
+    );
+  }
+
+  if (experienceData.length === 0) return null;
 
   return (
     <section className="py-20 px-[5%] sm:px-[5%] lg:px-[10%] bg-[#030014]" id="Experience">
@@ -151,7 +142,6 @@ const Experience = () => {
       </div>
 
       <div className="max-w-6xl mx-auto space-y-16 relative">
-        {/* Mobile icon */}
         <div className="lg:hidden flex justify-center mb-8">
           <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#6366f1] to-[#a855f7] flex items-center justify-center shadow-lg shadow-purple-500/30">
             <Briefcase className="w-8 h-8 text-white" />
@@ -159,7 +149,7 @@ const Experience = () => {
         </div>
 
         {experienceData.map((experience, index) => (
-          <ExperienceCard key={index} experience={experience} index={index} />
+          <ExperienceCard key={experience.id} experience={experience} index={index} />
         ))}
       </div>
     </section>

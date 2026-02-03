@@ -73,8 +73,8 @@ export function middleware(request: NextRequest) {
       response.headers.set("Access-Control-Allow-Credentials", "true");
     }
 
-    // Rate limiting for contact form submissions
-    if (request.nextUrl.pathname.includes("/api/contact") && request.method === "POST") {
+    // Rate limiting for contact form submissions (via messages endpoint)
+    if (request.nextUrl.pathname.includes("/api/messages") && request.method === "POST") {
       const identifier = getRateLimitIdentifier(request);
 
       // 5 submissions per 15 minutes

@@ -1,22 +1,13 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
-import { MessageCircle, UserCircle2, Loader2, AlertCircle, Send, Pin } from 'lucide-react';
+import { MessageCircle, UserCircle2, Loader2, AlertCircle, Send, Pin, CheckCircle } from 'lucide-react';
 import AOS from "aos";
 import "aos/dist/aos.css";
-
-interface CommentType {
-    id: string;
-    user_name: string;
-    position: string;
-    company: string;
-    content: string;
-    created_at: string;
-    is_pinned?: boolean;
-}
+import { getTestimonials, submitTestimonial, type TestimonialData } from '@/lib/public-api';
 
 interface CommentProps {
-    comment: CommentType;
+    comment: TestimonialData;
     formatDate: (timestamp: string) => string;
     isPinned?: boolean;
 }
@@ -52,14 +43,14 @@ const Comment = memo(({ comment, formatDate, isPinned = false }: CommentProps) =
                         <h4 className={`font-medium ${
                             isPinned ? 'text-indigo-200' : 'text-white'
                         }`}>
-                            {comment.user_name}
+                            {comment.name}
                         </h4>
                         <span className="text-xs text-indigo-400">
                             {comment.position} {comment.company && `at ${comment.company}`}
                         </span>
                     </div>
                     <span className="text-xs text-gray-400 whitespace-nowrap">
-                        {formatDate(comment.created_at)}
+                        {formatDate(comment.date)}
                     </span>
                 </div>
                 <p className="text-gray-300 text-sm break-words leading-relaxed mt-2">
@@ -188,10 +179,11 @@ const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
 CommentForm.displayName = 'CommentForm';
 
 const Komentar = () => {
-    const [comments, setComments] = useState<CommentType[]>([]);
-    const [pinnedComment, setPinnedComment] = useState<CommentType | null>(null);
+    const [comments, setComments] = useState<TestimonialData[]>([]);
+    const [pinnedComment, setPinnedComment] = useState<TestimonialData | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
 
     useEffect(() => {
         AOS.init({
@@ -200,45 +192,39 @@ const Komentar = () => {
         });
     }, []);
 
-    // TODO: Connect to your backend API to fetch testimonials
     useEffect(() => {
-        const fetchTestimonials = async () => {
+        const fetchData = async () => {
             try {
-                // Replace with your API call
-                // const response = await fetch('/api/testimonials');
-                // const data = await response.json();
-                // setComments(data.testimonials);
-                // setPinnedComment(data.featured);
+                const res = await getTestimonials();
+                const approved = res.data;
+                const pinned = approved.find(t => t.isPinned);
+                const rest = approved.filter(t => !t.isPinned);
+                setPinnedComment(pinned || null);
+                setComments(rest);
             } catch (err) {
                 console.error('Error fetching testimonials:', err);
             }
         };
 
-        fetchTestimonials();
+        fetchData();
     }, []);
 
-    // TODO: Connect to your backend API to submit testimonials
     const handleCommentSubmit = useCallback(async ({ newComment, userName, position, company }: { newComment: string; userName: string; position: string; company: string }) => {
         setError('');
+        setSuccess('');
         setIsSubmitting(true);
 
         try {
-            // Replace with your API call
-            // const response = await fetch('/api/testimonials', {
-            //     method: 'POST',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify({ content: newComment, user_name: userName, position, company }),
-            // });
-            //
-            // if (!response.ok) throw new Error('Failed to post testimonial');
-            //
-            // const newTestimonial = await response.json();
-            // setComments(prev => [newTestimonial, ...prev]);
-
-            console.log('Testimonial submitted:', { newComment, userName, position, company });
-            setError('Backend not connected. Please implement your API.');
+            await submitTestimonial({
+                name: userName,
+                position,
+                company,
+                content: newComment,
+            });
+            setSuccess('Thank you! Your testimonial has been submitted and is pending review.');
+            setTimeout(() => setSuccess(''), 5000);
         } catch (err) {
-            setError('Failed to post testimonial. Please try again.');
+            setError('Failed to submit testimonial. Please try again.');
             console.error('Error adding testimonial:', err);
         } finally {
             setIsSubmitting(false);
@@ -284,6 +270,13 @@ const Komentar = () => {
                     <div className="flex items-center gap-2 p-4 text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl" data-aos="fade-in">
                         <AlertCircle className="w-5 h-5 flex-shrink-0" />
                         <p className="text-sm">{error}</p>
+                    </div>
+                )}
+
+                {success && (
+                    <div className="flex items-center gap-2 p-4 text-green-400 bg-green-500/10 border border-green-500/20 rounded-xl" data-aos="fade-in">
+                        <CheckCircle className="w-5 h-5 flex-shrink-0" />
+                        <p className="text-sm">{success}</p>
                     </div>
                 )}
 

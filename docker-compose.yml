@@ -45,7 +45,7 @@ services:
             start_period: 10s
 
     # --------------------
-    # Backend (Nest.js API)
+    # Backend (Next.js API)
     # --------------------
     backend:
         build:
@@ -67,6 +67,13 @@ services:
 
             # Auth service URL (for token verification)
             AUTH_SERVICE_URL: http://auth-service:3001
+
+            # DigitalOcean Spaces
+            DO_SPACES_KEY: ${DO_SPACES_KEY}
+            DO_SPACES_SECRET: ${DO_SPACES_SECRET}
+            DO_SPACES_ENDPOINT: ${DO_SPACES_ENDPOINT}
+            DO_SPACES_BUCKET: ${DO_SPACES_BUCKET}
+            DO_SPACES_REGION: ${DO_SPACES_REGION:-tor1}
         depends_on:
             portfolio-db:
                 condition: service_healthy

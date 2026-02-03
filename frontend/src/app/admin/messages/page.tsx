@@ -1,87 +1,46 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Mail, 
-  Search, 
-  Trash2, 
-  Eye, 
-  X, 
+import {
+  Mail,
+  Search,
+  Trash2,
+  Eye,
+  X,
   Clock,
   User,
-  Phone,
   CheckCircle,
   Circle,
-  Filter
+  Filter,
+  Loader2
 } from "lucide-react";
-
-interface Message {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  message: string;
-  date: string;
-  read: boolean;
-}
-
-// Mock data for messages
-const initialMessages: Message[] = [
-  {
-    id: "1",
-    firstName: "John",
-    lastName: "Smith",
-    email: "john.smith@example.com",
-    phone: "+1 (555) 123-4567",
-    message: "Hi Maria! I came across your portfolio and I'm really impressed with your work. I'd love to discuss a potential collaboration on an upcoming project. Would you be available for a quick call this week?",
-    date: "2024-01-15T10:30:00",
-    read: false,
-  },
-  {
-    id: "2",
-    firstName: "Sarah",
-    lastName: "Johnson",
-    email: "sarah.j@techcorp.com",
-    phone: "+1 (555) 987-6543",
-    message: "Hello! We're looking for a talented developer to join our team. Your skills in Spring Boot and React are exactly what we need. Please let me know if you'd be interested in learning more about this opportunity.",
-    date: "2024-01-14T15:45:00",
-    read: true,
-  },
-  {
-    id: "3",
-    firstName: "Michael",
-    lastName: "Chen",
-    email: "m.chen@startup.io",
-    phone: "+1 (555) 456-7890",
-    message: "Hey Maria, I'm the founder of a startup and we need help building our MVP. Your portfolio shows great work with microservices architecture. Can we schedule a meeting to discuss?",
-    date: "2024-01-13T09:15:00",
-    read: true,
-  },
-  {
-    id: "4",
-    firstName: "Emily",
-    lastName: "Davis",
-    email: "emily.davis@agency.com",
-    phone: "+1 (555) 321-0987",
-    message: "Hi there! I'm reaching out from a digital agency. We have several clients who could benefit from your expertise. Would you be open to freelance work?",
-    date: "2024-01-12T14:20:00",
-    read: false,
-  },
-];
+import { fetchMessages as apiFetchMessages, markMessageRead as apiMarkMessageRead, deleteMessage as apiDeleteMessage, type Message } from "@/lib/api-client";
 
 export default function MessagesPage() {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<"all" | "read" | "unread">("all");
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
+  const loadMessages = useCallback(async () => {
+    try {
+      const res = await apiFetchMessages();
+      setMessages(res.data);
+    } catch (err) {
+      console.error("Failed to load messages:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadMessages(); }, [loadMessages]);
+
   const filteredMessages = messages.filter(msg => {
-    const matchesSearch = 
-      msg.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      msg.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch =
+      msg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       msg.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       msg.message.toLowerCase().includes(searchTerm.toLowerCase());
     
@@ -93,23 +52,34 @@ export default function MessagesPage() {
     return matchesSearch && matchesFilter;
   });
 
-  const markAsRead = (id: string) => {
-    setMessages(messages.map(msg => 
-      msg.id === id ? { ...msg, read: true } : msg
-    ));
+  const markAsRead = async (id: string) => {
+    try {
+      await apiMarkMessageRead(id, true);
+      setMessages(messages.map(msg => msg.id === id ? { ...msg, read: true } : msg));
+    } catch (err) {
+      console.error("Failed to mark as read:", err);
+    }
   };
 
-  const markAsUnread = (id: string) => {
-    setMessages(messages.map(msg => 
-      msg.id === id ? { ...msg, read: false } : msg
-    ));
+  const markAsUnread = async (id: string) => {
+    try {
+      await apiMarkMessageRead(id, false);
+      setMessages(messages.map(msg => msg.id === id ? { ...msg, read: false } : msg));
+    } catch (err) {
+      console.error("Failed to mark as unread:", err);
+    }
   };
 
-  const deleteMessage = (id: string) => {
-    setMessages(messages.filter(msg => msg.id !== id));
-    setDeleteConfirm(null);
-    if (selectedMessage?.id === id) {
-      setSelectedMessage(null);
+  const deleteMessage = async (id: string) => {
+    try {
+      await apiDeleteMessage(id);
+      setMessages(messages.filter(msg => msg.id !== id));
+      setDeleteConfirm(null);
+      if (selectedMessage?.id === id) {
+        setSelectedMessage(null);
+      }
+    } catch (err) {
+      console.error("Failed to delete message:", err);
     }
   };
 
@@ -119,6 +89,14 @@ export default function MessagesPage() {
       markAsRead(message.id);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 text-[#5227FF] animate-spin" />
+      </div>
+    );
+  }
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -204,7 +182,7 @@ export default function MessagesPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-4 mb-1">
                       <h3 className={`font-semibold truncate ${!message.read ? "text-white" : "text-[#B19EEF]"}`}>
-                        {message.firstName} {message.lastName}
+                        {message.name}
                       </h3>
                       <span className="text-xs text-[#B19EEF]/70 whitespace-nowrap flex items-center gap-1">
                         <Clock className="w-3 h-3" />
@@ -277,7 +255,7 @@ export default function MessagesPage() {
                     <User className="w-5 h-5 text-[#FF9FFC]" />
                     <div>
                       <p className="text-xs text-[#B19EEF]">Name</p>
-                      <p className="text-white font-medium">{selectedMessage.firstName} {selectedMessage.lastName}</p>
+                      <p className="text-white font-medium">{selectedMessage.name}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-4 bg-[#5227FF]/10 rounded-xl">
@@ -285,13 +263,6 @@ export default function MessagesPage() {
                     <div>
                       <p className="text-xs text-[#B19EEF]">Email</p>
                       <p className="text-white font-medium">{selectedMessage.email}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-4 bg-[#5227FF]/10 rounded-xl">
-                    <Phone className="w-5 h-5 text-[#FF9FFC]" />
-                    <div>
-                      <p className="text-xs text-[#B19EEF]">Phone</p>
-                      <p className="text-white font-medium">{selectedMessage.phone}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-4 bg-[#5227FF]/10 rounded-xl">

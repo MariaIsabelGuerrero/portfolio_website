@@ -39,18 +39,30 @@ COPY --from=build /app/next.config.js ./next.config.js
 COPY --from=build /app/drizzle.config.ts ./drizzle.config.ts
 COPY --from=build /app/src/lib/db ./src/lib/db
 
-# Change ownership to non-root user
-RUN chown -R nextjs:nodejs /app
+# Expose port
+EXPOSE 3003
+
+# Install postgresql-client for psql
+RUN apk add --no-cache postgresql-client
+
+# Copy scripts directory
+COPY scripts ./scripts
+
+# Convert line endings from CRLF to LF (Windows to Unix)
+RUN sed -i 's/\r$//' ./scripts/setup-db.sh && \
+    sed -i 's/\r$//' ./scripts/start.sh
+
+# Make scripts executable and change ownership to non-root user
+RUN chmod +x ./scripts/setup-db.sh && \
+    chmod +x ./scripts/start.sh && \
+    chown -R nextjs:nodejs /app
 
 # Switch to non-root user
 USER nextjs
-
-# Expose port
-EXPOSE 3003
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:3003/api/health || exit 1
 
-# Start the application
-CMD ["npm", "start"]
+# Start the application with DB initialization
+CMD ["./scripts/start.sh"]

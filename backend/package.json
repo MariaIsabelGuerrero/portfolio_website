@@ -12,6 +12,7 @@
     "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.981.0",
     "drizzle-orm": "^0.41.0",
     "jsonwebtoken": "^9.0.2",
     "next": "^15.0.0",

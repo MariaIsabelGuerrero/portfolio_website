@@ -84,3 +84,15 @@ export const auditLog = pgTable("audit_log", {
   metadata: jsonb("metadata"),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
 });
+
+// User IP history for tracking login locations
+export const userIpHistory = pgTable("user_ip_history", {
+  id: text("id").primaryKey(),
+  userId: text("userId")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  ipAddress: text("ipAddress").notNull(),
+  firstSeen: timestamp("firstSeen").notNull().defaultNow(),
+  lastSeen: timestamp("lastSeen").notNull().defaultNow(),
+  loginCount: text("loginCount").notNull().default("1"),
+});

@@ -13,7 +13,8 @@ import TechStackIcon from "../components/TechStackIcon";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import Certificate from "../components/Certificate";
-import { Code, Award, Boxes } from "lucide-react";
+import { Code, Award, Boxes, Loader2 } from "lucide-react";
+import { getProjects, getSkills, type ProjectData, type SkillData } from "@/lib/public-api";
 
 interface ToggleButtonProps {
   onClick: () => void;
@@ -109,21 +110,6 @@ function a11yProps(index: number) {
   };
 }
 
-const techStacks = [
-  { icon: "html.svg", language: "HTML" },
-  { icon: "css.svg", language: "CSS" },
-  { icon: "javascript.svg", language: "JavaScript" },
-  { icon: "tailwind.svg", language: "Tailwind CSS" },
-  { icon: "reactjs.svg", language: "ReactJS" },
-  { icon: "vite.svg", language: "Vite" },
-  { icon: "nodejs.svg", language: "Node JS" },
-  { icon: "bootstrap.svg", language: "Bootstrap" },
-  { icon: "firebase.svg", language: "Firebase" },
-  { icon: "MUI.svg", language: "Material UI" },
-  { icon: "vercel.svg", language: "Vercel" },
-  { icon: "SweetAlert.svg", language: "SweetAlert2" },
-];
-
 // Animation variants for tab transitions
 const tabVariants = {
   enter: (direction: number) => ({
@@ -143,11 +129,13 @@ const tabVariants = {
 export default function FullWidthTabs() {
   const [value, setValue] = useState(0);
   const [direction, setDirection] = useState(0);
-  const [projects, setProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<ProjectData[]>([]);
+  const [techStacks, setTechStacks] = useState<SkillData[]>([]);
   const [certificates, setCertificates] = useState<any[]>([]);
   const [showAllProjects, setShowAllProjects] = useState(false);
   const [showAllCertificates, setShowAllCertificates] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setIsMobile(window.innerWidth < 768);
@@ -161,39 +149,33 @@ export default function FullWidthTabs() {
     });
   }, []);
 
-  // TODO: Connect to your backend API to fetch projects and certificates
   const fetchData = useCallback(async () => {
     try {
-      // Replace with your API calls
-      // const [projectsResponse, certificatesResponse] = await Promise.all([
-      //   fetch('/api/projects'),
-      //   fetch('/api/certificates'),
-      // ]);
-      //
-      // const projectData = await projectsResponse.json();
-      // const certificateData = await certificatesResponse.json();
-      //
-      // setProjects(projectData);
-      // setCertificates(certificateData);
-      //
-      // localStorage.setItem("projects", JSON.stringify(projectData));
-      // localStorage.setItem("certificates", JSON.stringify(certificateData));
+      const [projectsRes, skillsRes] = await Promise.all([
+        getProjects(),
+        getSkills(),
+      ]);
+      setProjects(projectsRes.data);
+      setTechStacks(skillsRes.data);
 
-      console.log("Backend not connected. Using cached data only.");
+      // Load certificates from localStorage (no backend table for these yet)
+      const cachedCertificates = localStorage.getItem('certificates');
+      if (cachedCertificates) {
+        setCertificates(JSON.parse(cachedCertificates));
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
+      // Fallback to localStorage cache
+      const cachedProjects = localStorage.getItem('projects');
+      const cachedCertificates = localStorage.getItem('certificates');
+      if (cachedProjects) setProjects(JSON.parse(cachedProjects));
+      if (cachedCertificates) setCertificates(JSON.parse(cachedCertificates));
+    } finally {
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    const cachedProjects = localStorage.getItem('projects');
-    const cachedCertificates = localStorage.getItem('certificates');
-
-    if (cachedProjects && cachedCertificates) {
-      setProjects(JSON.parse(cachedProjects));
-      setCertificates(JSON.parse(cachedCertificates));
-    }
-
     fetchData();
   }, [fetchData]);
 
@@ -212,6 +194,16 @@ export default function FullWidthTabs() {
 
   const displayedProjects = showAllProjects ? projects : projects.slice(0, initialItems);
   const displayedCertificates = showAllCertificates ? certificates : certificates.slice(0, initialItems);
+
+  if (loading) {
+    return (
+      <div className="md:px-[10%] px-[5%] w-full sm:mt-0 mt-[3rem] bg-[#030014] overflow-hidden" id="Portofolio">
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 text-[#6366f1] animate-spin" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="md:px-[10%] px-[5%] w-full sm:mt-0 mt-[3rem] bg-[#030014] overflow-hidden" id="Portofolio">
@@ -343,10 +335,10 @@ export default function FullWidthTabs() {
                           data-aos-duration={index % 3 === 0 ? "1000" : index % 3 === 1 ? "1200" : "1000"}
                         >
                           <CardProject
-                            Img={project.Img}
-                            Title={project.Title}
-                            Description={project.Description}
-                            Link={project.Link}
+                            Img={project.img}
+                            Title={project.title}
+                            Description={project.description}
+                            Link={project.live}
                             id={project.id}
                           />
                         </div>
@@ -396,11 +388,11 @@ export default function FullWidthTabs() {
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 lg:gap-8 gap-5">
                       {techStacks.map((stack, index) => (
                         <div
-                          key={index}
+                          key={stack.id || index}
                           data-aos={index % 3 === 0 ? "fade-up-right" : index % 3 === 1 ? "fade-up" : "fade-up-left"}
                           data-aos-duration={index % 3 === 0 ? "1000" : index % 3 === 1 ? "1200" : "1000"}
                         >
-                          <TechStackIcon TechStackIcon={stack.icon} Language={stack.language} />
+                          <TechStackIcon TechStackIcon={stack.icon} Language={stack.name} />
                         </div>
                       ))}
                     </div>

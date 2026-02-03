@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Code2, Github, Globe, User } from 'lucide-react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import { useLanguage } from '@/lib/i18n';
 
 const TypewriterEffect = ({ text }) => {
   const [displayText, setDisplayText] = useState('');
@@ -49,6 +50,7 @@ const IconButton = ({ Icon }) => (
 
 const WelcomeScreen = ({ onLoadingComplete }) => {
   const [isLoading, setIsLoading] = useState(true);
+  const { t } = useLanguage();
 
   useEffect(() => {
     AOS.init({
@@ -126,13 +128,13 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
                 <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold space-y-2 sm:space-y-4">
                   <div className="mb-2 sm:mb-4">
                     <span data-aos="fade-right" data-aos-delay="200" className="inline-block px-2 bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent">
-                      Welcome
+                      {t("Welcome", "Bienvenue")}
                     </span>{' '}
                     <span data-aos="fade-right" data-aos-delay="400" className="inline-block px-2 bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent">
-                      To
+                      {t("To", "Sur")}
                     </span>{' '}
                     <span data-aos="fade-right" data-aos-delay="600" className="inline-block px-2 bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent">
-                      My
+                      {t("My", "Mon")}
                     </span>
                   </div>
                   <div>
@@ -140,7 +142,7 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
                       Portfolio
                     </span>{' '}
                     <span data-aos="fade-up" data-aos-delay="1000" className="inline-block px-2 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                      Website
+                      {t("Website", "Web")}
                     </span>
                   </div>
                 </h1>
@@ -154,7 +156,7 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
                 data-aos-delay="1200"
               >
                 <a
-                  href="https://www.eki.my.id"
+                  href="https://www.maria.portfolio"
                   className="inline-flex items-center gap-2 px-4 py-2 sm:px-6 sm:py-3 rounded-full relative group hover:scale-105 transition-transform duration-300"
                   target="_blank"
                   rel="noopener noreferrer"

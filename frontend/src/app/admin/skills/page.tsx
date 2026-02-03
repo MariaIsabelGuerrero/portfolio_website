@@ -2,106 +2,97 @@
 
 import React from "react"
 
-import { useState } from "react";
-import { Plus, Pencil, Trash2, X, Search } from "lucide-react";
-
-type SkillCategory = "soft" | "languages" | "frontend" | "databases" | "tools" | "other";
-
-interface Skill {
-  id: string;
-  name: string;
-  category: SkillCategory;
-}
-
-const initialSkills: Skill[] = [
-  { id: "1", name: "Teaching/Mentoring", category: "soft" },
-  { id: "2", name: "Communication", category: "soft" },
-  { id: "3", name: "Collaboration", category: "soft" },
-  { id: "4", name: "Problem-solving", category: "soft" },
-  { id: "5", name: "Adaptability", category: "soft" },
-  { id: "6", name: "Patience", category: "soft" },
-  { id: "7", name: "Java", category: "languages" },
-  { id: "8", name: "JavaScript/TypeScript", category: "languages" },
-  { id: "9", name: "Python", category: "languages" },
-  { id: "10", name: "SQL", category: "languages" },
-  { id: "11", name: "HTML/CSS", category: "languages" },
-  { id: "12", name: "C#", category: "languages" },
-  { id: "13", name: "React", category: "frontend" },
-  { id: "14", name: "Next.js", category: "frontend" },
-  { id: "15", name: "Tailwind CSS", category: "frontend" },
-  { id: "16", name: "PostgreSQL", category: "databases" },
-  { id: "17", name: "MySQL", category: "databases" },
-  { id: "18", name: "SQL Server", category: "databases" },
-];
-
-const categories: { value: SkillCategory; label: string }[] = [
-  { value: "soft", label: "Soft Skills" },
-  { value: "languages", label: "Programming Languages" },
-  { value: "frontend", label: "Frontend" },
-  { value: "databases", label: "Databases" },
-  { value: "tools", label: "Tools" },
-  { value: "other", label: "Other Technical" },
-];
+import { useState, useEffect, useCallback, useRef } from "react";
+import { Plus, Pencil, Trash2, X, Search, Loader2, Upload } from "lucide-react";
+import { fetchSkills as apiFetchSkills, createSkill, updateSkill, deleteSkill as apiDeleteSkill, uploadIcon, type Skill } from "@/lib/api-client";
 
 export default function SkillsManagement() {
-  const [skills, setSkills] = useState<Skill[]>(initialSkills);
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState<SkillCategory | "all">("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
-  const [formData, setFormData] = useState({ name: "", category: "soft" as SkillCategory });
+  const [formData, setFormData] = useState({ name: "", icon: "" });
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const filteredSkills = skills.filter((skill) => {
-    const matchesSearch = skill.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = filterCategory === "all" || skill.category === filterCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const loadSkills = useCallback(async () => {
+    try {
+      const res = await apiFetchSkills();
+      setSkills(res.data);
+    } catch (err) {
+      console.error("Failed to load skills:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadSkills(); }, [loadSkills]);
+
+  const filteredSkills = skills.filter((skill) =>
+    skill.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const openAddModal = () => {
     setEditingSkill(null);
-    setFormData({ name: "", category: "soft" });
+    setFormData({ name: "", icon: "" });
     setIsModalOpen(true);
   };
 
   const openEditModal = (skill: Skill) => {
     setEditingSkill(skill);
-    setFormData({ name: skill.name, category: skill.category });
+    setFormData({ name: skill.name, icon: skill.icon || "" });
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingSkill) {
-      setSkills(skills.map((s) => 
-        s.id === editingSkill.id ? { ...s, ...formData } : s
-      ));
-    } else {
-      const newSkill: Skill = {
-        id: Date.now().toString(),
-        ...formData,
-      };
-      setSkills([...skills, newSkill]);
+  const handleIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const res = await uploadIcon(file);
+      setFormData((prev) => ({ ...prev, icon: res.url }));
+    } catch (err) {
+      console.error("Failed to upload icon:", err);
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
-    setIsModalOpen(false);
   };
 
-  const handleDelete = (id: string) => {
-    setSkills(skills.filter((s) => s.id !== id));
-    setDeleteConfirm(null);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (editingSkill) {
+        await updateSkill(editingSkill.id, formData);
+      } else {
+        await createSkill(formData);
+      }
+      setIsModalOpen(false);
+      await loadSkills();
+    } catch (err) {
+      console.error("Failed to save skill:", err);
+    }
   };
 
-  const getCategoryColor = (category: SkillCategory) => {
-    const colors = {
-      soft: "bg-[#FF9FFC]/20 text-[#FF9FFC] border-[#FF9FFC]/30",
-      languages: "bg-[#5227FF]/20 text-[#B19EEF] border-[#5227FF]/30",
-      frontend: "bg-[#5227FF]/20 text-[#FF9FFC] border-[#5227FF]/30",
-      databases: "bg-[#B19EEF]/20 text-[#B19EEF] border-[#B19EEF]/30",
-      tools: "bg-[#5227FF]/20 text-white border-[#5227FF]/30",
-      other: "bg-[#FF9FFC]/20 text-[#FF9FFC] border-[#FF9FFC]/30",
-    };
-    return colors[category];
+  const handleDelete = async (id: string) => {
+    try {
+      await apiDeleteSkill(id);
+      setDeleteConfirm(null);
+      await loadSkills();
+    } catch (err) {
+      console.error("Failed to delete skill:", err);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 text-[#5227FF] animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -120,7 +111,7 @@ export default function SkillsManagement() {
         </button>
       </div>
 
-      {/* Filters */}
+      {/* Search */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B19EEF]" />
@@ -132,16 +123,6 @@ export default function SkillsManagement() {
             className="w-full pl-12 pr-4 py-3 bg-[#0f0520] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
           />
         </div>
-        <select
-          value={filterCategory}
-          onChange={(e) => setFilterCategory(e.target.value as SkillCategory | "all")}
-          className="px-4 py-3 bg-[#0f0520] border border-[#5227FF]/30 rounded-xl text-white focus:outline-none focus:border-[#FF9FFC]"
-        >
-          <option value="all">All Categories</option>
-          {categories.map((cat) => (
-            <option key={cat.value} value={cat.value}>{cat.label}</option>
-          ))}
-        </select>
       </div>
 
       {/* Skills Table */}
@@ -151,7 +132,7 @@ export default function SkillsManagement() {
             <thead>
               <tr className="border-b border-[#5227FF]/30">
                 <th className="text-left px-6 py-4 text-[#B19EEF] font-medium">Skill Name</th>
-                <th className="text-left px-6 py-4 text-[#B19EEF] font-medium">Category</th>
+                <th className="text-left px-6 py-4 text-[#B19EEF] font-medium">Icon</th>
                 <th className="text-right px-6 py-4 text-[#B19EEF] font-medium">Actions</th>
               </tr>
             </thead>
@@ -160,9 +141,11 @@ export default function SkillsManagement() {
                 <tr key={skill.id} className="border-b border-[#5227FF]/10 hover:bg-[#5227FF]/5">
                   <td className="px-6 py-4 text-white font-medium">{skill.name}</td>
                   <td className="px-6 py-4">
-                    <span className={`px-3 py-1 rounded-full text-sm border ${getCategoryColor(skill.category)}`}>
-                      {categories.find((c) => c.value === skill.category)?.label}
-                    </span>
+                    {skill.icon ? (
+                      <img src={skill.icon} alt={skill.name} className="w-6 h-6 object-contain" />
+                    ) : (
+                      <span className="text-[#B19EEF] text-sm">—</span>
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-2">
@@ -220,16 +203,46 @@ export default function SkillsManagement() {
                 />
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">Category</label>
-                <select
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value as SkillCategory })}
-                  className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white focus:outline-none focus:border-[#FF9FFC]"
+                <label className="block text-[#B19EEF] text-sm mb-2">Icon</label>
+                {formData.icon && (
+                  <div className="mb-3 flex items-center gap-3 p-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl">
+                    <img src={formData.icon} alt="Icon preview" className="w-8 h-8 object-contain" />
+                    <span className="text-[#B19EEF] text-sm truncate flex-1">{formData.icon.split("/").pop()}</span>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, icon: "" })}
+                      className="p-1 rounded hover:bg-red-500/20 text-red-400"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".svg,.png,.jpg,.jpeg,.webp"
+                  onChange={handleIconUpload}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-dashed border-[#5227FF]/50 rounded-xl text-[#B19EEF] hover:border-[#FF9FFC] hover:text-[#FF9FFC] transition-colors disabled:opacity-50"
                 >
-                  {categories.map((cat) => (
-                    <option key={cat.value} value={cat.value}>{cat.label}</option>
-                  ))}
-                </select>
+                  {uploading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4" />
+                      {formData.icon ? "Replace Icon" : "Upload Icon"}
+                    </>
+                  )}
+                </button>
+                <p className="text-[#B19EEF]/50 text-xs mt-1">SVG, PNG, JPG, or WebP (max 1MB)</p>
               </div>
               <div className="flex gap-3 pt-4">
                 <button

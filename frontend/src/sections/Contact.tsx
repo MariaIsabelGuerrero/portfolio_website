@@ -8,6 +8,7 @@ import Swal from "sweetalert2";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import axios from "axios";
+import { submitMessage } from "@/lib/public-api";
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -36,8 +37,8 @@ const ContactPage = () => {
     setIsSubmitting(true);
 
     Swal.fire({
-      title: 'Mengirim Pesan...',
-      html: 'Harap tunggu selagi kami mengirim pesan Anda',
+      title: 'Sending Message...',
+      html: 'Please wait while we send your message',
       allowOutsideClick: false,
       didOpen: () => {
         Swal.showLoading();
@@ -45,28 +46,34 @@ const ContactPage = () => {
     });
 
     try {
-      // Ganti dengan email Anda di FormSubmit
-      const formSubmitUrl = 'https://formsubmit.co/ekizulfarrachman@gmail.com';
+      // Save to backend database
+      await submitMessage({
+        name: formData.name,
+        email: formData.email,
+        message: formData.message,
+      });
 
-      // Siapkan data form untuk FormSubmit
+      // Also send via FormSubmit for email notification
+      const formSubmitUrl = 'https://formsubmit.co/ekizulfarrachman@gmail.com';
       const submitData = new FormData();
       submitData.append('name', formData.name);
       submitData.append('email', formData.email);
       submitData.append('message', formData.message);
-      submitData.append('_subject', 'Pesan Baru dari Website Portfolio');
-      submitData.append('_captcha', 'false'); // Nonaktifkan captcha
-      submitData.append('_template', 'table'); // Format email sebagai tabel
+      submitData.append('_subject', 'New Message from Portfolio Website');
+      submitData.append('_captcha', 'false');
+      submitData.append('_template', 'table');
 
       await axios.post(formSubmitUrl, submitData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+      }).catch(() => {
+        // FormSubmit may fail silently - message is already saved to DB
       });
 
-
       Swal.fire({
-        title: 'Berhasil!',
-        text: 'Pesan Anda telah berhasil terkirim!',
+        title: 'Success!',
+        text: 'Your message has been sent successfully!',
         icon: 'success',
         confirmButtonColor: '#6366f1',
         timer: 2000,
@@ -82,8 +89,8 @@ const ContactPage = () => {
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.request && error.request.status === 0) {
         Swal.fire({
-          title: 'Berhasil!',
-          text: 'Pesan Anda telah berhasil terkirim!',
+          title: 'Success!',
+          text: 'Your message has been sent successfully!',
           icon: 'success',
           confirmButtonColor: '#6366f1',
           timer: 2000,
@@ -97,8 +104,8 @@ const ContactPage = () => {
         });
       } else {
         Swal.fire({
-          title: 'Gagal!',
-          text: 'Terjadi kesalahan. Silakan coba lagi nanti.',
+          title: 'Failed!',
+          text: 'An error occurred. Please try again later.',
           icon: 'error',
           confirmButtonColor: '#6366f1'
         });
@@ -126,7 +133,7 @@ const ContactPage = () => {
               WebkitTextFillColor: "transparent",
             }}
           >
-            Hubungi Saya
+            Contact Me
           </span>
         </h2>
         <p
@@ -134,7 +141,7 @@ const ContactPage = () => {
           data-aos-duration="1100"
           className="text-slate-400 max-w-2xl mx-auto text-lg md:text-xl lg:text-2xl mt-4"
         >
-          Punya pertanyaan? Kirimi saya pesan, dan saya akan segera membalasnya.
+          Have a question? Send me a message, and I&apos;ll get back to you soon.
         </p>
       </div>
 
@@ -150,10 +157,10 @@ const ContactPage = () => {
             <div className="flex justify-between items-start mb-10">
               <div>
                 <h2 className="text-4xl lg:text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]">
-                  Hubungi
+                  Get in Touch
                 </h2>
                 <p className="text-gray-400 text-lg lg:text-xl">
-                  Ada yang ingin didiskusikan? Kirim saya pesan dan mari kita bicara.
+                  Want to discuss something? Send me a message and let&apos;s talk.
                 </p>
               </div>
               <Share2 className="w-12 h-12 text-[#6366f1] opacity-50" />
@@ -172,7 +179,7 @@ const ContactPage = () => {
                 <input
                   type="text"
                   name="name"
-                  placeholder="Nama Anda"
+                  placeholder="Your Name"
                   value={formData.name}
                   onChange={handleChange}
                   disabled={isSubmitting}
@@ -189,7 +196,7 @@ const ContactPage = () => {
                 <input
                   type="email"
                   name="email"
-                  placeholder="Email Anda"
+                  placeholder="Your Email"
                   value={formData.email}
                   onChange={handleChange}
                   disabled={isSubmitting}
@@ -205,7 +212,7 @@ const ContactPage = () => {
                 <MessageSquare className="absolute left-5 top-5 w-6 h-6 text-gray-400 group-focus-within:text-[#6366f1] transition-colors" />
                 <textarea
                   name="message"
-                  placeholder="Pesan Anda"
+                  placeholder="Your Message"
                   value={formData.message}
                   onChange={handleChange}
                   disabled={isSubmitting}
@@ -221,7 +228,7 @@ const ContactPage = () => {
                 className="w-full bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white py-5 rounded-xl text-lg font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-[#6366f1]/20 active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 <Send className="w-6 h-6" />
-                {isSubmitting ? 'Mengirim...' : 'Kirim Pesan'}
+                {isSubmitting ? 'Sending...' : 'Send Message'}
               </button>
             </form>
 

@@ -2,68 +2,93 @@
 
 import React from "react"
 
-import { useState } from "react";
-import { Upload, FileText, Trash2, Download, Eye } from "lucide-react";
-
-interface ResumeFile {
-  id: string;
-  name: string;
-  size: string;
-  uploadedAt: string;
-  isActive: boolean;
-}
-
-const initialResumes: ResumeFile[] = [
-  {
-    id: "1",
-    name: "Maria_Isabel_Resume_2024.pdf",
-    size: "245 KB",
-    uploadedAt: "Jan 15, 2024",
-    isActive: true,
-  },
-  {
-    id: "2",
-    name: "Maria_Isabel_Resume_2023.pdf",
-    size: "230 KB",
-    uploadedAt: "Dec 10, 2023",
-    isActive: false,
-  },
-];
+import { useState, useEffect, useCallback, useRef } from "react";
+import { Upload, FileText, Trash2, Download, Loader2 } from "lucide-react";
+import { fetchResumes, uploadResume, createResume, setActiveResume, deleteResume as apiDeleteResume, type ResumeFile } from "@/lib/api-client";
 
 export default function ResumeManagement() {
-  const [resumes, setResumes] = useState<ResumeFile[]>(initialResumes);
+  const [resumes, setResumes] = useState<ResumeFile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSetActive = (id: string) => {
-    setResumes(resumes.map((r) => ({
-      ...r,
-      isActive: r.id === id,
-    })));
+  const loadResumes = useCallback(async () => {
+    try {
+      const res = await fetchResumes(true);
+      setResumes(res.data);
+    } catch (err) {
+      console.error("Failed to load resumes:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadResumes(); }, [loadResumes]);
+
+  const handleUpload = async (file: File) => {
+    if (!file.name.endsWith(".pdf")) return;
+    setUploading(true);
+    try {
+      // Step 1: Upload file to DO Spaces
+      const uploadRes = await uploadResume(file);
+      // Step 2: Create DB record
+      await createResume({
+        filename: uploadRes.filename,
+        fileUrl: uploadRes.fileUrl,
+      });
+      await loadResumes();
+    } catch (err) {
+      console.error("Failed to upload resume:", err);
+    } finally {
+      setUploading(false);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setResumes(resumes.filter((r) => r.id !== id));
-    setDeleteConfirm(null);
+  const handleSetActive = async (id: string) => {
+    try {
+      await setActiveResume(id);
+      await loadResumes();
+    } catch (err) {
+      console.error("Failed to set active resume:", err);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await apiDeleteResume(id);
+      setDeleteConfirm(null);
+      await loadResumes();
+    } catch (err) {
+      console.error("Failed to delete resume:", err);
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    // In a real app, this would handle file upload
     const files = e.dataTransfer.files;
     if (files.length > 0) {
-      const file = files[0];
-      const newResume: ResumeFile = {
-        id: Date.now().toString(),
-        name: file.name,
-        size: `${Math.round(file.size / 1024)} KB`,
-        uploadedAt: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-        isActive: false,
-      };
-      setResumes([newResume, ...resumes]);
+      handleUpload(files[0]);
     }
   };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleUpload(file);
+    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 text-[#5227FF] animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -80,26 +105,37 @@ export default function ResumeManagement() {
         onDrop={handleDrop}
         className={`
           border-2 border-dashed rounded-2xl p-12 text-center transition-all
-          ${isDragging 
-            ? "border-[#FF9FFC] bg-[#FF9FFC]/10" 
+          ${isDragging
+            ? "border-[#FF9FFC] bg-[#FF9FFC]/10"
             : "border-[#5227FF]/50 bg-[#0f0520] hover:border-[#5227FF]"
           }
         `}
       >
         <div className="w-16 h-16 rounded-full bg-[#5227FF]/20 flex items-center justify-center mx-auto mb-4">
-          <Upload className="w-8 h-8 text-[#FF9FFC]" />
+          {uploading ? (
+            <Loader2 className="w-8 h-8 text-[#FF9FFC] animate-spin" />
+          ) : (
+            <Upload className="w-8 h-8 text-[#FF9FFC]" />
+          )}
         </div>
         <h3 className="text-xl font-semibold text-white mb-2">
-          {isDragging ? "Drop your file here" : "Upload Resume"}
+          {uploading ? "Uploading..." : isDragging ? "Drop your file here" : "Upload Resume"}
         </h3>
         <p className="text-[#B19EEF] mb-4">Drag and drop your PDF file here, or click to browse</p>
         <label className="inline-block">
-          <input type="file" accept=".pdf" className="hidden" />
-          <span className="px-6 py-3 bg-[#5227FF] text-white rounded-xl hover:bg-[#5227FF]/80 transition-colors cursor-pointer inline-block">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf"
+            className="hidden"
+            onChange={handleFileSelect}
+            disabled={uploading}
+          />
+          <span className={`px-6 py-3 bg-[#5227FF] text-white rounded-xl hover:bg-[#5227FF]/80 transition-colors cursor-pointer inline-block ${uploading ? "opacity-50 pointer-events-none" : ""}`}>
             Browse Files
           </span>
         </label>
-        <p className="text-[#B19EEF]/60 text-sm mt-4">Supported format: PDF (Max 5MB)</p>
+        <p className="text-[#B19EEF]/60 text-sm mt-4">Supported format: PDF (Max 10MB)</p>
       </div>
 
       {/* Uploaded Resumes */}
@@ -116,23 +152,28 @@ export default function ResumeManagement() {
                 </div>
                 <div>
                   <div className="flex items-center gap-3">
-                    <p className="text-white font-medium">{resume.name}</p>
+                    <p className="text-white font-medium">{resume.filename}</p>
                     {resume.isActive && (
                       <span className="px-2 py-0.5 text-xs bg-[#FF9FFC]/20 text-[#FF9FFC] rounded-full border border-[#FF9FFC]/30">
                         Active
                       </span>
                     )}
                   </div>
-                  <p className="text-[#B19EEF] text-sm">{resume.size} • Uploaded {resume.uploadedAt}</p>
+                  <p className="text-[#B19EEF] text-sm">
+                    Uploaded {resume.createdAt ? new Date(resume.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—"}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <button className="p-2 rounded-lg bg-[#5227FF]/20 text-[#B19EEF] hover:bg-[#5227FF]/40 hover:text-white transition-colors">
-                  <Eye className="w-4 h-4" />
-                </button>
-                <button className="p-2 rounded-lg bg-[#5227FF]/20 text-[#B19EEF] hover:bg-[#5227FF]/40 hover:text-white transition-colors">
+                <a
+                  href={resume.fileUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-2 rounded-lg bg-[#5227FF]/20 text-[#B19EEF] hover:bg-[#5227FF]/40 hover:text-white transition-colors"
+                  title="Download"
+                >
                   <Download className="w-4 h-4" />
-                </button>
+                </a>
                 {!resume.isActive && (
                   <button
                     onClick={() => handleSetActive(resume.id)}

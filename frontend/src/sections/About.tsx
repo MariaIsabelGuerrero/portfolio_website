@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useEffect, memo, useMemo } from "react"
+import React, { useEffect, useState, memo, useMemo } from "react"
 import { FileText, Code, Award, Globe, ArrowUpRight, Sparkles } from "lucide-react"
+import { fetchResumes, type ResumeFile } from "@/lib/api-client"
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 
@@ -131,6 +132,17 @@ const StatCard = memo(function StatCard({ icon: Icon, color, value, label, descr
 });
 
 const AboutPage = () => {
+  const [activeResumes, setActiveResumes] = useState<ResumeFile[]>([]);
+
+  useEffect(() => {
+    fetchResumes()
+      .then((res) => setActiveResumes(res.data))
+      .catch(() => {});
+  }, []);
+
+  const enResume = activeResumes.find((r) => r.language === "en");
+  const frResume = activeResumes.find((r) => r.language === "fr");
+
   // Memoized calculations
   const { totalProjects, totalCertificates, YearExperience } = useMemo(() => {
     if (typeof window === 'undefined') {
@@ -201,7 +213,7 @@ const AboutPage = () => {
       description: "Continuous learning journey",
       animation: "fade-left",
     },
-  ], [totalProjects, totalCertificates, YearExperience]);
+  ], [totalProjects, totalCertificates]);
 
   return (
     <div
@@ -226,7 +238,7 @@ const AboutPage = () => {
                 data-aos="fade-right"
                 data-aos-duration="1300"
               >
-                Eki Zulfar Rachman
+                Maria Isabel Guerrero
               </span>
             </h2>
 
@@ -235,7 +247,7 @@ const AboutPage = () => {
               data-aos="fade-right"
               data-aos-duration="1500"
             >
-              Seorang lulusan Teknik Jaringan Komputer dan Telekomunikasi yang memiliki ketertarikan besar dalam pengembangan Front-End. Saya berfokus pada menciptakan pengalaman digital yang menarik dan selalu berusaha memberikan solusi terbaik dalam setiap proyek yang saya kerjakan.
+              A Computer Science student at Champlain College and Full-Stack Developer with a strong focus on backend architecture. I specialize in building scalable microservices with Spring Boot and crafting modern web interfaces with React and Next.js. Currently seeking a Winter 2026 internship where I can contribute to real-world projects and grow as a developer. When I'm not coding, I coach gymnastics and tutor fellow students in programming because helping others level up is just as rewarding as shipping clean code.
             </p>
 
             {/* Quote Section */}
@@ -256,20 +268,33 @@ const AboutPage = () => {
               </div>
 
               <blockquote className="text-gray-300 text-center lg:text-left italic font-medium text-base lg:text-lg relative z-10 pl-8">
-                &quot;Leveraging AI as a professional tool, not a replacement.&quot;
+                &quot;Clean architecture today saves a hundred debugging sessions tomorrow.&quot;
               </blockquote>
             </div>
 
             <div className="flex flex-col lg:flex-row items-center lg:items-start gap-4 lg:gap-6 lg:px-0 w-full">
-              <a href="https://drive.google.com/drive/folders/1BOm51Grsabb3zj6Xk27K-iRwI1zITcpo" className="w-full lg:w-auto">
-                <button
-                  data-aos="fade-up"
-                  data-aos-duration="800"
-                  className="w-full lg:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white text-lg font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center lg:justify-start gap-3 shadow-lg hover:shadow-xl"
-                >
-                  <FileText className="w-6 h-6" /> Download CV
-                </button>
-              </a>
+              {enResume && (
+                <a href={enResume.fileUrl} target="_blank" rel="noopener noreferrer" className="w-full lg:w-auto">
+                  <button
+                    data-aos="fade-up"
+                    data-aos-duration="800"
+                    className="w-full lg:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white text-lg font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center lg:justify-start gap-3 shadow-lg hover:shadow-xl"
+                  >
+                    <FileText className="w-6 h-6" /> CV English
+                  </button>
+                </a>
+              )}
+              {frResume && (
+                <a href={frResume.fileUrl} target="_blank" rel="noopener noreferrer" className="w-full lg:w-auto">
+                  <button
+                    data-aos="fade-up"
+                    data-aos-duration="900"
+                    className="w-full lg:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white text-lg font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center lg:justify-start gap-3 shadow-lg hover:shadow-xl"
+                  >
+                    <FileText className="w-6 h-6" /> CV Français
+                  </button>
+                </a>
+              )}
               <a href="#Portofolio" className="w-full lg:w-auto">
                 <button
                   data-aos="fade-up"

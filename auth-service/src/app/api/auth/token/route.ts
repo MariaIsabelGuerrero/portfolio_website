@@ -1,52 +1,67 @@
 import { auth } from "@/lib/auth/auth";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import jwt from "jsonwebtoken";
 
 export async function GET(request: NextRequest) {
+  return handleTokenRequest(request);
+}
+
+export async function POST(request: NextRequest) {
+  return handleTokenRequest(request);
+}
+
+async function handleTokenRequest(request: NextRequest) {
   try {
-    const session = await auth.api.getSession({
-      headers: request.headers,
+    // Get session from cookies using Better Auth
+    const cookieHeader = request.headers.get("cookie") || "";
+
+    const sessionResult = await auth.api.getSession({
+      headers: {
+        cookie: cookieHeader,
+      },
     });
 
-    if (!session) {
-      return NextResponse.json(
-        { error: "Not authenticated" },
-        { status: 401 }
-      );
+    if (!sessionResult || !sessionResult.user) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    const jwtSecret = process.env.BETTER_AUTH_JWT_SECRET ||
-                      process.env.AUTH_JWT_SECRET ||
-                      process.env.BETTER_AUTH_SECRET;
+    const user = sessionResult.user;
 
-    if (!jwtSecret) {
-      console.error("JWT secret not configured");
+    const jwtSecret =
+      process.env.BETTER_AUTH_JWT_SECRET ||
+      process.env.AUTH_JWT_SECRET ||
+      process.env.BETTER_AUTH_SECRET;
+
+    if (!jwtSecret || jwtSecret.length < 32) {
+      console.error("JWT secret is missing or too short");
       return NextResponse.json(
         { error: "Server configuration error" },
         { status: 500 }
       );
     }
 
-    // Create JWT token for API authentication
     const token = jwt.sign(
       {
-        sub: session.user.id,
-        email: session.user.email,
-        name: session.user.name,
-        role: (session.user as { role?: string }).role || "USER",
-        locale: (session.user as { locale?: string }).locale || "en",
+        sub: user.id,
+        email: user.email,
+        name: user.name || null,
+        role: (user as any).role || "USER",
+        locale: (user as any).locale || "en",
+        iss: process.env.AUTH_JWT_ISS || "portfolio-auth",
+        aud: process.env.AUTH_JWT_AUD || "portfolio-api",
       },
       jwtSecret,
       {
         expiresIn: "1h",
-        issuer: "portfolio-auth",
-        audience: "portfolio-api",
       }
     );
 
     return NextResponse.json({ token });
   } catch (error) {
-    console.error("Token generation error:", error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Token generation error:", error);
+    }
     return NextResponse.json(
       { error: "Failed to generate token" },
       { status: 500 }

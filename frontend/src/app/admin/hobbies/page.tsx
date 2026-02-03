@@ -2,28 +2,31 @@
 
 import React from "react"
 
-import { useState } from "react";
-import { Plus, Pencil, Trash2, X, Search, Heart } from "lucide-react";
-
-interface Hobby {
-  id: string;
-  name: string;
-}
-
-const initialHobbies: Hobby[] = [
-  { id: "1", name: "Gymnastics" },
-  { id: "2", name: "Music" },
-  { id: "3", name: "Yoga" },
-  { id: "4", name: "Traveling" },
-];
+import { useState, useEffect, useCallback } from "react";
+import { Plus, Pencil, Trash2, X, Search, Heart, Loader2 } from "lucide-react";
+import { fetchHobbies as apiFetchHobbies, createHobby, updateHobby, deleteHobby as apiDeleteHobby, type Hobby } from "@/lib/api-client";
 
 export default function HobbiesManagement() {
-  const [hobbies, setHobbies] = useState<Hobby[]>(initialHobbies);
+  const [hobbies, setHobbies] = useState<Hobby[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingHobby, setEditingHobby] = useState<Hobby | null>(null);
-  const [formData, setFormData] = useState({ name: "" });
+  const [formData, setFormData] = useState({ name: "", description: "", icon: "", color: "" });
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+  const loadHobbies = useCallback(async () => {
+    try {
+      const res = await apiFetchHobbies();
+      setHobbies(res.data);
+    } catch (err) {
+      console.error("Failed to load hobbies:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadHobbies(); }, [loadHobbies]);
 
   const filteredHobbies = hobbies.filter((hobby) =>
     hobby.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -31,33 +34,48 @@ export default function HobbiesManagement() {
 
   const openAddModal = () => {
     setEditingHobby(null);
-    setFormData({ name: "" });
+    setFormData({ name: "", description: "", icon: "", color: "" });
     setIsModalOpen(true);
   };
 
   const openEditModal = (hobby: Hobby) => {
     setEditingHobby(hobby);
-    setFormData({ name: hobby.name });
+    setFormData({ name: hobby.name, description: hobby.description || "", icon: hobby.icon || "", color: hobby.color || "" });
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingHobby) {
-      setHobbies(hobbies.map((h) =>
-        h.id === editingHobby.id ? { ...h, ...formData } : h
-      ));
-    } else {
-      const newHobby: Hobby = { id: Date.now().toString(), ...formData };
-      setHobbies([...hobbies, newHobby]);
+    try {
+      if (editingHobby) {
+        await updateHobby(editingHobby.id, formData);
+      } else {
+        await createHobby(formData);
+      }
+      setIsModalOpen(false);
+      await loadHobbies();
+    } catch (err) {
+      console.error("Failed to save hobby:", err);
     }
-    setIsModalOpen(false);
   };
 
-  const handleDelete = (id: string) => {
-    setHobbies(hobbies.filter((h) => h.id !== id));
-    setDeleteConfirm(null);
+  const handleDelete = async (id: string) => {
+    try {
+      await apiDeleteHobby(id);
+      setDeleteConfirm(null);
+      await loadHobbies();
+    } catch (err) {
+      console.error("Failed to delete hobby:", err);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 text-[#5227FF] animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -115,6 +133,8 @@ export default function HobbiesManagement() {
               </div>
             </div>
             <h3 className="text-xl font-semibold text-white">{hobby.name}</h3>
+            {hobby.description && <p className="text-[#B19EEF]/70 text-sm mt-1">{hobby.description}</p>}
+            {hobby.icon && <p className="text-[#B19EEF]/50 text-xs mt-2">Icon: {hobby.icon}</p>}
           </div>
         ))}
       </div>
@@ -151,6 +171,38 @@ export default function HobbiesManagement() {
                   className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
                   placeholder="Enter hobby name"
                 />
+              </div>
+              <div>
+                <label className="block text-[#B19EEF] text-sm mb-2">Description</label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={2}
+                  className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC] resize-none"
+                  placeholder="Brief description of this hobby"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[#B19EEF] text-sm mb-2">Icon Name</label>
+                  <input
+                    type="text"
+                    value={formData.icon}
+                    onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+                    className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
+                    placeholder="e.g., Dumbbell, Heart"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[#B19EEF] text-sm mb-2">Color Gradient</label>
+                  <input
+                    type="text"
+                    value={formData.color}
+                    onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                    className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
+                    placeholder="e.g., from-rose-500 to-pink-600"
+                  />
+                </div>
               </div>
               <div className="flex gap-3 pt-4">
                 <button

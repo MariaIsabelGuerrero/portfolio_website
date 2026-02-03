@@ -2,42 +2,58 @@
 
 import React from "react"
 
-import { useState } from "react";
-import { Save, Mail, Phone, MapPin, Github, Linkedin, Twitter } from "lucide-react";
-
-interface ContactInfo {
-  email: string;
-  phone: string;
-  location: string;
-  github: string;
-  linkedin: string;
-  twitter: string;
-}
-
-const initialContact: ContactInfo = {
-  email: "maria.isabel@example.com",
-  phone: "+1 (555) 123-4567",
-  location: "Montreal, Canada",
-  github: "https://github.com/mariaisabel",
-  linkedin: "https://linkedin.com/in/mariaisabel",
-  twitter: "https://twitter.com/mariaisabel",
-};
+import { useState, useEffect, useCallback } from "react";
+import { Save, Mail, Phone, MapPin, Github, Linkedin, Twitter, Loader2 } from "lucide-react";
+import { fetchContact as apiFetchContact, updateContact as apiUpdateContact, type ContactInfo } from "@/lib/api-client";
 
 export default function ContactManagement() {
-  const [contact, setContact] = useState<ContactInfo>(initialContact);
+  const [contact, setContact] = useState<ContactInfo>({ email: "", phone: "", location: "", github: "", linkedin: "", twitter: "" });
+  const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const loadContact = useCallback(async () => {
+    try {
+      const res = await apiFetchContact();
+      const data = res.data;
+      setContact({
+        email: data.email || "",
+        phone: data.phone || "",
+        location: data.location || "",
+        github: data.github || "",
+        linkedin: data.linkedin || "",
+        twitter: data.twitter || "",
+      });
+    } catch (err) {
+      console.error("Failed to load contact:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadContact(); }, [loadContact]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
-    // Simulate save
-    setTimeout(() => {
-      setIsSaving(false);
+    try {
+      await apiUpdateContact(contact);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
-    }, 500);
+    } catch (err) {
+      console.error("Failed to save contact:", err);
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 text-[#5227FF] animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

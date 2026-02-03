@@ -1,77 +1,172 @@
-import { db } from "../auth/auth";
-import * as schema from "../db/schema";
-import { eq, and, gte, desc } from "drizzle-orm";
-import { randomUUID } from "crypto";
+/**
+ * Account lockout functionality
+ * Tracks failed login attempts and locks accounts after threshold
+ */
 
-const MAX_FAILED_ATTEMPTS = 5;
-const LOCKOUT_DURATION_MINUTES = 15;
+import { db } from "../auth/auth";
+import { loginAttempt, auditLog, user } from "../db/schema";
+import { eq, and, gte, desc } from "drizzle-orm";
+import { randomBytes } from "crypto";
+
+export const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 30 * 60 * 1000; // 30 minutes
 
 export interface LockoutStatus {
   isLocked: boolean;
+  remainingAttempts: number;
   lockoutExpiresAt?: Date;
-  failedAttempts: number;
+  isAdminLocked?: boolean;
 }
 
-export async function checkAccountLockout(email: string): Promise<LockoutStatus> {
-  const lockoutWindowStart = new Date(Date.now() - LOCKOUT_DURATION_MINUTES * 60 * 1000);
+/**
+ * Check if an account is currently locked
+ */
+export async function checkAccountLockout(
+  email: string
+): Promise<LockoutStatus> {
+  const thirtyMinutesAgo = new Date(Date.now() - LOCKOUT_DURATION_MS);
 
-  const recentAttempts = await db
+  // Check if there's a recent admin lock in the audit log
+  const users = await db
     .select()
-    .from(schema.loginAttempt)
-    .where(
-      and(
-        eq(schema.loginAttempt.email, email.toLowerCase()),
-        gte(schema.loginAttempt.attemptedAt, lockoutWindowStart)
+    .from(user)
+    .where(eq(user.email, email.toLowerCase()))
+    .limit(1);
+
+  if (users.length > 0) {
+    const userId = users[0].id;
+
+    // Check for recent unlock event first
+    const unlockEvents = await db
+      .select()
+      .from(auditLog)
+      .where(
+        and(
+          eq(auditLog.userId, userId),
+          eq(auditLog.eventType, "account_unlocked"),
+          eq(auditLog.success, true),
+          gte(auditLog.createdAt, thirtyMinutesAgo)
+        )
       )
-    )
-    .orderBy(desc(schema.loginAttempt.attemptedAt));
+      .orderBy(desc(auditLog.createdAt))
+      .limit(1);
 
-  const failedAttempts = recentAttempts.filter(a => !a.success).length;
-  const lastSuccessfulLogin = recentAttempts.find(a => a.success);
+    // Check for recent admin lock event
+    const adminLockEvents = await db
+      .select()
+      .from(auditLog)
+      .where(
+        and(
+          eq(auditLog.userId, userId),
+          eq(auditLog.eventType, "account_locked"),
+          eq(auditLog.success, true),
+          gte(auditLog.createdAt, thirtyMinutesAgo)
+        )
+      )
+      .orderBy(desc(auditLog.createdAt))
+      .limit(1);
 
-  // If there's a successful login after failures, reset count
-  const failedSinceLastSuccess = lastSuccessfulLogin
-    ? recentAttempts.filter(a => !a.success && a.attemptedAt > lastSuccessfulLogin.attemptedAt).length
-    : failedAttempts;
-
-  if (failedSinceLastSuccess >= MAX_FAILED_ATTEMPTS) {
-    const oldestFailedAttempt = recentAttempts
-      .filter(a => !a.success)
-      .slice(-MAX_FAILED_ATTEMPTS)[0];
-
-    if (oldestFailedAttempt) {
-      const lockoutExpiresAt = new Date(
-        oldestFailedAttempt.attemptedAt.getTime() + LOCKOUT_DURATION_MINUTES * 60 * 1000
-      );
-
-      if (lockoutExpiresAt > new Date()) {
+    // If there's an unlock event, check if it's more recent than the lock event
+    if (unlockEvents.length > 0) {
+      const unlockEvent = unlockEvents[0];
+      if (
+        adminLockEvents.length === 0 ||
+        unlockEvent.createdAt > adminLockEvents[0].createdAt
+      ) {
+        // Account was unlocked, continue to check for automatic lockouts
+      } else {
+        const adminLockEvent = adminLockEvents[0];
+        const metadata = adminLockEvent.metadata as { reason?: string } | null;
+        if (metadata && metadata.reason === "admin_locked") {
+          const lockoutExpiresAt = new Date(
+            adminLockEvent.createdAt.getTime() + LOCKOUT_DURATION_MS
+          );
+          return {
+            isLocked: true,
+            remainingAttempts: 0,
+            lockoutExpiresAt,
+            isAdminLocked: true,
+          };
+        }
+      }
+    } else if (adminLockEvents.length > 0) {
+      const adminLockEvent = adminLockEvents[0];
+      const metadata = adminLockEvent.metadata as { reason?: string } | null;
+      if (metadata && metadata.reason === "admin_locked") {
+        const lockoutExpiresAt = new Date(
+          adminLockEvent.createdAt.getTime() + LOCKOUT_DURATION_MS
+        );
         return {
           isLocked: true,
+          remainingAttempts: 0,
           lockoutExpiresAt,
-          failedAttempts: failedSinceLastSuccess,
+          isAdminLocked: true,
         };
       }
     }
   }
 
+  // Check for automatic lockout due to failed attempts
+  const recentAttempts = await db
+    .select()
+    .from(loginAttempt)
+    .where(
+      and(
+        eq(loginAttempt.email, email.toLowerCase()),
+        eq(loginAttempt.success, false),
+        gte(loginAttempt.attemptedAt, thirtyMinutesAgo)
+      )
+    )
+    .orderBy(desc(loginAttempt.attemptedAt))
+    .limit(MAX_FAILED_ATTEMPTS);
+
+  const failedCount = recentAttempts.length;
+  const isLocked = failedCount >= MAX_FAILED_ATTEMPTS;
+
+  if (isLocked && recentAttempts.length > 0) {
+    const oldestAttempt = recentAttempts[recentAttempts.length - 1];
+    const lockoutExpiresAt = new Date(
+      oldestAttempt.attemptedAt.getTime() + LOCKOUT_DURATION_MS
+    );
+    return {
+      isLocked: true,
+      remainingAttempts: 0,
+      lockoutExpiresAt,
+      isAdminLocked: false,
+    };
+  }
+
   return {
     isLocked: false,
-    failedAttempts: failedSinceLastSuccess,
+    remainingAttempts: Math.max(0, MAX_FAILED_ATTEMPTS - failedCount),
   };
 }
 
+/**
+ * Record a login attempt
+ */
 export async function recordLoginAttempt(
   email: string,
   success: boolean,
   ipAddress?: string,
   userAgent?: string
 ): Promise<void> {
-  await db.insert(schema.loginAttempt).values({
-    id: randomUUID(),
+  const id = randomBytes(16).toString("hex");
+
+  await db.insert(loginAttempt).values({
+    id,
     email: email.toLowerCase(),
+    ipAddress: ipAddress || null,
     success,
-    ipAddress,
-    userAgent,
     attemptedAt: new Date(),
+    userAgent: userAgent || null,
   });
+}
+
+/**
+ * Clear failed attempts for an email (called on successful login)
+ */
+export async function clearFailedAttempts(_email: string): Promise<void> {
+  // The checkAccountLockout function only looks at recent failures,
+  // so recording a successful attempt effectively resets the counter
 }

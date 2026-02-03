@@ -2,54 +2,39 @@
 
 import React from "react"
 
-import { useState } from "react";
-import { Plus, Pencil, Trash2, X, Search, Briefcase } from "lucide-react";
-
-interface Experience {
-  id: string;
-  title: string;
-  company: string;
-  period: string;
-  responsibilities: string[];
-}
-
-const initialExperiences: Experience[] = [
-  {
-    id: "1",
-    title: "Software Developer",
-    company: "TechCorp Inc.",
-    period: "2022 - Present",
-    responsibilities: [
-      "Developed and maintained full-stack web applications using React and Node.js",
-      "Collaborated with cross-functional teams to deliver high-quality software solutions",
-      "Implemented CI/CD pipelines and improved deployment processes",
-    ],
-  },
-  {
-    id: "2",
-    title: "Junior Developer",
-    company: "StartUp Labs",
-    period: "2020 - 2022",
-    responsibilities: [
-      "Built responsive user interfaces using modern JavaScript frameworks",
-      "Participated in code reviews and agile development processes",
-      "Assisted in database design and optimization",
-    ],
-  },
-];
+import { useState, useEffect, useCallback } from "react";
+import { Plus, Pencil, Trash2, X, Search, Briefcase, MapPin, Loader2 } from "lucide-react";
+import { fetchExperience as apiFetchExperience, createExperience, updateExperience, deleteExperience as apiDeleteExperience, type Experience } from "@/lib/api-client";
 
 export default function ExperienceManagement() {
-  const [experiences, setExperiences] = useState<Experience[]>(initialExperiences);
+  const [experiences, setExperiences] = useState<Experience[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingExperience, setEditingExperience] = useState<Experience | null>(null);
   const [formData, setFormData] = useState({
     title: "",
     company: "",
+    location: "",
     period: "",
+    type: "",
+    description: "",
     responsibilities: "",
   });
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+  const loadExperience = useCallback(async () => {
+    try {
+      const res = await apiFetchExperience();
+      setExperiences(res.data);
+    } catch (err) {
+      console.error("Failed to load experience:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { loadExperience(); }, [loadExperience]);
 
   const filteredExperiences = experiences.filter((exp) =>
     exp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -58,7 +43,7 @@ export default function ExperienceManagement() {
 
   const openAddModal = () => {
     setEditingExperience(null);
-    setFormData({ title: "", company: "", period: "", responsibilities: "" });
+    setFormData({ title: "", company: "", location: "", period: "", type: "", description: "", responsibilities: "" });
     setIsModalOpen(true);
   };
 
@@ -67,36 +52,57 @@ export default function ExperienceManagement() {
     setFormData({
       title: exp.title,
       company: exp.company,
+      location: exp.location || "",
       period: exp.period,
+      type: exp.type || "",
+      description: exp.description || "",
       responsibilities: exp.responsibilities.join("\n"),
     });
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const expData = {
       title: formData.title,
       company: formData.company,
+      location: formData.location,
       period: formData.period,
+      type: formData.type,
+      description: formData.description,
       responsibilities: formData.responsibilities.split("\n").filter(Boolean),
     };
 
-    if (editingExperience) {
-      setExperiences(experiences.map((e) =>
-        e.id === editingExperience.id ? { ...e, ...expData } : e
-      ));
-    } else {
-      const newExp: Experience = { id: Date.now().toString(), ...expData };
-      setExperiences([...experiences, newExp]);
+    try {
+      if (editingExperience) {
+        await updateExperience(editingExperience.id, expData);
+      } else {
+        await createExperience(expData);
+      }
+      setIsModalOpen(false);
+      await loadExperience();
+    } catch (err) {
+      console.error("Failed to save experience:", err);
     }
-    setIsModalOpen(false);
   };
 
-  const handleDelete = (id: string) => {
-    setExperiences(experiences.filter((e) => e.id !== id));
-    setDeleteConfirm(null);
+  const handleDelete = async (id: string) => {
+    try {
+      await apiDeleteExperience(id);
+      setDeleteConfirm(null);
+      await loadExperience();
+    } catch (err) {
+      console.error("Failed to delete experience:", err);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 text-[#5227FF] animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -142,7 +148,21 @@ export default function ExperienceManagement() {
                 <div>
                   <h3 className="text-xl font-semibold text-white">{exp.title}</h3>
                   <p className="text-[#FF9FFC]">{exp.company}</p>
-                  <p className="text-[#B19EEF] text-sm mt-1">{exp.period}</p>
+                  <div className="flex flex-wrap items-center gap-3 mt-1">
+                    <p className="text-[#B19EEF] text-sm">{exp.period}</p>
+                    {exp.location && (
+                      <span className="text-[#B19EEF]/70 text-sm flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        {exp.location}
+                      </span>
+                    )}
+                    {exp.type && (
+                      <span className="px-2 py-0.5 text-xs bg-[#5227FF]/20 text-[#B19EEF] rounded-full border border-[#5227FF]/30">
+                        {exp.type}
+                      </span>
+                    )}
+                  </div>
+                  {exp.description && <p className="text-[#B19EEF]/80 text-sm mt-2">{exp.description}</p>}
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -217,6 +237,16 @@ export default function ExperienceManagement() {
                 />
               </div>
               <div>
+                <label className="block text-[#B19EEF] text-sm mb-2">Location</label>
+                <input
+                  type="text"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
+                  placeholder="Remote, City, Country"
+                />
+              </div>
+              <div>
                 <label className="block text-[#B19EEF] text-sm mb-2">Period</label>
                 <input
                   type="text"
@@ -225,6 +255,31 @@ export default function ExperienceManagement() {
                   required
                   className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
                   placeholder="2022 - Present"
+                />
+              </div>
+              <div>
+                <label className="block text-[#B19EEF] text-sm mb-2">Employment Type</label>
+                <select
+                  value={formData.type}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white focus:outline-none focus:border-[#FF9FFC]"
+                >
+                  <option value="">Select type</option>
+                  <option value="Full-time">Full-time</option>
+                  <option value="Part-time">Part-time</option>
+                  <option value="Freelance">Freelance</option>
+                  <option value="Internship">Internship</option>
+                  <option value="Contract">Contract</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-[#B19EEF] text-sm mb-2">Description</label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={2}
+                  className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC] resize-none"
+                  placeholder="Brief overview of your role..."
                 />
               </div>
               <div>

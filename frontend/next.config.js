@@ -1,25 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
-  reactStrictMode: true,
-  devIndicators: false,
-  images: {
-    unoptimized: true,
-    remotePatterns: [
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '3003',
-        pathname: '/api/files/**',
-      },
-      {
-        protocol: 'http',
-        hostname: 'backend',
-        port: '3003',
-        pathname: '/api/files/**',
-      },
-    ],
+  compiler: {
+    styledComponents: true,
   },
-}
+};
 
-module.exports = nextConfig
+export default nextConfig;

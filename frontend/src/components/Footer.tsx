@@ -1,16 +1,16 @@
-import { personalInfo } from "@/config/portfolio";
-
 export default function Footer() {
   return (
-    <footer className="py-8 border-t border-primary/30 bg-background">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <p className="text-muted-foreground text-sm">
-            Designed & Built by{" "}
-            <span className="text-accent hover:underline cursor-pointer">{personalInfo.name}</span>
-          </p>
-        </div>
-      </div>
+    <footer>
+      <center>
+        <hr className="my-3 border-gray-400 opacity-15 sm:mx-auto lg:my-6 text-center" />
+        <span className="block text-sm pb-4 text-gray-500 text-center dark:text-gray-400">
+          © 2026{" "}
+          <a href="https://www.maria.portfolio" className="hover:underline">
+            EkiZR™
+          </a>
+          . All Rights Reserved.
+        </span>
+      </center>
     </footer>
   );
 }

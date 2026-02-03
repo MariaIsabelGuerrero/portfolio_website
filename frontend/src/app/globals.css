@@ -1,98 +1,187 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@custom-variant dark (&:is(.dark *));
-
-:root {
-  --background: #0f0520;
-  --foreground: #FBFAFA;
-  --card: #1a0a2e;
-  --card-foreground: #FBFAFA;
-  --popover: #1a0a2e;
-  --popover-foreground: #FBFAFA;
-  --primary: #5227FF;
-  --primary-foreground: #FFFFFF;
-  --secondary: #2d1b4e;
-  --secondary-foreground: #FFFFFF;
-  --muted: #2d1b4e;
-  --muted-foreground: #B19EEF;
-  --accent: #FF9FFC;
-  --accent-foreground: #0f0520;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --border: #5227FF;
-  --input: #2d1b4e;
-  --ring: #FF9FFC;
-  --text-light: #E2DDDD;
-  --primary-gradient-end: #8B5CF6;
-  --primary-shadow: rgba(82, 39, 255, 0.39);
-  --primary-glow: rgba(82, 39, 255, 0.5);
-  --chart-1: #8b5cf6;
-  --chart-2: #06b6d4;
-  --chart-3: #22c55e;
-  --chart-4: #f59e0b;
-  --chart-5: #ef4444;
-  --chart-6: #ec4899;
-  --chart-7: #3b82f6;
-  --chart-8: #14b8a6;
-  --radius: 0.625rem;
-  --sidebar: #0f172a;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #3b82f6;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1e293b;
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #1e3a5f;
-  --sidebar-ring: #3b82f6;
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	font-family: "Poppins", serif;
+	scroll-behavior: smooth;
+	scrollbar-width: thin;
+	scrollbar-color: rgba(99, 102, 241, 0.3) rgba(12, 5, 53, 0.356);
 }
 
-@theme inline {
-  --font-sans: 'Open Sans', 'Open Sans Fallback';
-  --font-display: 'Radio Canada', 'Radio Canada Fallback';
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
+html,
+body {
+	overflow-x: hidden;
+	background: #030014;
+	scroll-behavior: smooth !important;
 }
 
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
+@keyframes blob {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-20px);
+	}
+}
+
+.animate-blob {
+	animation: blob 8s infinite;
+}
+
+.animation-delay-2000 {
+	animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+	animation-delay: 4s;
+}
+
+/* Enhanced Custom Scrollbar Styles */
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+	background-color: transparent;
   }
-  body {
-    @apply bg-background text-foreground;
+  
+  ::-webkit-scrollbar-track {
+	background: rgba(3, 0, 20, 0.4);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+	border: 1px solid rgba(99, 102, 241, 0.1);
   }
-}
+  
+  ::-webkit-scrollbar-thumb {
+	background: rgba(99, 102, 241, 0.3);
+	backdrop-filter: blur(4px);
+	-webkit-backdrop-filter: blur(4px);
+	border-radius: 20px;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	box-shadow: 
+	  inset 0 0 20px rgba(168, 85, 247, 0.2),
+	  0 0 10px rgba(99, 102, 241, 0.2);
+	transition: all 0.3s ease;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+	background: rgba(99, 102, 241, 0.5);
+	border: 1px solid rgba(168, 85, 247, 0.3);
+	box-shadow: 
+	  inset 0 0 30px rgba(168, 85, 247, 0.3),
+	  0 0 15px rgba(99, 102, 241, 0.3);
+  }
+  
+  /* When scrollbar is in active/clicked state */
+  ::-webkit-scrollbar-thumb:active {
+	background: rgba(99, 102, 241, 0.6);
+	border: 1px solid rgba(168, 85, 247, 0.4);
+	box-shadow: 
+	  inset 0 0 40px rgba(168, 85, 247, 0.4),
+	  0 0 20px rgba(99, 102, 241, 0.4);
+  }
+  
+  ::-webkit-scrollbar-corner {
+	background: transparent;
+  }
+
+  [data-aos] {
+	will-change: transform, opacity !important;
+  }
+
+
+
+ @keyframes shine {
+  from {
+	     left: -100%;
+  }
+	  to {
+	    left: 200%;
+	   }
+	 }
+	 .animate-shine {
+   animation: shine 1.5s ease-in-out infinite;
+ }
+
+  
+/*   @media (prefers-color-scheme: dark) {
+	::-webkit-scrollbar-track {
+	  background: rgba(3, 0, 20, 0.6);
+	}
+  } */
+
+
+/* 
+  .container {
+	width: 100%;
+	height: 100%;
+  }
+  
+  .main > div {
+	position: absolute;
+	will-change: transform;
+	border-radius: 50%;
+	background: lightcoral;
+	box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
+	opacity: 0.6;
+  }
+  
+  .main > div:nth-child(1) {
+	width: 60px;
+	height: 60px;
+  }
+  
+  .main > div:nth-child(2) {
+	width: 125px;
+	height: 125px;
+  }
+  
+  .main > div:nth-child(3) {
+	width: 75px;
+	height: 75px;
+  }
+  
+  .main > div::after {
+	content: '';
+	position: absolute;
+	top: 20px;
+	left: 20px;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	background: rgba(255, 0, 0, 0.8);
+  }
+  
+  .main > div:nth-child(2)::after {
+	top: 35px;
+	left: 35px;
+	width: 35px;
+	height: 35px;
+  }
+  
+  .main > div:nth-child(3)::after {
+	top: 25px;
+	left: 25px;
+	width: 25px;
+	height: 25px;
+  }
+  
+  .main {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	filter: url('#blob');
+	overflow: hidden;
+	background: transparent;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	cursor: default;
+  } */

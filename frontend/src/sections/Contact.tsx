@@ -3,14 +3,16 @@
 import React, { useState, useEffect } from "react";
 import { Share2, User, Mail, MessageSquare, Send } from "lucide-react";
 import SocialLinks from "../components/SocialLinks";
-import Komentar from "./Testimonials";
+import Testimonials from "./Testimonials";
 import Swal from "sweetalert2";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import axios from "axios";
 import { submitMessage } from "@/lib/public-api";
+import { useLanguage } from "@/lib/i18n";
 
 const ContactPage = () => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -37,8 +39,8 @@ const ContactPage = () => {
     setIsSubmitting(true);
 
     Swal.fire({
-      title: 'Sending Message...',
-      html: 'Please wait while we send your message',
+      title: t('Sending Message...', 'Envoi du message...'),
+      html: t('Please wait while we send your message', 'Veuillez patienter pendant l\'envoi de votre message'),
       allowOutsideClick: false,
       didOpen: () => {
         Swal.showLoading();
@@ -54,7 +56,7 @@ const ContactPage = () => {
       });
 
       // Also send via FormSubmit for email notification
-      const formSubmitUrl = 'https://formsubmit.co/ekizulfarrachman@gmail.com';
+      const formSubmitUrl = 'https://formsubmit.co/mariaigs2005@gmail.com';
       const submitData = new FormData();
       submitData.append('name', formData.name);
       submitData.append('email', formData.email);
@@ -72,8 +74,8 @@ const ContactPage = () => {
       });
 
       Swal.fire({
-        title: 'Success!',
-        text: 'Your message has been sent successfully!',
+        title: t('Success!', 'Succes !'),
+        text: t('Your message has been sent successfully!', 'Votre message a ete envoye avec succes !'),
         icon: 'success',
         confirmButtonColor: '#6366f1',
         timer: 2000,
@@ -89,8 +91,8 @@ const ContactPage = () => {
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.request && error.request.status === 0) {
         Swal.fire({
-          title: 'Success!',
-          text: 'Your message has been sent successfully!',
+          title: t('Success!', 'Succes !'),
+          text: t('Your message has been sent successfully!', 'Votre message a ete envoye avec succes !'),
           icon: 'success',
           confirmButtonColor: '#6366f1',
           timer: 2000,
@@ -104,8 +106,8 @@ const ContactPage = () => {
         });
       } else {
         Swal.fire({
-          title: 'Failed!',
-          text: 'An error occurred. Please try again later.',
+          title: t('Failed!', 'Echec !'),
+          text: t('An error occurred. Please try again later.', 'Une erreur est survenue. Veuillez reessayer plus tard.'),
           icon: 'error',
           confirmButtonColor: '#6366f1'
         });
@@ -133,7 +135,7 @@ const ContactPage = () => {
               WebkitTextFillColor: "transparent",
             }}
           >
-            Contact Me
+            {t("Contact Me", "Contactez-moi")}
           </span>
         </h2>
         <p
@@ -141,7 +143,10 @@ const ContactPage = () => {
           data-aos-duration="1100"
           className="text-slate-400 max-w-2xl mx-auto text-lg md:text-xl lg:text-2xl mt-4"
         >
-          Have a question? Send me a message, and I&apos;ll get back to you soon.
+          {t(
+            "Have a question? Send me a message, and I'll get back to you soon.",
+            "Vous avez une question ? Envoyez-moi un message et je vous repondrai rapidement."
+          )}
         </p>
       </div>
 
@@ -157,10 +162,13 @@ const ContactPage = () => {
             <div className="flex justify-between items-start mb-10">
               <div>
                 <h2 className="text-4xl lg:text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]">
-                  Get in Touch
+                  {t("Get in Touch", "Prenez contact")}
                 </h2>
                 <p className="text-gray-400 text-lg lg:text-xl">
-                  Want to discuss something? Send me a message and let&apos;s talk.
+                  {t(
+                    "Want to discuss something? Send me a message and let's talk.",
+                    "Vous souhaitez discuter ? Envoyez-moi un message et parlons-en."
+                  )}
                 </p>
               </div>
               <Share2 className="w-12 h-12 text-[#6366f1] opacity-50" />
@@ -179,7 +187,7 @@ const ContactPage = () => {
                 <input
                   type="text"
                   name="name"
-                  placeholder="Your Name"
+                  placeholder={t("Your Name", "Votre nom")}
                   value={formData.name}
                   onChange={handleChange}
                   disabled={isSubmitting}
@@ -196,7 +204,7 @@ const ContactPage = () => {
                 <input
                   type="email"
                   name="email"
-                  placeholder="Your Email"
+                  placeholder={t("Your Email", "Votre e-mail")}
                   value={formData.email}
                   onChange={handleChange}
                   disabled={isSubmitting}
@@ -212,7 +220,7 @@ const ContactPage = () => {
                 <MessageSquare className="absolute left-5 top-5 w-6 h-6 text-gray-400 group-focus-within:text-[#6366f1] transition-colors" />
                 <textarea
                   name="message"
-                  placeholder="Your Message"
+                  placeholder={t("Your Message", "Votre message")}
                   value={formData.message}
                   onChange={handleChange}
                   disabled={isSubmitting}
@@ -228,7 +236,7 @@ const ContactPage = () => {
                 className="w-full bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white py-5 rounded-xl text-lg font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-[#6366f1]/20 active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 <Send className="w-6 h-6" />
-                {isSubmitting ? 'Sending...' : 'Send Message'}
+                {isSubmitting ? t('Sending...', 'Envoi...') : t('Send Message', 'Envoyer le message')}
               </button>
             </form>
 
@@ -238,7 +246,7 @@ const ContactPage = () => {
           </div>
 
           <div className="bg-white/5 backdrop-blur-xl rounded-3xl p-4 py-4 md:p-12 md:py-10 shadow-2xl transform transition-all duration-500 hover:shadow-[#6366f1]/10">
-            <Komentar />
+            <Testimonials />
           </div>
         </div>
       </div>

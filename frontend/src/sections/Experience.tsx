@@ -5,8 +5,9 @@ import { Briefcase, Calendar, MapPin, Building2, Loader2 } from 'lucide-react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { getExperience, type ExperienceData } from '@/lib/public-api';
+import { useLanguage } from '@/lib/i18n';
 
-const ExperienceCard = ({ experience, index }: { experience: ExperienceData; index: number }) => {
+const ExperienceCard = ({ experience, index, t }: { experience: ExperienceData; index: number; t: (en: string, fr: string) => string }) => {
   const isEven = index % 2 === 0;
 
   return (
@@ -21,7 +22,7 @@ const ExperienceCard = ({ experience, index }: { experience: ExperienceData; ind
 
       <div className={`flex flex-col lg:flex-row gap-8 ${isEven ? 'lg:flex-row' : 'lg:flex-row-reverse'}`}>
         {/* Content */}
-        <div className={`flex-1 ${isEven ? 'lg:text-right lg:pr-12' : 'lg:text-left lg:pl-12'}`}>
+        <div className={`flex-1 lg:text-left ${isEven ? 'lg:pr-12' : 'lg:pl-12'}`}>
           <div className={`bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 md:p-8 hover:bg-white/10 transition-all duration-300 group ${isEven ? 'lg:mr-4' : 'lg:ml-4'}`}>
             {/* Type badge */}
             {experience.type && (
@@ -34,14 +35,14 @@ const ExperienceCard = ({ experience, index }: { experience: ExperienceData; ind
               {experience.title}
             </h3>
 
-            <div className={`flex flex-wrap gap-4 mt-3 mb-4 text-gray-400 ${isEven ? 'lg:justify-end' : 'lg:justify-start'}`}>
+            <div className={`flex flex-wrap gap-4 mt-3 mb-4 text-gray-400 lg:justify-start`}>
               <div className="flex items-center gap-2">
                 <Building2 className="w-5 h-5 text-[#6366f1]" />
                 <span className="text-lg text-[#a855f7] font-medium">{experience.company}</span>
               </div>
             </div>
 
-            <div className={`flex flex-wrap gap-4 mb-4 text-gray-400 ${isEven ? 'lg:justify-end' : 'lg:justify-start'}`}>
+            <div className={`flex flex-wrap gap-4 mb-4 text-gray-400 lg:justify-start`}>
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-[#6366f1]" />
                 <span>{experience.period}</span>
@@ -62,10 +63,10 @@ const ExperienceCard = ({ experience, index }: { experience: ExperienceData; ind
 
             {experience.responsibilities && experience.responsibilities.length > 0 && (
               <div className="mt-4">
-                <h4 className={`text-white font-medium mb-3 text-lg ${isEven ? 'lg:text-right' : 'lg:text-left'}`}>Key Responsibilities:</h4>
-                <ul className={`space-y-2 ${isEven ? 'lg:text-right' : 'lg:text-left'}`}>
+                <h4 className="text-white font-medium mb-3 text-lg lg:text-left">{t("Key Responsibilities:", "Responsabilités clés:")}</h4>
+                <ul className="space-y-2 lg:text-left">
                   {experience.responsibilities.map((item, i) => (
-                    <li key={i} className={`flex items-start gap-3 text-gray-300 ${isEven ? 'lg:flex-row-reverse' : ''}`}>
+                    <li key={i} className="flex items-start gap-3 text-gray-300">
                       <span className="w-2 h-2 rounded-full bg-gradient-to-r from-[#6366f1] to-[#a855f7] mt-2 flex-shrink-0" />
                       <span>{item}</span>
                     </li>
@@ -91,6 +92,7 @@ const ExperienceCard = ({ experience, index }: { experience: ExperienceData; ind
 };
 
 const Experience = () => {
+  const { t } = useLanguage();
   const [experienceData, setExperienceData] = useState<ExperienceData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -130,14 +132,14 @@ const Experience = () => {
           data-aos="zoom-in-up"
           data-aos-duration="600"
         >
-          Experience
+          {t("Experience", "Expérience")}
         </h2>
         <p
           className="mt-4 text-gray-400 max-w-2xl mx-auto text-lg sm:text-xl lg:text-2xl"
           data-aos="zoom-in-up"
           data-aos-duration="800"
         >
-          My professional journey and work experience
+          {t("My professional journey and work experience", "Mon parcours professionnel et mon expérience de travail")}
         </p>
       </div>
 
@@ -149,7 +151,7 @@ const Experience = () => {
         </div>
 
         {experienceData.map((experience, index) => (
-          <ExperienceCard key={experience.id} experience={experience} index={index} />
+          <ExperienceCard key={experience.id} experience={experience} index={index} t={t} />
         ))}
       </div>
     </section>

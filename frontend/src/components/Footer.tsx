@@ -1,4 +1,10 @@
+'use client';
+
+import { useLanguage } from "@/lib/i18n";
+
 export default function Footer() {
+  const { t } = useLanguage();
+
   return (
     <footer>
       <center>
@@ -6,9 +12,9 @@ export default function Footer() {
         <span className="block text-sm pb-4 text-gray-500 text-center dark:text-gray-400">
           © 2026{" "}
           <a href="https://www.maria.portfolio" className="hover:underline">
-            EkiZR™
+            Maria™
           </a>
-          . All Rights Reserved.
+          . {t("All Rights Reserved.", "Tous droits réservés.")}
         </span>
       </center>
     </footer>

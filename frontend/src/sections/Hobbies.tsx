@@ -16,8 +16,8 @@ const iconMap: Record<string, React.ElementType> = {
   Bike, Mountain, Coffee, Utensils, Headphones, Tv, PenTool, Globe, Star,
 };
 
-function getIcon(iconName: string): React.ElementType {
-  return iconMap[iconName] || Heart;
+function getIcon(iconName: string): React.ElementType | null {
+  return iconMap[iconName] || null;
 }
 
 const HobbyCard = ({ hobby, index }: { hobby: HobbyData; index: number }) => {
@@ -37,7 +37,7 @@ const HobbyCard = ({ hobby, index }: { hobby: HobbyData; index: number }) => {
 
         {/* Icon */}
         <div className={`w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gradient-to-br ${color} flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500`}>
-          <Icon className="w-8 h-8 md:w-10 md:h-10 text-white" />
+          {Icon && <Icon className="w-8 h-8 md:w-10 md:h-10 text-white" />}
         </div>
 
         {/* Content */}

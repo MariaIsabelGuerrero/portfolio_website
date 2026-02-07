@@ -13,8 +13,8 @@ const Navbar = () => {
 
     const navItems = [
         { href: "#Home", label: t("Home", "Accueil") },
-        { href: "#About", label: t("About", "A propos") },
-        { href: "#Portofolio", label: "Portfolio" },
+        { href: "#About", label: t("About", "À propos") },
+        { href: "#Portfolio", label: "Portfolio" },
         { href: "#Contact", label: "Contact" },
     ];
 

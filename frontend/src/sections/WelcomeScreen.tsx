@@ -64,7 +64,7 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
       setTimeout(() => {
         onLoadingComplete?.();
       }, 1000);
-    }, 4000);
+    }, 6000);
     
     return () => clearTimeout(timer);
   }, [onLoadingComplete]);
@@ -126,7 +126,7 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
                 variants={childVariants}
               >
                 <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold space-y-2 sm:space-y-4">
-                  <div className="mb-2 sm:mb-4">
+                  <div className="mb-2 sm:mb-4 whitespace-nowrap">
                     <span data-aos="fade-right" data-aos-delay="200" className="inline-block px-2 bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent">
                       {t("Welcome", "Bienvenue")}
                     </span>{' '}
@@ -156,7 +156,7 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
                 data-aos-delay="1200"
               >
                 <a
-                  href="https://www.maria.portfolio"
+                  href="https://www.mariaguerrero.me"
                   className="inline-flex items-center gap-2 px-4 py-2 sm:px-6 sm:py-3 rounded-full relative group hover:scale-105 transition-transform duration-300"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -165,7 +165,7 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
                   <div className="relative flex items-center gap-2 text-lg sm:text-xl md:text-2xl">
                     <Globe className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
                     <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                      <TypewriterEffect text="www.eki.my.id" />
+                      <TypewriterEffect text="www.mariaguerrero.me" />
                     </span>
                   </div>
                 </a>

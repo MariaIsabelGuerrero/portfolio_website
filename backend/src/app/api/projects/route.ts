@@ -2,23 +2,13 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { db } from "@/lib/db";
 import { projects } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
 import { requireAdmin } from "@/lib/auth/require-admin";
 
 export const runtime = "nodejs";
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const featured = request.nextUrl.searchParams.get("featured");
-
-    let result;
-    if (featured === "true") {
-      result = await db.select().from(projects).where(eq(projects.featured, true));
-    } else if (featured === "false") {
-      result = await db.select().from(projects).where(eq(projects.featured, false));
-    } else {
-      result = await db.select().from(projects);
-    }
+    const result = await db.select().from(projects);
 
     return NextResponse.json({ data: result });
   } catch (error) {
@@ -33,7 +23,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { title, description, img, technologies, github, live, featured } = body;
+    const { title, description, img, technologies, github, live, keyFeatures } = body;
 
     if (!title || !description) {
       return NextResponse.json({ error: "Title and description are required" }, { status: 400 });
@@ -48,7 +38,7 @@ export async function POST(request: NextRequest) {
       technologies: technologies || [],
       github: github || "",
       live: live || "",
-      featured: featured || false,
+      keyFeatures: keyFeatures || [],
     }).returning();
 
     return NextResponse.json({ data: created }, { status: 201 });

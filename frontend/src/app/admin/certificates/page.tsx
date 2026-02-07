@@ -3,74 +3,73 @@
 import React from "react"
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Upload, FileText, Trash2, Download, Loader2 } from "lucide-react";
-import { fetchResumes, uploadResume, createResume, setActiveResume, deleteResume as apiDeleteResume, type ResumeFile } from "@/lib/api-client";
+import { Upload, Award, Trash2, Download, Loader2, FileText } from "lucide-react";
+import { fetchCertificates, uploadCertificate, createCertificate, deleteCertificate as apiDeleteCertificate, type CertificateFile } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n";
 
-export default function ResumeManagement() {
+export default function CertificateManagement() {
   const { t } = useLanguage();
-  const [resumes, setResumes] = useState<ResumeFile[]>([]);
+  const [certificates, setCertificates] = useState<CertificateFile[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const [uploadLanguage, setUploadLanguage] = useState<"en" | "fr">("en");
+  const [uploadTitle, setUploadTitle] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const loadResumes = useCallback(async () => {
+  const loadCertificates = useCallback(async () => {
     try {
-      const res = await fetchResumes(true);
-      setResumes(res.data);
+      const res = await fetchCertificates();
+      setCertificates(res.data);
     } catch (err) {
-      console.error("Failed to load resumes:", err);
+      console.error("Failed to load certificates:", err);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => { loadResumes(); }, [loadResumes]);
+  useEffect(() => { loadCertificates(); }, [loadCertificates]);
 
   const handleUpload = async (file: File) => {
-    if (!file.name.endsWith(".pdf")) return;
+    const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      setUploadError(t("Only PDF, JPG, PNG, and WEBP files are allowed", "Seuls les fichiers PDF, JPG, PNG et WEBP sont autorisés"));
+      return;
+    }
+    if (!uploadTitle.trim()) {
+      setUploadError(t("Please enter a title for the certificate", "Veuillez entrer un titre pour le certificat"));
+      return;
+    }
     setUploading(true);
     setUploadError(null);
     try {
       // Step 1: Upload file to DO Spaces
-      const uploadRes = await uploadResume(file);
-      // Step 2: Create DB record with language and set as active
-      await createResume({
-        filename: uploadRes.filename,
+      const uploadRes = await uploadCertificate(file);
+      // Step 2: Create DB record
+      await createCertificate({
+        title: uploadTitle.trim(),
         fileUrl: uploadRes.fileUrl,
-        language: uploadLanguage,
-        isActive: true,
+        fileType: uploadRes.fileType,
       });
-      await loadResumes();
+      setUploadTitle("");
+      await loadCertificates();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Upload failed";
-      console.error("Failed to upload resume:", message);
+      console.error("Failed to upload certificate:", message);
       setUploadError(message);
     } finally {
       setUploading(false);
     }
   };
 
-  const handleSetActive = async (id: string) => {
-    try {
-      await setActiveResume(id);
-      await loadResumes();
-    } catch (err) {
-      console.error("Failed to set active resume:", err);
-    }
-  };
-
   const handleDelete = async (id: string) => {
     try {
-      await apiDeleteResume(id);
+      await apiDeleteCertificate(id);
       setDeleteConfirm(null);
-      await loadResumes();
+      await loadCertificates();
     } catch (err) {
-      console.error("Failed to delete resume:", err);
+      console.error("Failed to delete certificate:", err);
     }
   };
 
@@ -103,8 +102,8 @@ export default function ResumeManagement() {
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h1 className="text-3xl font-bold text-white">{t("Resume", "CV")}</h1>
-        <p className="text-[#B19EEF] mt-1">{t("Upload and manage your resume files", "Téléchargez et gérez vos fichiers CV")}</p>
+        <h1 className="text-3xl font-bold text-white">{t("Certificates", "Certificats")}</h1>
+        <p className="text-[#B19EEF] mt-1">{t("Upload and manage your certificates", "Téléchargez et gérez vos certificats")}</p>
       </div>
 
       {/* Upload Area */}
@@ -128,19 +127,18 @@ export default function ResumeManagement() {
           )}
         </div>
         <h3 className="text-xl font-semibold text-white mb-2">
-          {uploading ? t("Uploading...", "Téléchargement...") : isDragging ? t("Drop your file here", "Déposez votre fichier ici") : t("Upload Resume", "Télécharger un CV")}
+          {uploading ? t("Uploading...", "Téléchargement...") : isDragging ? t("Drop your file here", "Déposez votre fichier ici") : t("Upload Certificate", "Télécharger un certificat")}
         </h3>
-        <p className="text-[#B19EEF] mb-4">{t("Drag and drop your PDF file here, or click to browse", "Glissez-déposez votre fichier PDF ici, ou cliquez pour parcourir")}</p>
+        <p className="text-[#B19EEF] mb-4">{t("Drag and drop your file here, or click to browse", "Glissez-déposez votre fichier ici, ou cliquez pour parcourir")}</p>
         <div className="flex items-center justify-center gap-3 mb-4">
-          <label className="text-[#B19EEF] text-sm">{t("Language:", "Langue :")}</label>
-          <select
-            value={uploadLanguage}
-            onChange={(e) => setUploadLanguage(e.target.value as "en" | "fr")}
-            className="px-4 py-2 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white focus:outline-none focus:border-[#FF9FFC]"
-          >
-            <option value="en">English</option>
-            <option value="fr">Français</option>
-          </select>
+          <label className="text-[#B19EEF] text-sm">{t("Title:", "Titre :")}</label>
+          <input
+            type="text"
+            value={uploadTitle}
+            onChange={(e) => setUploadTitle(e.target.value)}
+            placeholder={t("Certificate title", "Titre du certificat")}
+            className="px-4 py-2 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white focus:outline-none focus:border-[#FF9FFC] w-64"
+          />
         </div>
         {uploadError && (
           <div className="mb-4 px-4 py-2 bg-red-500/20 text-red-400 rounded-xl border border-red-500/30 text-sm">
@@ -151,7 +149,7 @@ export default function ResumeManagement() {
           <input
             ref={fileInputRef}
             type="file"
-            accept=".pdf"
+            accept=".pdf,.jpg,.jpeg,.png,.webp"
             className="hidden"
             onChange={handleFileSelect}
             disabled={uploading}
@@ -160,41 +158,41 @@ export default function ResumeManagement() {
             {t("Browse Files", "Parcourir les fichiers")}
           </span>
         </label>
-        <p className="text-[#B19EEF]/60 text-sm mt-4">{t("Supported format: PDF (Max 10MB)", "Format supporté: PDF (Max 10 Mo)")}</p>
+        <p className="text-[#B19EEF]/60 text-sm mt-4">{t("Supported formats: PDF, JPG, PNG, WEBP (Max 10MB)", "Formats supportés: PDF, JPG, PNG, WEBP (Max 10 Mo)")}</p>
       </div>
 
-      {/* Uploaded Resumes */}
+      {/* Uploaded Certificates */}
       <div className="bg-[#0f0520] border border-[#5227FF]/30 rounded-2xl overflow-hidden">
         <div className="p-4 border-b border-[#5227FF]/30">
-          <h2 className="text-lg font-semibold text-white">{t("Uploaded Resumes", "CV téléchargés")}</h2>
+          <h2 className="text-lg font-semibold text-white">{t("Uploaded Certificates", "Certificats téléchargés")}</h2>
         </div>
         <div className="divide-y divide-[#5227FF]/20">
-          {resumes.map((resume) => (
-            <div key={resume.id} className="p-4 flex items-center justify-between hover:bg-[#5227FF]/5">
+          {certificates.map((cert) => (
+            <div key={cert.id} className="p-4 flex items-center justify-between hover:bg-[#5227FF]/5">
               <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${resume.isActive ? "bg-[#FF9FFC]/20" : "bg-[#5227FF]/20"}`}>
-                  <FileText className={`w-6 h-6 ${resume.isActive ? "text-[#FF9FFC]" : "text-[#B19EEF]"}`} />
+                <div className="w-12 h-12 rounded-xl bg-[#5227FF]/20 flex items-center justify-center overflow-hidden">
+                  {cert.fileType === "image" ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img src={cert.fileUrl} alt={cert.title} className="w-full h-full object-cover" />
+                  ) : (
+                    <FileText className="w-6 h-6 text-[#B19EEF]" />
+                  )}
                 </div>
                 <div>
                   <div className="flex items-center gap-3">
-                    <p className="text-white font-medium">{resume.filename}</p>
+                    <p className="text-white font-medium">{cert.title}</p>
                     <span className="px-2 py-0.5 text-xs bg-[#5227FF]/20 text-[#B19EEF] rounded-full border border-[#5227FF]/30">
-                      {resume.language === "fr" ? "FR" : "EN"}
+                      {cert.fileType === "pdf" ? "PDF" : "IMG"}
                     </span>
-                    {resume.isActive && (
-                      <span className="px-2 py-0.5 text-xs bg-[#FF9FFC]/20 text-[#FF9FFC] rounded-full border border-[#FF9FFC]/30">
-                        {t("Active", "Actif")}
-                      </span>
-                    )}
                   </div>
                   <p className="text-[#B19EEF] text-sm">
-                    {t("Uploaded", "Téléchargé")} {resume.createdAt ? new Date(resume.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—"}
+                    {t("Uploaded", "Téléchargé")} {cert.createdAt ? new Date(cert.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—"}
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <a
-                  href={resume.fileUrl}
+                  href={cert.fileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2 rounded-lg bg-[#5227FF]/20 text-[#B19EEF] hover:bg-[#5227FF]/40 hover:text-white transition-colors"
@@ -202,16 +200,8 @@ export default function ResumeManagement() {
                 >
                   <Download className="w-4 h-4" />
                 </a>
-                {!resume.isActive && (
-                  <button
-                    onClick={() => handleSetActive(resume.id)}
-                    className="px-3 py-2 text-sm bg-[#5227FF]/20 text-[#FF9FFC] rounded-lg hover:bg-[#5227FF]/40 transition-colors"
-                  >
-                    {t("Set Active", "Définir comme actif")}
-                  </button>
-                )}
                 <button
-                  onClick={() => setDeleteConfirm(resume.id)}
+                  onClick={() => setDeleteConfirm(cert.id)}
                   className="p-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/40 hover:text-red-300 transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -220,9 +210,9 @@ export default function ResumeManagement() {
             </div>
           ))}
         </div>
-        {resumes.length === 0 && (
+        {certificates.length === 0 && (
           <div className="p-8 text-center text-[#B19EEF]">
-            {t("No resumes uploaded yet.", "Aucun CV téléchargé pour le moment.")}
+            {t("No certificates uploaded yet.", "Aucun certificat téléchargé pour le moment.")}
           </div>
         )}
       </div>
@@ -234,7 +224,7 @@ export default function ResumeManagement() {
             <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-4">
               <Trash2 className="w-8 h-8 text-red-400" />
             </div>
-            <h2 className="text-xl font-semibold text-white mb-2">{t("Delete Resume?", "Supprimer le CV ?")}</h2>
+            <h2 className="text-xl font-semibold text-white mb-2">{t("Delete Certificate?", "Supprimer le certificat ?")}</h2>
             <p className="text-[#B19EEF] mb-6">{t("This action cannot be undone.", "Cette action est irréversible.")}</p>
             <div className="flex gap-3">
               <button

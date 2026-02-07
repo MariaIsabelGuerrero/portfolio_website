@@ -5,6 +5,7 @@ import { MessageCircle, UserCircle2, Loader2, AlertCircle, Send, Pin, CheckCircl
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { getTestimonials, submitTestimonial, type TestimonialData } from '@/lib/public-api';
+import { useLanguage } from '@/lib/i18n';
 
 interface CommentProps {
     comment: TestimonialData;
@@ -17,7 +18,9 @@ interface CommentFormProps {
     isSubmitting: boolean;
 }
 
-const Comment = memo(({ comment, formatDate, isPinned = false }: CommentProps) => (
+const Comment = memo(({ comment, formatDate, isPinned = false }: CommentProps) => {
+    const { t } = useLanguage();
+    return (
     <div
         className={`px-4 pt-4 pb-4 rounded-xl border transition-all group hover:shadow-lg hover:-translate-y-0.5 ${
             isPinned
@@ -28,7 +31,7 @@ const Comment = memo(({ comment, formatDate, isPinned = false }: CommentProps) =
         {isPinned && (
             <div className="flex items-center gap-2 mb-3 text-indigo-400">
                 <Pin className="w-4 h-4" />
-                <span className="text-xs font-medium uppercase tracking-wide">Featured</span>
+                <span className="text-xs font-medium uppercase tracking-wide">{t("Featured", "En vedette")}</span>
             </div>
         )}
         <div className="flex items-start gap-3">
@@ -46,7 +49,7 @@ const Comment = memo(({ comment, formatDate, isPinned = false }: CommentProps) =
                             {comment.name}
                         </h4>
                         <span className="text-xs text-indigo-400">
-                            {comment.position} {comment.company && `at ${comment.company}`}
+                            {comment.position} {comment.company && `${t("at", "chez")} ${comment.company}`}
                         </span>
                     </div>
                     <span className="text-xs text-gray-400 whitespace-nowrap">
@@ -59,11 +62,13 @@ const Comment = memo(({ comment, formatDate, isPinned = false }: CommentProps) =
             </div>
         </div>
     </div>
-));
+);
+});
 
 Comment.displayName = 'Comment';
 
 const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
+    const { t } = useLanguage();
     const [newComment, setNewComment] = useState('');
     const [userName, setUserName] = useState('');
     const [position, setPosition] = useState('');
@@ -94,14 +99,14 @@ const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
         <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2" data-aos="fade-up" data-aos-duration="1000">
                 <label className="block text-sm font-medium text-white">
-                    Name <span className="text-red-400">*</span>
+                    {t("Name", "Nom")} <span className="text-red-400">*</span>
                 </label>
                 <input
                     type="text"
                     value={userName}
                     onChange={(e) => setUserName(e.target.value)}
                     maxLength={30}
-                    placeholder="Enter your name"
+                    placeholder={t("Enter your name", "Entrez votre nom")}
                     className="w-full p-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
                     required
                 />
@@ -109,14 +114,14 @@ const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
 
             <div className="space-y-2" data-aos="fade-up" data-aos-duration="1100">
                 <label className="block text-sm font-medium text-white">
-                    Position <span className="text-red-400">*</span>
+                    {t("Position", "Poste")} <span className="text-red-400">*</span>
                 </label>
                 <input
                     type="text"
                     value={position}
                     onChange={(e) => setPosition(e.target.value)}
                     maxLength={30}
-                    placeholder="e.g. Software Engineer"
+                    placeholder={t("e.g. Software Engineer", "ex: Ingenieur logiciel")}
                     className="w-full p-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
                     required
                 />
@@ -124,28 +129,28 @@ const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
 
             <div className="space-y-2" data-aos="fade-up" data-aos-duration="1200">
                 <label className="block text-sm font-medium text-white">
-                    Company <span className="text-gray-400">(optional)</span>
+                    {t("Company", "Entreprise")} <span className="text-gray-400">({t("optional", "facultatif")})</span>
                 </label>
                 <input
                     type="text"
                     value={company}
                     onChange={(e) => setCompany(e.target.value)}
                     maxLength={30}
-                    placeholder="e.g. Google"
+                    placeholder={t("e.g. Google", "ex: Google")}
                     className="w-full p-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
                 />
             </div>
 
             <div className="space-y-2" data-aos="fade-up" data-aos-duration="1300">
                 <label className="block text-sm font-medium text-white">
-                    Testimonial <span className="text-red-400">*</span>
+                    {t("Testimonial", "Témoignage")} <span className="text-red-400">*</span>
                 </label>
                 <textarea
                     ref={textareaRef}
                     value={newComment}
                     maxLength={300}
                     onChange={handleTextareaChange}
-                    placeholder="Share your experience working with me..."
+                    placeholder={t("Share your experience working with me...", "Partagez votre expérience de travail avec moi...")}
                     className="w-full p-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all resize-none min-h-[100px]"
                     required
                 />
@@ -162,12 +167,12 @@ const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
                     {isSubmitting ? (
                         <>
                             <Loader2 className="w-4 h-4 animate-spin" />
-                            <span>Submitting...</span>
+                            <span>{t("Submitting...", "Envoi...")}</span>
                         </>
                     ) : (
                         <>
                             <Send className="w-4 h-4" />
-                            <span>Submit Testimonial</span>
+                            <span>{t("Submit Testimonial", "Envoyer le témoignage")}</span>
                         </>
                     )}
                 </div>
@@ -178,7 +183,8 @@ const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
 
 CommentForm.displayName = 'CommentForm';
 
-const Komentar = () => {
+const Testimonials = () => {
+    const { t } = useLanguage();
     const [comments, setComments] = useState<TestimonialData[]>([]);
     const [pinnedComment, setPinnedComment] = useState<TestimonialData | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -221,15 +227,15 @@ const Komentar = () => {
                 company,
                 content: newComment,
             });
-            setSuccess('Thank you! Your testimonial has been submitted and is pending review.');
+            setSuccess(t('Thank you! Your testimonial has been submitted and is pending review.', 'Merci ! Votre témoignage a été soumis et est en attente de validation.'));
             setTimeout(() => setSuccess(''), 5000);
         } catch (err) {
-            setError('Failed to submit testimonial. Please try again.');
+            setError(t('Failed to submit testimonial. Please try again.', 'Échec de l\'envoi du témoignage. Veuillez réessayer.'));
             console.error('Error adding testimonial:', err);
         } finally {
             setIsSubmitting(false);
         }
-    }, []);
+    }, [t]);
 
     const formatDate = useCallback((timestamp: string) => {
         if (!timestamp) return '';
@@ -239,17 +245,17 @@ const Komentar = () => {
         const diffHours = Math.floor(diffMinutes / 60);
         const diffDays = Math.floor(diffHours / 24);
 
-        if (diffMinutes < 1) return 'Just now';
-        if (diffMinutes < 60) return `${diffMinutes}m ago`;
-        if (diffHours < 24) return `${diffHours}h ago`;
-        if (diffDays < 7) return `${diffDays}d ago`;
+        if (diffMinutes < 1) return t('Just now', 'A l\'instant');
+        if (diffMinutes < 60) return `${diffMinutes}${t('m ago', ' min')}`;
+        if (diffHours < 24) return `${diffHours}${t('h ago', ' h')}`;
+        if (diffDays < 7) return `${diffDays}${t('d ago', ' j')}`;
 
         return new Intl.DateTimeFormat('en-US', {
             year: 'numeric',
             month: 'short',
             day: 'numeric'
         }).format(date);
-    }, []);
+    }, [t]);
 
     const totalComments = comments.length + (pinnedComment ? 1 : 0);
 
@@ -261,7 +267,7 @@ const Komentar = () => {
                         <MessageCircle className="w-6 h-6 text-indigo-400" />
                     </div>
                     <h3 className="text-xl font-semibold text-white">
-                        Testimonials <span className="text-indigo-400">({totalComments})</span>
+                        {t("Testimonials", "Témoignages")} <span className="text-indigo-400">({totalComments})</span>
                     </h3>
                 </div>
             </div>
@@ -298,7 +304,7 @@ const Komentar = () => {
                     {comments.length === 0 && !pinnedComment ? (
                         <div className="text-center py-8" data-aos="fade-in">
                             <UserCircle2 className="w-12 h-12 text-indigo-400 mx-auto mb-3 opacity-50" />
-                            <p className="text-gray-400">No testimonials yet. Be the first to share your experience!</p>
+                            <p className="text-gray-400">{t("No testimonials yet. Be the first to share your experience!", "Aucun témoignage pour le moment. Soyez le premier a partager votre expérience !")}</p>
                         </div>
                     ) : (
                         comments.map((comment) => (
@@ -332,4 +338,4 @@ const Komentar = () => {
     );
 };
 
-export default Komentar;
+export default Testimonials;

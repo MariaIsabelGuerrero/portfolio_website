@@ -5,8 +5,10 @@ import React from "react"
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Plus, Pencil, Trash2, X, Search, Loader2, Upload } from "lucide-react";
 import { fetchSkills as apiFetchSkills, createSkill, updateSkill, deleteSkill as apiDeleteSkill, uploadIcon, type Skill } from "@/lib/api-client";
+import { useLanguage } from "@/lib/i18n";
 
 export default function SkillsManagement() {
+  const { t } = useLanguage();
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -99,15 +101,15 @@ export default function SkillsManagement() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Skills</h1>
-          <p className="text-[#B19EEF] mt-1">Manage your skills and expertise</p>
+          <h1 className="text-3xl font-bold text-white">{t("Skills", "Compétences")}</h1>
+          <p className="text-[#B19EEF] mt-1">{t("Manage your skills and expertise", "Gérez vos compétences et expertises")}</p>
         </div>
         <button
           onClick={openAddModal}
           className="flex items-center gap-2 px-6 py-3 bg-[#5227FF] text-white rounded-xl hover:bg-[#5227FF]/80 transition-colors shadow-lg shadow-[#5227FF]/30"
         >
           <Plus className="w-5 h-5" />
-          Add Skill
+          {t("Add Skill", "Ajouter")}
         </button>
       </div>
 
@@ -117,7 +119,7 @@ export default function SkillsManagement() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B19EEF]" />
           <input
             type="text"
-            placeholder="Search skills..."
+            placeholder={t("Search skills...", "Rechercher...")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-12 pr-4 py-3 bg-[#0f0520] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
@@ -131,9 +133,9 @@ export default function SkillsManagement() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-[#5227FF]/30">
-                <th className="text-left px-6 py-4 text-[#B19EEF] font-medium">Skill Name</th>
-                <th className="text-left px-6 py-4 text-[#B19EEF] font-medium">Icon</th>
-                <th className="text-right px-6 py-4 text-[#B19EEF] font-medium">Actions</th>
+                <th className="text-left px-6 py-4 text-[#B19EEF] font-medium">{t("Skill Name", "Nom")}</th>
+                <th className="text-left px-6 py-4 text-[#B19EEF] font-medium">{t("Icon", "Icône")}</th>
+                <th className="text-right px-6 py-4 text-[#B19EEF] font-medium">{t("Actions", "Actions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -170,7 +172,7 @@ export default function SkillsManagement() {
         </div>
         {filteredSkills.length === 0 && (
           <div className="p-8 text-center text-[#B19EEF]">
-            No skills found matching your criteria.
+            {t("No skills found matching your criteria.", "Aucune compétence trouvée.")}
           </div>
         )}
       </div>
@@ -181,7 +183,7 @@ export default function SkillsManagement() {
           <div className="bg-[#0f0520] border border-[#5227FF]/30 rounded-2xl w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-white">
-                {editingSkill ? "Edit Skill" : "Add New Skill"}
+                {editingSkill ? t("Edit Skill", "Modifier la compétence") : t("Add New Skill", "Nouvelle compétence")}
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -192,18 +194,18 @@ export default function SkillsManagement() {
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">Skill Name</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{t("Skill Name", "Nom de la compétence")}</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
                   className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
-                  placeholder="Enter skill name"
+                  placeholder={t("Enter skill name", "Nom de la compétence")}
                 />
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">Icon</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{t("Icon", "Icône")}</label>
                 {formData.icon && (
                   <div className="mb-3 flex items-center gap-3 p-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl">
                     <img src={formData.icon} alt="Icon preview" className="w-8 h-8 object-contain" />
@@ -233,16 +235,16 @@ export default function SkillsManagement() {
                   {uploading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Uploading...
+                      {t("Uploading...", "Téléchargement...")}
                     </>
                   ) : (
                     <>
                       <Upload className="w-4 h-4" />
-                      {formData.icon ? "Replace Icon" : "Upload Icon"}
+                      {formData.icon ? t("Replace Icon", "Remplacer l'icône") : t("Upload Icon", "Telecharger l'icone")}
                     </>
                   )}
                 </button>
-                <p className="text-[#B19EEF]/50 text-xs mt-1">SVG, PNG, JPG, or WebP (max 1MB)</p>
+                <p className="text-[#B19EEF]/50 text-xs mt-1">{t("SVG, PNG, JPG, or WebP (max 1MB)", "SVG, PNG, JPG ou WebP (max 1 Mo)")}</p>
               </div>
               <div className="flex gap-3 pt-4">
                 <button
@@ -250,13 +252,13 @@ export default function SkillsManagement() {
                   onClick={() => setIsModalOpen(false)}
                   className="flex-1 px-4 py-3 border border-[#5227FF]/30 text-[#B19EEF] rounded-xl hover:bg-[#5227FF]/20 transition-colors"
                 >
-                  Cancel
+                  {t("Cancel", "Annuler")}
                 </button>
                 <button
                   type="submit"
                   className="flex-1 px-4 py-3 bg-[#5227FF] text-white rounded-xl hover:bg-[#5227FF]/80 transition-colors"
                 >
-                  {editingSkill ? "Save Changes" : "Add Skill"}
+                  {editingSkill ? t("Save Changes", "Enregistrer") : t("Add Skill", "Ajouter")}
                 </button>
               </div>
             </form>
@@ -271,20 +273,20 @@ export default function SkillsManagement() {
             <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-4">
               <Trash2 className="w-8 h-8 text-red-400" />
             </div>
-            <h2 className="text-xl font-semibold text-white mb-2">Delete Skill?</h2>
-            <p className="text-[#B19EEF] mb-6">This action cannot be undone.</p>
+            <h2 className="text-xl font-semibold text-white mb-2">{t("Delete Skill?", "Supprimer la compétence?")}</h2>
+            <p className="text-[#B19EEF] mb-6">{t("This action cannot be undone.", "Cette action est irréversible.")}</p>
             <div className="flex gap-3">
               <button
                 onClick={() => setDeleteConfirm(null)}
                 className="flex-1 px-4 py-3 border border-[#5227FF]/30 text-[#B19EEF] rounded-xl hover:bg-[#5227FF]/20 transition-colors"
               >
-                Cancel
+                {t("Cancel", "Annuler")}
               </button>
               <button
                 onClick={() => handleDelete(deleteConfirm)}
                 className="flex-1 px-4 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors"
               >
-                Delete
+                {t("Delete", "Supprimer")}
               </button>
             </div>
           </div>

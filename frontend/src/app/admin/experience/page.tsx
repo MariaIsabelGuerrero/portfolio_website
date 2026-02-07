@@ -5,8 +5,10 @@ import React from "react"
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Pencil, Trash2, X, Search, Briefcase, MapPin, Loader2 } from "lucide-react";
 import { fetchExperience as apiFetchExperience, createExperience, updateExperience, deleteExperience as apiDeleteExperience, type Experience } from "@/lib/api-client";
+import { useLanguage } from "@/lib/i18n";
 
 export default function ExperienceManagement() {
+  const { t } = useLanguage();
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -109,15 +111,15 @@ export default function ExperienceManagement() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Work Experience</h1>
-          <p className="text-[#B19EEF] mt-1">Manage your professional experience</p>
+          <h1 className="text-3xl font-bold text-white">{t("Work Experience", "Expérience professionnelle")}</h1>
+          <p className="text-[#B19EEF] mt-1">{t("Manage your professional experience", "Gérez votre expérience professionnelle")}</p>
         </div>
         <button
           onClick={openAddModal}
           className="flex items-center gap-2 px-6 py-3 bg-[#5227FF] text-white rounded-xl hover:bg-[#5227FF]/80 transition-colors shadow-lg shadow-[#5227FF]/30"
         >
           <Plus className="w-5 h-5" />
-          Add Experience
+          {t("Add Experience", "Ajouter une expérience")}
         </button>
       </div>
 
@@ -126,7 +128,7 @@ export default function ExperienceManagement() {
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B19EEF]" />
         <input
           type="text"
-          placeholder="Search experience..."
+          placeholder={t("Search experience...", "Rechercher une expérience...")}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full pl-12 pr-4 py-3 bg-[#0f0520] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
@@ -194,7 +196,7 @@ export default function ExperienceManagement() {
 
       {filteredExperiences.length === 0 && (
         <div className="bg-[#0f0520] border border-[#5227FF]/30 rounded-2xl p-8 text-center text-[#B19EEF]">
-          No experience found.
+          {t("No experience found.", "Aucune expérience trouvée.")}
         </div>
       )}
 
@@ -204,7 +206,7 @@ export default function ExperienceManagement() {
           <div className="bg-[#0f0520] border border-[#5227FF]/30 rounded-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-white">
-                {editingExperience ? "Edit Experience" : "Add New Experience"}
+                {editingExperience ? t("Edit Experience", "Modifier l'expérience") : t("Add New Experience", "Ajouter une nouvelle expérience")}
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -215,81 +217,81 @@ export default function ExperienceManagement() {
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">Job Title</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{t("Job Title", "Intitulé du poste")}</label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   required
                   className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
-                  placeholder="Software Developer"
+                  placeholder={t("Software Developer", "Développeur logiciel")}
                 />
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">Company</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{t("Company", "Entreprise")}</label>
                 <input
                   type="text"
                   value={formData.company}
                   onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                   required
                   className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
-                  placeholder="Company Name"
+                  placeholder={t("Company Name", "Nom de l'entreprise")}
                 />
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">Location</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{t("Location", "Localisation")}</label>
                 <input
                   type="text"
                   value={formData.location}
                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                   className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
-                  placeholder="Remote, City, Country"
+                  placeholder={t("Remote, City, Country", "Télétravail, Ville, Pays")}
                 />
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">Period</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{t("Period", "Période")}</label>
                 <input
                   type="text"
                   value={formData.period}
                   onChange={(e) => setFormData({ ...formData, period: e.target.value })}
                   required
                   className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
-                  placeholder="2022 - Present"
+                  placeholder={t("2022 - Present", "2022 - Présent")}
                 />
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">Employment Type</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{t("Employment Type", "Type d'emploi")}</label>
                 <select
                   value={formData.type}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                   className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white focus:outline-none focus:border-[#FF9FFC]"
                 >
-                  <option value="">Select type</option>
-                  <option value="Full-time">Full-time</option>
-                  <option value="Part-time">Part-time</option>
-                  <option value="Freelance">Freelance</option>
-                  <option value="Internship">Internship</option>
-                  <option value="Contract">Contract</option>
+                  <option value="">{t("Select type", "Sélectionner le type")}</option>
+                  <option value="Full-time">{t("Full-time", "Temps plein")}</option>
+                  <option value="Part-time">{t("Part-time", "Temps partiel")}</option>
+                  <option value="Freelance">{t("Freelance", "Freelance")}</option>
+                  <option value="Internship">{t("Internship", "Stage")}</option>
+                  <option value="Contract">{t("Contract", "Contrat")}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">Description</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{t("Description", "Description")}</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={2}
                   className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC] resize-none"
-                  placeholder="Brief overview of your role..."
+                  placeholder={t("Brief overview of your role...", "Bref aperçu de votre rôle...")}
                 />
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">Responsibilities (one per line)</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{t("Responsibilities (one per line)", "Responsabilités (une par ligne)")}</label>
                 <textarea
                   value={formData.responsibilities}
                   onChange={(e) => setFormData({ ...formData, responsibilities: e.target.value })}
                   rows={4}
                   className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC] resize-none"
-                  placeholder="Developed web applications&#10;Collaborated with teams&#10;..."
+                  placeholder={t("Developed web applications\nCollaborated with teams\n...", "Développé des applications web\nCollaboré avec des équipes\n...")}
                 />
               </div>
               <div className="flex gap-3 pt-4">
@@ -298,13 +300,13 @@ export default function ExperienceManagement() {
                   onClick={() => setIsModalOpen(false)}
                   className="flex-1 px-4 py-3 border border-[#5227FF]/30 text-[#B19EEF] rounded-xl hover:bg-[#5227FF]/20 transition-colors"
                 >
-                  Cancel
+                  {t("Cancel", "Annuler")}
                 </button>
                 <button
                   type="submit"
                   className="flex-1 px-4 py-3 bg-[#5227FF] text-white rounded-xl hover:bg-[#5227FF]/80 transition-colors"
                 >
-                  {editingExperience ? "Save Changes" : "Add Experience"}
+                  {editingExperience ? t("Save Changes", "Enregistrer") : t("Add Experience", "Ajouter l'expérience")}
                 </button>
               </div>
             </form>
@@ -319,20 +321,20 @@ export default function ExperienceManagement() {
             <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-4">
               <Trash2 className="w-8 h-8 text-red-400" />
             </div>
-            <h2 className="text-xl font-semibold text-white mb-2">Delete Experience?</h2>
-            <p className="text-[#B19EEF] mb-6">This action cannot be undone.</p>
+            <h2 className="text-xl font-semibold text-white mb-2">{t("Delete Experience?", "Supprimer l'expérience ?")}</h2>
+            <p className="text-[#B19EEF] mb-6">{t("This action cannot be undone.", "Cette action est irréversible.")}</p>
             <div className="flex gap-3">
               <button
                 onClick={() => setDeleteConfirm(null)}
                 className="flex-1 px-4 py-3 border border-[#5227FF]/30 text-[#B19EEF] rounded-xl hover:bg-[#5227FF]/20 transition-colors"
               >
-                Cancel
+                {t("Cancel", "Annuler")}
               </button>
               <button
                 onClick={() => handleDelete(deleteConfirm)}
                 className="flex-1 px-4 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors"
               >
-                Delete
+                {t("Delete", "Supprimer")}
               </button>
             </div>
           </div>

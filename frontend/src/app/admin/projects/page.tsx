@@ -5,12 +5,13 @@ import React from "react"
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Plus, Pencil, Trash2, X, Search, ExternalLink, Github, Loader2, Upload } from "lucide-react";
 import { fetchProjects as apiFetchProjects, createProject, updateProject, deleteProject as apiDeleteProject, uploadProjectImage, type Project } from "@/lib/api-client";
+import { useLanguage } from "@/lib/i18n";
 
 export default function ProjectsManagement() {
+  const { t } = useLanguage();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterFeatured, setFilterFeatured] = useState<"all" | "featured" | "other">("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [formData, setFormData] = useState({
@@ -20,7 +21,7 @@ export default function ProjectsManagement() {
     technologies: "",
     github: "",
     live: "",
-    featured: false,
+    keyFeatures: "",
   });
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -40,12 +41,7 @@ export default function ProjectsManagement() {
   useEffect(() => { loadProjects(); }, [loadProjects]);
 
   const filteredProjects = projects.filter((project) => {
-    const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFeatured = 
-      filterFeatured === "all" || 
-      (filterFeatured === "featured" && project.featured) ||
-      (filterFeatured === "other" && !project.featured);
-    return matchesSearch && matchesFeatured;
+    return project.title.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
   const openAddModal = () => {
@@ -57,7 +53,7 @@ export default function ProjectsManagement() {
       technologies: "",
       github: "",
       live: "",
-      featured: false,
+      keyFeatures: "",
     });
     setIsModalOpen(true);
   };
@@ -71,7 +67,7 @@ export default function ProjectsManagement() {
       technologies: project.technologies.join(", "),
       github: project.github,
       live: project.live,
-      featured: project.featured,
+      keyFeatures: (project.keyFeatures || []).join("\n"),
     });
     setIsModalOpen(true);
   };
@@ -100,7 +96,7 @@ export default function ProjectsManagement() {
       technologies: formData.technologies.split(",").map((t) => t.trim()).filter(Boolean),
       github: formData.github,
       live: formData.live,
-      featured: formData.featured,
+      keyFeatures: formData.keyFeatures.split("\n").map((f) => f.trim()).filter(Boolean),
     };
 
     try {
@@ -139,15 +135,15 @@ export default function ProjectsManagement() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Projects</h1>
-          <p className="text-[#B19EEF] mt-1">Manage your portfolio projects</p>
+          <h1 className="text-3xl font-bold text-white">{t("Projects", "Projets")}</h1>
+          <p className="text-[#B19EEF] mt-1">{t("Manage your portfolio projects", "Gérez vos projets de portfolio")}</p>
         </div>
         <button
           onClick={openAddModal}
           className="flex items-center gap-2 px-6 py-3 bg-[#5227FF] text-white rounded-xl hover:bg-[#5227FF]/80 transition-colors shadow-lg shadow-[#5227FF]/30"
         >
           <Plus className="w-5 h-5" />
-          Add Project
+          {t("Add Project", "Ajouter un projet")}
         </button>
       </div>
 
@@ -157,27 +153,18 @@ export default function ProjectsManagement() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B19EEF]" />
           <input
             type="text"
-            placeholder="Search projects..."
+            placeholder={t("Search projects...", "Rechercher des projets...")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-12 pr-4 py-3 bg-[#0f0520] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
           />
         </div>
-        <select
-          value={filterFeatured}
-          onChange={(e) => setFilterFeatured(e.target.value as "all" | "featured" | "other")}
-          className="px-4 py-3 bg-[#0f0520] border border-[#5227FF]/30 rounded-xl text-white focus:outline-none focus:border-[#FF9FFC]"
-        >
-          <option value="all">All Projects</option>
-          <option value="featured">Featured</option>
-          <option value="other">Other</option>
-        </select>
       </div>
 
       {/* Projects Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {filteredProjects.map((project) => (
-          <div 
+          <div
             key={project.id}
             className="bg-[#0f0520] border border-[#5227FF]/30 rounded-2xl p-6 hover:border-[#FF9FFC]/50 transition-all"
           >
@@ -185,11 +172,6 @@ export default function ProjectsManagement() {
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
                   <h3 className="text-xl font-semibold text-white">{project.title}</h3>
-                  {project.featured && (
-                    <span className="px-2 py-1 text-xs bg-[#FF9FFC]/20 text-[#FF9FFC] rounded-full border border-[#FF9FFC]/30">
-                      Featured
-                    </span>
-                  )}
                 </div>
                 <p className="text-[#B19EEF] text-sm line-clamp-2">{project.description}</p>
               </div>
@@ -197,7 +179,7 @@ export default function ProjectsManagement() {
 
             <div className="flex flex-wrap gap-2 mb-4">
               {project.technologies.map((tech, index) => (
-                <span 
+                <span
                   key={index}
                   className="px-3 py-1 text-xs bg-[#5227FF]/20 text-[#B19EEF] rounded-full border border-[#5227FF]/30"
                 >
@@ -208,13 +190,13 @@ export default function ProjectsManagement() {
 
             <div className="flex items-center justify-between pt-4 border-t border-[#5227FF]/20">
               <div className="flex items-center gap-3">
-                <a 
+                <a
                   href={project.github}
                   className="p-2 rounded-lg bg-[#5227FF]/20 text-[#B19EEF] hover:bg-[#5227FF]/40 hover:text-white transition-colors"
                 >
                   <Github className="w-4 h-4" />
                 </a>
-                <a 
+                <a
                   href={project.live}
                   className="p-2 rounded-lg bg-[#5227FF]/20 text-[#B19EEF] hover:bg-[#5227FF]/40 hover:text-white transition-colors"
                 >
@@ -242,7 +224,7 @@ export default function ProjectsManagement() {
 
       {filteredProjects.length === 0 && (
         <div className="bg-[#0f0520] border border-[#5227FF]/30 rounded-2xl p-8 text-center text-[#B19EEF]">
-          No projects found matching your criteria.
+          {t("No projects found matching your criteria.", "Aucun projet trouvé correspondant à vos critères.")}
         </div>
       )}
 
@@ -252,7 +234,7 @@ export default function ProjectsManagement() {
           <div className="bg-[#0f0520] border border-[#5227FF]/30 rounded-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-white">
-                {editingProject ? "Edit Project" : "Add New Project"}
+                {editingProject ? t("Edit Project", "Modifier le projet") : t("Add New Project", "Ajouter un nouveau projet")}
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -263,29 +245,29 @@ export default function ProjectsManagement() {
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">Project Title</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{t("Project Title", "Titre du projet")}</label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   required
                   className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
-                  placeholder="Enter project title"
+                  placeholder={t("Enter project title", "Entrez le titre du projet")}
                 />
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">Description</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{t("Description", "Description")}</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   required
                   rows={3}
                   className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC] resize-none"
-                  placeholder="Describe your project"
+                  placeholder={t("Describe your project", "Décrivez votre projet")}
                 />
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">Project Image</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{t("Project Image", "Image du projet")}</label>
                 {formData.img && (
                   <div className="mb-3 flex items-center gap-3 p-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl">
                     <img src={formData.img} alt="Project preview" className="w-16 h-10 object-cover rounded" />
@@ -315,19 +297,19 @@ export default function ProjectsManagement() {
                   {uploading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Uploading...
+                      {t("Uploading...", "Téléchargement...")}
                     </>
                   ) : (
                     <>
                       <Upload className="w-4 h-4" />
-                      {formData.img ? "Replace Image" : "Upload Image"}
+                      {formData.img ? t("Replace Image", "Remplacer l'image") : t("Upload Image", "Télécharger une image")}
                     </>
                   )}
                 </button>
-                <p className="text-[#B19EEF]/50 text-xs mt-1">PNG, JPG, WebP, or SVG (max 5MB)</p>
+                <p className="text-[#B19EEF]/50 text-xs mt-1">{t("PNG, JPG, WebP, or SVG (max 5MB)", "PNG, JPG, WebP ou SVG (max 5 Mo)")}</p>
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">Technologies (comma-separated)</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{t("Technologies (comma-separated)", "Technologies (séparées par des virgules)")}</label>
                 <input
                   type="text"
                   value={formData.technologies}
@@ -336,9 +318,19 @@ export default function ProjectsManagement() {
                   placeholder="React, TypeScript, Node.js"
                 />
               </div>
+              <div>
+                <label className="block text-[#B19EEF] text-sm mb-2">{t("Key Features (one per line)", "Fonctionnalités clés (une par ligne)")}</label>
+                <textarea
+                  value={formData.keyFeatures}
+                  onChange={(e) => setFormData({ ...formData, keyFeatures: e.target.value })}
+                  rows={3}
+                  className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC] resize-none"
+                  placeholder={t("Enter each feature on a new line", "Entrez chaque fonctionnalité sur une nouvelle ligne")}
+                />
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[#B19EEF] text-sm mb-2">GitHub URL</label>
+                  <label className="block text-[#B19EEF] text-sm mb-2">{t("GitHub URL", "URL GitHub")}</label>
                   <input
                     type="url"
                     value={formData.github}
@@ -348,7 +340,7 @@ export default function ProjectsManagement() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[#B19EEF] text-sm mb-2">Live URL</label>
+                  <label className="block text-[#B19EEF] text-sm mb-2">{t("Live URL", "URL en direct")}</label>
                   <input
                     type="url"
                     value={formData.live}
@@ -358,29 +350,19 @@ export default function ProjectsManagement() {
                   />
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id="featured"
-                  checked={formData.featured}
-                  onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
-                  className="w-5 h-5 rounded border-[#5227FF]/30 bg-[#0a0314] text-[#5227FF] focus:ring-[#FF9FFC]"
-                />
-                <label htmlFor="featured" className="text-[#B19EEF]">Featured Project</label>
-              </div>
               <div className="flex gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
                   className="flex-1 px-4 py-3 border border-[#5227FF]/30 text-[#B19EEF] rounded-xl hover:bg-[#5227FF]/20 transition-colors"
                 >
-                  Cancel
+                  {t("Cancel", "Annuler")}
                 </button>
                 <button
                   type="submit"
                   className="flex-1 px-4 py-3 bg-[#5227FF] text-white rounded-xl hover:bg-[#5227FF]/80 transition-colors"
                 >
-                  {editingProject ? "Save Changes" : "Add Project"}
+                  {editingProject ? t("Save Changes", "Enregistrer") : t("Add Project", "Ajouter le projet")}
                 </button>
               </div>
             </form>
@@ -395,20 +377,20 @@ export default function ProjectsManagement() {
             <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-4">
               <Trash2 className="w-8 h-8 text-red-400" />
             </div>
-            <h2 className="text-xl font-semibold text-white mb-2">Delete Project?</h2>
-            <p className="text-[#B19EEF] mb-6">This action cannot be undone.</p>
+            <h2 className="text-xl font-semibold text-white mb-2">{t("Delete Project?", "Supprimer le projet ?")}</h2>
+            <p className="text-[#B19EEF] mb-6">{t("This action cannot be undone.", "Cette action est irréversible.")}</p>
             <div className="flex gap-3">
               <button
                 onClick={() => setDeleteConfirm(null)}
                 className="flex-1 px-4 py-3 border border-[#5227FF]/30 text-[#B19EEF] rounded-xl hover:bg-[#5227FF]/20 transition-colors"
               >
-                Cancel
+                {t("Cancel", "Annuler")}
               </button>
               <button
                 onClick={() => handleDelete(deleteConfirm)}
                 className="flex-1 px-4 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors"
               >
-                Delete
+                {t("Delete", "Supprimer")}
               </button>
             </div>
           </div>

@@ -18,6 +18,7 @@ import {
   Loader2
 } from "lucide-react";
 import { fetchTestimonials as apiFetchTestimonials, updateTestimonialStatus as apiUpdateStatus, updateTestimonialPin as apiUpdatePin, deleteTestimonial as apiDeleteTestimonial, type Testimonial } from "@/lib/api-client";
+import { useLanguage } from "@/lib/i18n";
 
 type TestimonialStatus = "pending" | "approved" | "rejected";
 
@@ -46,6 +47,13 @@ const statusConfig = {
 };
 
 export default function TestimonialsPage() {
+  const { t } = useLanguage();
+  const statusLabelsFr: Record<TestimonialStatus, string> = {
+    pending: "En attente",
+    approved: "Approuvé",
+    rejected: "Rejeté",
+  };
+
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -67,13 +75,13 @@ export default function TestimonialsPage() {
   useEffect(() => { loadTestimonials(); }, [loadTestimonials]);
 
   const filteredTestimonials = testimonials.filter(t => {
-    const matchesSearch = 
+    const matchesSearch =
       t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       t.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
       t.content.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     const matchesFilter = filterStatus === "all" || t.status === filterStatus;
-    
+
     return matchesSearch && matchesFilter;
   });
 
@@ -136,9 +144,12 @@ export default function TestimonialsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Testimonials</h1>
+          <h1 className="text-2xl font-bold text-white">{t("Testimonials", "Témoignages")}</h1>
           <p className="text-[#B19EEF] mt-1">
-            {pendingCount} pending review | {approvedCount} approved
+            {t(
+              `${pendingCount} pending review | ${approvedCount} approved`,
+              `${pendingCount} en attente | ${approvedCount} approuvé${approvedCount !== 1 ? "s" : ""}`
+            )}
           </p>
         </div>
       </div>
@@ -152,7 +163,7 @@ export default function TestimonialsPage() {
             </div>
             <div>
               <p className="text-2xl font-bold text-white">{pendingCount}</p>
-              <p className="text-sm text-[#B19EEF]">Pending</p>
+              <p className="text-sm text-[#B19EEF]">{t("Pending", "En attente")}</p>
             </div>
           </div>
         </div>
@@ -163,7 +174,7 @@ export default function TestimonialsPage() {
             </div>
             <div>
               <p className="text-2xl font-bold text-white">{approvedCount}</p>
-              <p className="text-sm text-[#B19EEF]">Approved</p>
+              <p className="text-sm text-[#B19EEF]">{t("Approved", "Approuvé")}</p>
             </div>
           </div>
         </div>
@@ -174,7 +185,7 @@ export default function TestimonialsPage() {
             </div>
             <div>
               <p className="text-2xl font-bold text-white">{testimonials.filter(t => t.status === "rejected").length}</p>
-              <p className="text-sm text-[#B19EEF]">Rejected</p>
+              <p className="text-sm text-[#B19EEF]">{t("Rejected", "Rejeté")}</p>
             </div>
           </div>
         </div>
@@ -186,7 +197,7 @@ export default function TestimonialsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B19EEF]" />
           <input
             type="text"
-            placeholder="Search testimonials..."
+            placeholder={t("Search testimonials...", "Rechercher des témoignages...")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-3 bg-[#0f0520] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC] transition-colors"
@@ -199,10 +210,10 @@ export default function TestimonialsPage() {
             onChange={(e) => setFilterStatus(e.target.value as "all" | TestimonialStatus)}
             className="px-4 py-3 bg-[#0f0520] border border-[#5227FF]/30 rounded-xl text-white focus:outline-none focus:border-[#FF9FFC] transition-colors"
           >
-            <option value="all">All Testimonials</option>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
+            <option value="all">{t("All Testimonials", "Tous les témoignages")}</option>
+            <option value="pending">{t("Pending", "En attente")}</option>
+            <option value="approved">{t("Approved", "Approuvé")}</option>
+            <option value="rejected">{t("Rejected", "Rejeté")}</option>
           </select>
         </div>
       </div>
@@ -212,13 +223,13 @@ export default function TestimonialsPage() {
         {filteredTestimonials.length === 0 ? (
           <div className="bg-[#0f0520] border border-[#5227FF]/30 rounded-2xl p-12 text-center">
             <Quote className="w-12 h-12 text-[#5227FF]/50 mx-auto mb-4" />
-            <p className="text-[#B19EEF]">No testimonials found</p>
+            <p className="text-[#B19EEF]">{t("No testimonials found", "Aucun témoignage trouvé")}</p>
           </div>
         ) : (
           filteredTestimonials.map((testimonial) => {
             const status = statusConfig[testimonial.status];
             const StatusIcon = status.icon;
-            
+
             return (
               <motion.div
                 key={testimonial.id}
@@ -240,25 +251,25 @@ export default function TestimonialsPage() {
                       <h3 className="font-semibold text-white">{testimonial.name}</h3>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${status.bgColor} ${status.color}`}>
                         <StatusIcon className="w-3 h-3" />
-                        {status.label}
+                        {t(status.label, statusLabelsFr[testimonial.status])}
                       </span>
                       {testimonial.isPinned && (
                         <span className="px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 bg-[#FF9FFC]/20 text-[#FF9FFC]">
                           <Pin className="w-3 h-3" />
-                          Pinned
+                          {t("Pinned", "Épinglé")}
                         </span>
                       )}
                     </div>
                     <p className="text-sm text-[#B19EEF] mb-3 flex items-center gap-2">
                       <Briefcase className="w-4 h-4" />
-                      {testimonial.position} at {testimonial.company}
+                      {testimonial.position} {t("at", "chez")} {testimonial.company}
                     </p>
                     <p className="text-[#B19EEF]/80 mb-4 line-clamp-3">
                       &ldquo;{testimonial.content}&rdquo;
                     </p>
                     <div className="flex items-center gap-2 text-xs text-[#B19EEF]/60">
                       <Clock className="w-3 h-3" />
-                      Submitted {formatDate(testimonial.date)}
+                      {t("Submitted", "Soumis le")} {formatDate(testimonial.date)}
                     </div>
                   </div>
 
@@ -270,7 +281,7 @@ export default function TestimonialsPage() {
                         className="flex items-center gap-2 px-4 py-2 bg-green-500/20 border border-green-500/50 rounded-xl text-green-400 hover:bg-green-500/30 transition-colors"
                       >
                         <Check className="w-4 h-4" />
-                        <span className="text-sm">Approve</span>
+                        <span className="text-sm">{t("Approve", "Approuver")}</span>
                       </button>
                     )}
                     {testimonial.status !== "rejected" && (
@@ -279,7 +290,7 @@ export default function TestimonialsPage() {
                         className="flex items-center gap-2 px-4 py-2 bg-red-500/20 border border-red-500/50 rounded-xl text-red-400 hover:bg-red-500/30 transition-colors"
                       >
                         <X className="w-4 h-4" />
-                        <span className="text-sm">Reject</span>
+                        <span className="text-sm">{t("Reject", "Rejeter")}</span>
                       </button>
                     )}
                     <button
@@ -291,14 +302,14 @@ export default function TestimonialsPage() {
                       }`}
                     >
                       <Pin className="w-4 h-4" />
-                      <span className="text-sm">{testimonial.isPinned ? "Unpin" : "Pin"}</span>
+                      <span className="text-sm">{testimonial.isPinned ? t("Unpin", "Désépingler") : t("Pin", "Épingler")}</span>
                     </button>
                     <button
                       onClick={() => setDeleteConfirm(testimonial.id)}
                       className="flex items-center gap-2 px-4 py-2 bg-[#5227FF]/20 border border-[#5227FF]/50 rounded-xl text-[#B19EEF] hover:text-white hover:border-[#FF9FFC] transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
-                      <span className="text-sm">Delete</span>
+                      <span className="text-sm">{t("Delete", "Supprimer")}</span>
                     </button>
                   </div>
                 </div>
@@ -325,22 +336,22 @@ export default function TestimonialsPage() {
               className="bg-[#0f0520] border border-[#5227FF]/30 rounded-2xl p-6 w-full max-w-md"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-xl font-bold text-white mb-2">Delete Testimonial?</h3>
+              <h3 className="text-xl font-bold text-white mb-2">{t("Delete Testimonial?", "Supprimer le témoignage ?")}</h3>
               <p className="text-[#B19EEF] mb-6">
-                This action cannot be undone. The testimonial will be permanently removed.
+                {t("This action cannot be undone. The testimonial will be permanently removed.", "Cette action est irréversible. Le témoignage sera définitivement supprimé.")}
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setDeleteConfirm(null)}
                   className="flex-1 px-4 py-3 bg-[#5227FF]/20 border border-[#5227FF]/50 rounded-xl text-white hover:border-[#FF9FFC] transition-colors"
                 >
-                  Cancel
+                  {t("Cancel", "Annuler")}
                 </button>
                 <button
                   onClick={() => deleteTestimonial(deleteConfirm)}
                   className="flex-1 px-4 py-3 bg-red-500 rounded-xl text-white hover:bg-red-600 transition-colors"
                 >
-                  Delete
+                  {t("Delete", "Supprimer")}
                 </button>
               </div>
             </motion.div>

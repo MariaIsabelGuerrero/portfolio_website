@@ -19,7 +19,8 @@ import {
   LogOut,
   ChevronLeft,
   MessageSquare,
-  Quote
+  Quote,
+  Award
 } from "lucide-react";
 import { useAdminAccess } from "@/lib/hooks/useAdminAccess";
 import { authClient } from "@/lib/auth-client";
@@ -28,15 +29,16 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 
 const sidebarLinks = [
   { nameEn: "Dashboard", nameFr: "Tableau de bord", href: "/admin", icon: LayoutDashboard },
-  { nameEn: "Skills", nameFr: "Competences", href: "/admin/skills", icon: Lightbulb },
+  { nameEn: "Skills", nameFr: "Compétences", href: "/admin/skills", icon: Lightbulb },
   { nameEn: "Projects", nameFr: "Projets", href: "/admin/projects", icon: FolderKanban },
-  { nameEn: "Experience", nameFr: "Experience", href: "/admin/experience", icon: Briefcase },
+  { nameEn: "Experience", nameFr: "Expérience", href: "/admin/experience", icon: Briefcase },
   { nameEn: "Education", nameFr: "Formation", href: "/admin/education", icon: GraduationCap },
   { nameEn: "Resume", nameFr: "CV", href: "/admin/resume", icon: FileText },
+  { nameEn: "Certificates", nameFr: "Certificats", href: "/admin/certificates", icon: Award },
   { nameEn: "Contact", nameFr: "Contact", href: "/admin/contact", icon: Mail },
   { nameEn: "Hobbies", nameFr: "Loisirs", href: "/admin/hobbies", icon: Heart },
   { nameEn: "Messages", nameFr: "Messages", href: "/admin/messages", icon: MessageSquare },
-  { nameEn: "Testimonials", nameFr: "Temoignages", href: "/admin/testimonials", icon: Quote },
+  { nameEn: "Testimonials", nameFr: "Témoignages", href: "/admin/testimonials", icon: Quote },
 ];
 
 export default function AdminLayout({
@@ -172,7 +174,7 @@ export default function AdminLayout({
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[#FF9FFC] hover:bg-red-500/20 hover:text-red-400 transition-all"
           >
             <LogOut className="w-5 h-5 flex-shrink-0" />
-            {sidebarOpen && <span className="font-medium">{t("Logout", "Deconnexion")}</span>}
+            {sidebarOpen && <span className="font-medium">{t("Logout", "Déconnexion")}</span>}
           </button>
         </div>
       </aside>

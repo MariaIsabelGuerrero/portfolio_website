@@ -16,8 +16,10 @@ import {
   Loader2
 } from "lucide-react";
 import { fetchMessages as apiFetchMessages, markMessageRead as apiMarkMessageRead, deleteMessage as apiDeleteMessage, type Message } from "@/lib/api-client";
+import { useLanguage } from "@/lib/i18n";
 
 export default function MessagesPage() {
+  const { t } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -43,12 +45,12 @@ export default function MessagesPage() {
       msg.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       msg.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
       msg.message.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesFilter = 
+
+    const matchesFilter =
       filterStatus === "all" ||
       (filterStatus === "read" && msg.read) ||
       (filterStatus === "unread" && !msg.read);
-    
+
     return matchesSearch && matchesFilter;
   });
 
@@ -116,9 +118,12 @@ export default function MessagesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Messages</h1>
+          <h1 className="text-2xl font-bold text-white">{t("Messages", "Messages")}</h1>
           <p className="text-[#B19EEF] mt-1">
-            {unreadCount} unread message{unreadCount !== 1 ? "s" : ""}
+            {t(
+              `${unreadCount} unread message${unreadCount !== 1 ? "s" : ""}`,
+              `${unreadCount} message${unreadCount !== 1 ? "s" : ""} non lu${unreadCount !== 1 ? "s" : ""}`
+            )}
           </p>
         </div>
       </div>
@@ -129,7 +134,7 @@ export default function MessagesPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B19EEF]" />
           <input
             type="text"
-            placeholder="Search messages..."
+            placeholder={t("Search messages...", "Rechercher des messages...")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-3 bg-[#0f0520] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC] transition-colors"
@@ -142,9 +147,9 @@ export default function MessagesPage() {
             onChange={(e) => setFilterStatus(e.target.value as "all" | "read" | "unread")}
             className="px-4 py-3 bg-[#0f0520] border border-[#5227FF]/30 rounded-xl text-white focus:outline-none focus:border-[#FF9FFC] transition-colors"
           >
-            <option value="all">All Messages</option>
-            <option value="unread">Unread</option>
-            <option value="read">Read</option>
+            <option value="all">{t("All Messages", "Tous les messages")}</option>
+            <option value="unread">{t("Unread", "Non lus")}</option>
+            <option value="read">{t("Read", "Lus")}</option>
           </select>
         </div>
       </div>
@@ -154,7 +159,7 @@ export default function MessagesPage() {
         {filteredMessages.length === 0 ? (
           <div className="p-12 text-center">
             <Mail className="w-12 h-12 text-[#5227FF]/50 mx-auto mb-4" />
-            <p className="text-[#B19EEF]">No messages found</p>
+            <p className="text-[#B19EEF]">{t("No messages found", "Aucun message trouvé")}</p>
           </div>
         ) : (
           <div className="divide-y divide-[#5227FF]/20">
@@ -200,14 +205,14 @@ export default function MessagesPage() {
                     <button
                       onClick={() => openMessage(message)}
                       className="p-2 rounded-lg hover:bg-[#5227FF]/20 text-[#B19EEF] hover:text-white transition-colors"
-                      title="View message"
+                      title={t("View message", "Voir le message")}
                     >
                       <Eye className="w-5 h-5" />
                     </button>
                     <button
                       onClick={() => setDeleteConfirm(message.id)}
                       className="p-2 rounded-lg hover:bg-red-500/20 text-[#B19EEF] hover:text-red-400 transition-colors"
-                      title="Delete message"
+                      title={t("Delete message", "Supprimer le message")}
                     >
                       <Trash2 className="w-5 h-5" />
                     </button>
@@ -238,7 +243,7 @@ export default function MessagesPage() {
             >
               {/* Modal Header */}
               <div className="p-6 border-b border-[#5227FF]/30 flex items-center justify-between">
-                <h2 className="text-xl font-bold text-white">Message Details</h2>
+                <h2 className="text-xl font-bold text-white">{t("Message Details", "Détails du message")}</h2>
                 <button
                   onClick={() => setSelectedMessage(null)}
                   className="p-2 rounded-lg hover:bg-[#5227FF]/20 text-[#B19EEF] hover:text-white transition-colors"
@@ -254,21 +259,21 @@ export default function MessagesPage() {
                   <div className="flex items-center gap-3 p-4 bg-[#5227FF]/10 rounded-xl">
                     <User className="w-5 h-5 text-[#FF9FFC]" />
                     <div>
-                      <p className="text-xs text-[#B19EEF]">Name</p>
+                      <p className="text-xs text-[#B19EEF]">{t("Name", "Nom")}</p>
                       <p className="text-white font-medium">{selectedMessage.name}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-4 bg-[#5227FF]/10 rounded-xl">
                     <Mail className="w-5 h-5 text-[#FF9FFC]" />
                     <div>
-                      <p className="text-xs text-[#B19EEF]">Email</p>
+                      <p className="text-xs text-[#B19EEF]">{t("Email", "E-mail")}</p>
                       <p className="text-white font-medium">{selectedMessage.email}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-4 bg-[#5227FF]/10 rounded-xl">
                     <Clock className="w-5 h-5 text-[#FF9FFC]" />
                     <div>
-                      <p className="text-xs text-[#B19EEF]">Received</p>
+                      <p className="text-xs text-[#B19EEF]">{t("Received", "Reçu")}</p>
                       <p className="text-white font-medium">{formatDate(selectedMessage.date)}</p>
                     </div>
                   </div>
@@ -276,7 +281,7 @@ export default function MessagesPage() {
 
                 {/* Message */}
                 <div>
-                  <p className="text-sm text-[#B19EEF] mb-2">Message</p>
+                  <p className="text-sm text-[#B19EEF] mb-2">{t("Message", "Message")}</p>
                   <div className="p-4 bg-[#5227FF]/10 rounded-xl">
                     <p className="text-white leading-relaxed">{selectedMessage.message}</p>
                   </div>
@@ -296,13 +301,15 @@ export default function MessagesPage() {
                     }}
                     className="px-4 py-2 bg-[#5227FF]/20 border border-[#5227FF]/50 rounded-xl text-[#B19EEF] hover:text-white hover:border-[#FF9FFC] transition-colors"
                   >
-                    Mark as {selectedMessage.read ? "Unread" : "Read"}
+                    {selectedMessage.read
+                      ? t("Mark as Unread", "Marquer comme non lu")
+                      : t("Mark as Read", "Marquer comme lu")}
                   </button>
                   <a
                     href={`mailto:${selectedMessage.email}`}
                     className="px-4 py-2 bg-[#5227FF] rounded-xl text-white hover:bg-[#5227FF]/80 transition-colors"
                   >
-                    Reply via Email
+                    {t("Reply via Email", "Répondre par e-mail")}
                   </a>
                   <button
                     onClick={() => {
@@ -310,7 +317,7 @@ export default function MessagesPage() {
                     }}
                     className="px-4 py-2 bg-red-500/20 border border-red-500/50 rounded-xl text-red-400 hover:bg-red-500/30 transition-colors"
                   >
-                    Delete
+                    {t("Delete", "Supprimer")}
                   </button>
                 </div>
               </div>
@@ -336,22 +343,22 @@ export default function MessagesPage() {
               className="bg-[#0f0520] border border-[#5227FF]/30 rounded-2xl p-6 w-full max-w-md"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-xl font-bold text-white mb-2">Delete Message?</h3>
+              <h3 className="text-xl font-bold text-white mb-2">{t("Delete Message?", "Supprimer le message ?")}</h3>
               <p className="text-[#B19EEF] mb-6">
-                This action cannot be undone. The message will be permanently removed.
+                {t("This action cannot be undone. The message will be permanently removed.", "Cette action est irréversible. Le message sera définitivement supprimé.")}
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setDeleteConfirm(null)}
                   className="flex-1 px-4 py-3 bg-[#5227FF]/20 border border-[#5227FF]/50 rounded-xl text-white hover:border-[#FF9FFC] transition-colors"
                 >
-                  Cancel
+                  {t("Cancel", "Annuler")}
                 </button>
                 <button
                   onClick={() => deleteMessage(deleteConfirm)}
                   className="flex-1 px-4 py-3 bg-red-500 rounded-xl text-white hover:bg-red-600 transition-colors"
                 >
-                  Delete
+                  {t("Delete", "Supprimer")}
                 </button>
               </div>
             </motion.div>

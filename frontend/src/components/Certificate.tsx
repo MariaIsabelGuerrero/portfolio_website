@@ -1,12 +1,16 @@
 'use client';
 
 import React, { useState } from "react"
-import { Modal, IconButton, Box, Fade, Backdrop, Zoom, Typography } from "@mui/material"
+import { Modal, IconButton, Box, Typography } from "@mui/material"
 import CloseIcon from "@mui/icons-material/Close"
 import FullscreenIcon from "@mui/icons-material/Fullscreen"
+import { useLanguage } from "@/lib/i18n"
 
-const Certificate = ({ ImgSertif }) => {
+const Certificate = ({ certificateImage, fileType }: { certificateImage: string; fileType?: string }) => {
+	const { t } = useLanguage()
 	const [open, setOpen] = useState(false)
+
+	const isPdf = fileType === "pdf" || certificateImage?.toLowerCase().endsWith(".pdf")
 
 	const handleOpen = () => {
 		setOpen(true)
@@ -20,12 +24,12 @@ const Certificate = ({ ImgSertif }) => {
 		<Box component="div" sx={{ width: "100%" }}>
 			{/* Thumbnail Container */}
 			<Box
-				className=""
 				sx={{
 					position: "relative",
 					overflow: "hidden",
 					borderRadius: 2,
 					boxShadow: "0 8px 16px rgba(0,0,0,0.1)",
+					cursor: "pointer",
 					transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
 					"&:hover": {
 						transform: "translateY(-5px)",
@@ -41,8 +45,10 @@ const Certificate = ({ ImgSertif }) => {
 							filter: "contrast(1.05) brightness(1) saturate(1.1)",
 						},
 					},
-				}}>
-				{/* Certificate Image with Initial Filter */}
+				}}
+				onClick={handleOpen}
+			>
+				{/* Certificate Thumbnail */}
 				<Box
 					sx={{
 						position: "relative",
@@ -57,20 +63,41 @@ const Certificate = ({ ImgSertif }) => {
 							zIndex: 1,
 						},
 					}}>
-					<img
-						className="certificate-image"
-						src={ImgSertif}
-						alt="Certificate"
-						style={{
-							width: "100%",
-							height: "auto",
-							display: "block",
-							objectFit: "cover",
-							filter: "contrast(1.10) brightness(0.9) saturate(1.1)",
-							transition: "filter 0.3s ease",
-						}}
-						onClick={handleOpen}
-					/>
+					{isPdf ? (
+						<Box
+							sx={{
+								width: "100%",
+								aspectRatio: "4/3",
+								overflow: "hidden",
+								position: "relative",
+							}}
+						>
+							<iframe
+								src={`${certificateImage}#toolbar=0&navpanes=0&scrollbar=0`}
+								title={t("Certificate", "Certificat")}
+								style={{
+									width: "100%",
+									height: "100%",
+									border: "none",
+									pointerEvents: "none",
+								}}
+							/>
+						</Box>
+					) : (
+						<img
+							className="certificate-image"
+							src={certificateImage}
+							alt={t("Certificate", "Certificat")}
+							style={{
+								width: "100%",
+								height: "auto",
+								display: "block",
+								objectFit: "cover",
+								filter: "contrast(1.10) brightness(0.9) saturate(1.1)",
+								transition: "filter 0.3s ease",
+							}}
+						/>
+					)}
 				</Box>
 
 				{/* Hover Overlay */}
@@ -83,11 +110,12 @@ const Certificate = ({ ImgSertif }) => {
 						right: 0,
 						bottom: 0,
 						opacity: 0,
+						background: "rgba(0, 0, 0, 0.5)",
 						transition: "all 0.3s ease",
 						cursor: "pointer",
 						zIndex: 2,
 					}}
-					onClick={handleOpen}>
+				>
 					{/* Hover Content */}
 					<Box
 						className="hover-content"
@@ -104,18 +132,19 @@ const Certificate = ({ ImgSertif }) => {
 						}}>
 						<FullscreenIcon
 							sx={{
-								fontSize: 40,
+								fontSize: 48,
 								mb: 1,
-								filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.2))",
+								filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.3))",
 							}}
 						/>
 						<Typography
 							variant="h6"
 							sx={{
 								fontWeight: 600,
-								textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+								fontSize: "1.25rem",
+								textShadow: "0 2px 4px rgba(0,0,0,0.4)",
 							}}>
-							View Certificate
+							{t("View Certificate", "Voir le certificat")}
 						</Typography>
 					</Box>
 				</Box>
@@ -125,14 +154,14 @@ const Certificate = ({ ImgSertif }) => {
 			<Modal
 				open={open}
 				onClose={handleClose}
-				aria-labelledby="modal-modal-title"
-				aria-describedby="modal-modal-description"
-				BackdropComponent={Backdrop}
-				BackdropProps={{
-					timeout: 300,
-					sx: {
-						backgroundColor: "rgba(0, 0, 0, 0.9)",
-						backdropFilter: "blur(5px)",
+				aria-labelledby="certificate-modal"
+				slotProps={{
+					backdrop: {
+						timeout: 300,
+						sx: {
+							backgroundColor: "rgba(0, 0, 0, 0.9)",
+							backdropFilter: "blur(5px)",
+						},
 					},
 				}}
 				sx={{
@@ -141,14 +170,12 @@ const Certificate = ({ ImgSertif }) => {
 					justifyContent: "center",
 					margin: 0,
 					padding: 0,
-					"& .MuiBackdrop-root": {
-						backgroundColor: "rgba(0, 0, 0, 0.9)",
-					},
 				}}>
 				<Box
 					sx={{
 						position: "relative",
-						width: "auto",
+						width: isPdf ? "90vw" : "auto",
+						height: isPdf ? "90vh" : "auto",
 						maxWidth: "90vw",
 						maxHeight: "90vh",
 						m: 0,
@@ -178,18 +205,31 @@ const Certificate = ({ ImgSertif }) => {
 						<CloseIcon sx={{ fontSize: 24 }} />
 					</IconButton>
 
-					{/* Modal Image */}
-					<img
-						src={ImgSertif}
-						alt="Certificate Full View"
-						style={{
-							display: "block",
-							maxWidth: "100%",
-							maxHeight: "90vh",
-							margin: "0 auto",
-							objectFit: "contain",
-						}}
-					/>
+					{/* Modal Content */}
+					{isPdf ? (
+						<iframe
+							src={certificateImage}
+							title={t("Certificate Full View", "Vue complète du certificat")}
+							style={{
+								width: "100%",
+								height: "100%",
+								border: "none",
+								borderRadius: "8px",
+							}}
+						/>
+					) : (
+						<img
+							src={certificateImage}
+							alt={t("Certificate Full View", "Vue complète du certificat")}
+							style={{
+								display: "block",
+								maxWidth: "100%",
+								maxHeight: "90vh",
+								margin: "0 auto",
+								objectFit: "contain",
+							}}
+						/>
+					)}
 				</Box>
 			</Modal>
 		</Box>

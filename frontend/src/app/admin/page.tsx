@@ -33,7 +33,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   const statConfig = [
-    { key: "skills" as const, nameEn: "Skills", nameFr: "Competences", icon: Lightbulb, href: "/admin/skills", color: "from-[#5227FF] to-[#7B5CFF]" },
+    { key: "skills" as const, nameEn: "Skills", nameFr: "Compétences", icon: Lightbulb, href: "/admin/skills", color: "from-[#5227FF] to-[#7B5CFF]" },
     { key: "projects" as const, nameEn: "Projects", nameFr: "Projets", icon: FolderKanban, href: "/admin/projects", color: "from-[#FF9FFC] to-[#FF6BF5]" },
     { key: "experience" as const, nameEn: "Experience", nameFr: "Experience", icon: Briefcase, href: "/admin/experience", color: "from-[#5227FF] to-[#FF9FFC]" },
     { key: "education" as const, nameEn: "Education", nameFr: "Formation", icon: GraduationCap, href: "/admin/education", color: "from-[#B19EEF] to-[#5227FF]" },
@@ -41,10 +41,10 @@ export default function AdminDashboard() {
   ];
 
   const quickActions = [
-    { nameEn: "Add New Skill", nameFr: "Ajouter une competence", href: "/admin/skills", icon: Lightbulb },
+    { nameEn: "Add New Skill", nameFr: "Ajouter une compétence", href: "/admin/skills", icon: Lightbulb },
     { nameEn: "Add New Project", nameFr: "Ajouter un projet", href: "/admin/projects", icon: FolderKanban },
-    { nameEn: "Update Resume", nameFr: "Mettre a jour le CV", href: "/admin/resume", icon: FileText },
-    { nameEn: "Edit Contact Info", nameFr: "Modifier les coordonnees", href: "/admin/contact", icon: Mail },
+    { nameEn: "Update Resume", nameFr: "Mettre à jour le CV", href: "/admin/resume", icon: FileText },
+    { nameEn: "Edit Contact Info", nameFr: "Modifier les coordonnées", href: "/admin/contact", icon: Mail },
   ];
 
   const loadStats = useCallback(async () => {
@@ -144,8 +144,8 @@ export default function AdminDashboard() {
                 <Quote className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-white font-semibold text-lg">{t("Pending Testimonials", "Temoignages en attente")}</p>
-                <p className="text-[#B19EEF] text-sm">{t("Awaiting your review", "En attente de votre examen")}</p>
+                <p className="text-white font-semibold text-lg">{t("Pending Testimonials", "Témoignages en attente")}</p>
+                <p className="text-[#B19EEF] text-sm">{t("Awaiting your review", "En attente de votre avis")}</p>
               </div>
             </div>
             <p className="text-3xl font-bold text-white">{stats?.pendingTestimonials ?? 0}</p>

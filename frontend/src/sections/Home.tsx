@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, memo } from "react"
-import { Github, Linkedin, Mail, ExternalLink, Instagram, Sparkles } from "lucide-react"
+import { Github, Linkedin, Mail, ExternalLink, Sparkles } from "lucide-react"
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 import { useLanguage } from '@/lib/i18n'
@@ -26,7 +26,7 @@ const StatusBadge = memo(function StatusBadge({ label }: { label: string }) {
 const MainTitle = memo(function MainTitle({ line1, line2 }: { line1: string; line2: string }) {
   return (
     <div className="space-y-2" data-aos="fade-up" data-aos-delay="600">
-      <h1 className="text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-bold leading-tight">
+      <h1 className="text-[2.75rem] sm:text-7xl md:text-8xl lg:text-9xl font-bold leading-tight">
         <span className="relative inline-block">
           <span className="absolute -inset-2 bg-gradient-to-r from-[#6366f1] to-[#a855f7] blur-2xl opacity-20"></span>
           <span className="relative bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent">
@@ -88,9 +88,9 @@ const SocialLink = memo(function SocialLink({ icon: Icon, link }: { icon: React.
 // Constants
 const TYPING_SPEED = 100;
 const ERASING_SPEED = 50;
-const PAUSE_DURATION = 2000;
-const WORDS_EN = ["Computer Science Student & Full-Stack Developer", "Tech Enthusiast"];
-const WORDS_FR = ["Etudiante en informatique & Developpeuse Full-Stack", "Passionnee de technologie"];
+const PAUSE_DURATION = 6000;
+const WORDS_EN = ["Computer Science Student", "Tech Enthusiast"];
+const WORDS_FR = ["Étudiante en informatique", "Passionnée de technologie"];
 const TECH_STACK = ["React", "Javascript", "Node.js", "Tailwind"];
 const SOCIAL_LINKS = [
   { icon: Github, link: "https://github.com/MariaIsabelGuerrero" },
@@ -172,12 +172,12 @@ const Home = () => {
               data-aos="fade-right"
               data-aos-delay="200">
               <div className="space-y-4">
-                <StatusBadge label={t("Ready to Innovate", "Prete a innover")} />
-                <MainTitle line1={t("Full Stack", "Full Stack")} line2={t("Developer", "Developpeuse")} />
+                <StatusBadge label={t("Ready to Innovate", "Prête à innover")} />
+                <MainTitle line1={t("Full Stack", "Full Stack")} line2={t("Developer", "Développeuse")} />
 
                 {/* Typing Effect */}
-                <div className="h-12 flex items-center" data-aos="fade-up" data-aos-delay="800">
-                  <span className="text-3xl sm:text-4xl md:text-5xl bg-gradient-to-r from-gray-100 to-gray-300 bg-clip-text text-transparent font-light">
+                <div className="h-16 sm:h-20 flex items-center mb-2 overflow-visible" data-aos="fade-up" data-aos-delay="800">
+                  <span className="text-3xl sm:text-4xl md:text-5xl bg-gradient-to-r from-gray-100 to-gray-300 bg-clip-text text-transparent font-light" style={{ lineHeight: '1.4', paddingBottom: '0.15em', display: 'inline-block' }}>
                     {text}
                   </span>
                   <span className="w-[4px] h-10 bg-gradient-to-t from-[#6366f1] to-[#a855f7] ml-1 animate-blink"></span>
@@ -187,7 +187,7 @@ const Home = () => {
                 <p className="text-xl sm:text-2xl lg:text-3xl text-gray-400 max-w-2xl leading-relaxed font-light"
                   data-aos="fade-up"
                   data-aos-delay="1000">
-                  {t("Building scalable, clean, and production-ready systems for real-world solutions.", "Construire des systemes evolutifs, propres et prets pour la production.")}
+                  {t("Building Scalable, Clean, and User-Focused Applications for Real-World Solutions.", "Créer des applications évolutives, propres et centrées sur l'utilisateur pour des solutions concrètes.")}
                 </p>
 
                 {/* Tech Stack */}
@@ -199,7 +199,7 @@ const Home = () => {
 
                 {/* CTA Buttons */}
                 <div className="flex flex-row gap-3 w-full justify-start" data-aos="fade-up" data-aos-delay="1400">
-                  <CTAButton href="#Portofolio" text={t("Projects", "Projets")} icon={ExternalLink} />
+                  <CTAButton href="#Portfolio" text={t("Projects", "Projets")} icon={ExternalLink} />
                   <CTAButton href="#Contact" text="Contact" icon={Mail} />
                 </div>
 
@@ -227,7 +227,7 @@ const Home = () => {
                 <div className={`relative lg:left-12 z-10 w-full opacity-90 transform transition-transform duration-500 ${
                   isHovering ? "scale-105" : "scale-100"
                 }`}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+
                   <img
                     src="Animation1.gif"
                     alt="Developer Animation"

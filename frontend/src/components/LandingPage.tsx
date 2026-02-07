@@ -12,7 +12,7 @@ import About from '../sections/About';
 import Education from '../sections/Education';
 import Experience from '../sections/Experience';
 import Hobbies from '../sections/Hobbies';
-import Portofolio from '../sections/Portofolio';
+import Portfolio from '../sections/Portfolio';
 import ContactPage from '../sections/Contact';
 import WelcomeScreen from '../sections/WelcomeScreen';
 
@@ -35,7 +35,7 @@ export default function LandingPage() {
           <About />
           <Education />
           <Experience />
-          <Portofolio />
+          <Portfolio />
           <Hobbies />
           <ContactPage />
           <Footer />

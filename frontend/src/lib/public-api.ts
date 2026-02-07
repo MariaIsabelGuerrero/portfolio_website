@@ -43,6 +43,10 @@ export async function getTestimonials() {
   return publicFetch<{ data: TestimonialData[] }>("/api/testimonials");
 }
 
+export async function getCertificates() {
+  return publicFetch<{ data: CertificateData[] }>("/api/certificates");
+}
+
 export async function submitTestimonial(data: { name: string; position: string; company: string; content: string }) {
   return publicFetch<{ data: TestimonialData }>("/api/testimonials", {
     method: "POST",
@@ -73,7 +77,7 @@ export interface ProjectData {
   technologies: string[];
   github: string;
   live: string;
-  featured: boolean;
+  keyFeatures: string[];
 }
 
 export interface ExperienceData {
@@ -123,4 +127,13 @@ export interface MessageData {
   message: string;
   date: string;
   read: boolean;
+}
+
+export interface CertificateData {
+  id: string;
+  title: string;
+  fileUrl: string;
+  fileType: string;
+  createdAt?: string;
+  updatedAt?: string;
 }

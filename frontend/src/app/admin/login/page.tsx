@@ -46,7 +46,7 @@ export default function SignIn() {
           errObj?.message ||
             t(
               "Login failed. Please check your credentials.",
-              "Connexion echouee. Veuillez verifier vos identifiants."
+              "Connexion échouée. Veuillez vérifier vos identifiants."
             )
         );
         setLoading(false);
@@ -65,7 +65,7 @@ export default function SignIn() {
         setError(
           t(
             "Failed to establish session. Please try again.",
-            "Impossible d'etablir la session. Veuillez reessayer."
+            "Impossible d'établir la session. Veuillez réessayer."
           )
         );
         setLoading(false);
@@ -82,7 +82,7 @@ export default function SignIn() {
         setError(
           t(
             "Failed to retrieve authentication token. Please try again.",
-            "Impossible de recuperer le jeton d'authentification. Veuillez reessayer."
+            "Impossible de récupérer le jeton d'authentification. Veuillez réessayer."
           )
         );
         setLoading(false);
@@ -91,7 +91,7 @@ export default function SignIn() {
       setError(
         t(
           "Login failed. Please check your credentials.",
-          "Connexion echouee. Veuillez verifier vos identifiants."
+          "Connexion échouée. Veuillez vérifier vos identifiants."
         )
       );
       setLoading(false);
@@ -118,7 +118,7 @@ export default function SignIn() {
           </h1>
 
           <p className="text-[#B19EEF] text-center text-sm mb-6">
-            {t("Sign in to manage your portfolio", "Connectez-vous pour gerer votre portfolio")}
+            {t("Sign in to manage your portfolio", "Connectez-vous pour gérer votre portfolio")}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -193,7 +193,7 @@ export default function SignIn() {
             </h2>
 
             <p className="text-white/80 text-xl">
-              {t("Manage your portfolio content", "Gerez le contenu de votre portfolio")}
+              {t("Manage your portfolio content", "Gérez le contenu de votre portfolio")}
             </p>
           </motion.div>
         </div>

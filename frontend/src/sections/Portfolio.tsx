@@ -14,14 +14,17 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import Certificate from "../components/Certificate";
 import { Code, Award, Boxes, Loader2 } from "lucide-react";
-import { getProjects, getSkills, type ProjectData, type SkillData } from "@/lib/public-api";
+import { getProjects, getSkills, getCertificates, type ProjectData, type SkillData, type CertificateData } from "@/lib/public-api";
+import { useLanguage } from "@/lib/i18n";
 
 interface ToggleButtonProps {
   onClick: () => void;
   isShowingMore: boolean;
+  seeMoreLabel: string;
+  seeLessLabel: string;
 }
 
-const ToggleButton = ({ onClick, isShowingMore }: ToggleButtonProps) => (
+const ToggleButton = ({ onClick, isShowingMore, seeMoreLabel, seeLessLabel }: ToggleButtonProps) => (
   <button
     onClick={onClick}
     className="
@@ -49,7 +52,7 @@ const ToggleButton = ({ onClick, isShowingMore }: ToggleButtonProps) => (
     "
   >
     <span className="relative z-10 flex items-center gap-3">
-      {isShowingMore ? "See Less" : "See More"}
+      {isShowingMore ? seeLessLabel : seeMoreLabel}
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="20"
@@ -127,11 +130,12 @@ const tabVariants = {
 };
 
 export default function FullWidthTabs() {
+  const { t } = useLanguage();
   const [value, setValue] = useState(0);
   const [direction, setDirection] = useState(0);
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [techStacks, setTechStacks] = useState<SkillData[]>([]);
-  const [certificates, setCertificates] = useState<any[]>([]);
+  const [certificates, setCertificates] = useState<CertificateData[]>([]);
   const [showAllProjects, setShowAllProjects] = useState(false);
   const [showAllCertificates, setShowAllCertificates] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -151,25 +155,16 @@ export default function FullWidthTabs() {
 
   const fetchData = useCallback(async () => {
     try {
-      const [projectsRes, skillsRes] = await Promise.all([
+      const [projectsRes, skillsRes, certificatesRes] = await Promise.allSettled([
         getProjects(),
         getSkills(),
+        getCertificates(),
       ]);
-      setProjects(projectsRes.data);
-      setTechStacks(skillsRes.data);
-
-      // Load certificates from localStorage (no backend table for these yet)
-      const cachedCertificates = localStorage.getItem('certificates');
-      if (cachedCertificates) {
-        setCertificates(JSON.parse(cachedCertificates));
-      }
+      if (projectsRes.status === "fulfilled") setProjects(projectsRes.value.data);
+      if (skillsRes.status === "fulfilled") setTechStacks(skillsRes.value.data);
+      if (certificatesRes.status === "fulfilled") setCertificates(certificatesRes.value.data);
     } catch (error) {
       console.error("Error fetching data:", error);
-      // Fallback to localStorage cache
-      const cachedProjects = localStorage.getItem('projects');
-      const cachedCertificates = localStorage.getItem('certificates');
-      if (cachedProjects) setProjects(JSON.parse(cachedProjects));
-      if (cachedCertificates) setCertificates(JSON.parse(cachedCertificates));
     } finally {
       setLoading(false);
     }
@@ -197,7 +192,7 @@ export default function FullWidthTabs() {
 
   if (loading) {
     return (
-      <div className="md:px-[10%] px-[5%] w-full sm:mt-0 mt-[3rem] bg-[#030014] overflow-hidden" id="Portofolio">
+      <div className="md:px-[10%] px-[5%] w-full sm:mt-0 mt-[3rem] bg-[#030014] overflow-hidden" id="Portfolio">
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 text-[#6366f1] animate-spin" />
         </div>
@@ -206,7 +201,7 @@ export default function FullWidthTabs() {
   }
 
   return (
-    <div className="md:px-[10%] px-[5%] w-full sm:mt-0 mt-[3rem] bg-[#030014] overflow-hidden" id="Portofolio">
+    <div className="md:px-[10%] px-[5%] w-full sm:mt-0 mt-[3rem] bg-[#030014] overflow-hidden" id="Portfolio">
       <div className="text-center pb-12" data-aos="fade-up" data-aos-duration="1000">
         <h2 className="inline-block text-5xl md:text-6xl lg:text-7xl font-bold text-center mx-auto text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]">
           <span style={{
@@ -216,12 +211,14 @@ export default function FullWidthTabs() {
             backgroundClip: 'text',
             WebkitTextFillColor: 'transparent'
           }}>
-            Portfolio Showcase
+            {t("Portfolio Showcase", "Vitrine du portfolio")}
           </span>
         </h2>
         <p className="text-slate-400 max-w-3xl mx-auto text-lg md:text-xl lg:text-2xl mt-4">
-          Explore my journey through projects, certifications, and technical expertise.
-          Each section represents a milestone in my continuous learning path.
+          {t(
+            "Explore my journey through projects, certifications, and technical expertise. Each section represents a milestone in my continuous learning path.",
+            "Explorez mon parcours à travers mes projets, certifications et expertises techniques. Chaque section représente une étape de mon apprentissage continu."
+          )}
         </p>
       </div>
 
@@ -294,17 +291,17 @@ export default function FullWidthTabs() {
           >
             <Tab
               icon={<Code className="mb-2 w-6 h-6 transition-all duration-300" />}
-              label="Projects"
+              label={t("Projects", "Projets")}
               {...a11yProps(0)}
             />
             <Tab
               icon={<Award className="mb-2 w-6 h-6 transition-all duration-300" />}
-              label="Certificates"
+              label={t("Certificates", "Certificats")}
               {...a11yProps(1)}
             />
             <Tab
               icon={<Boxes className="mb-2 w-6 h-6 transition-all duration-300" />}
-              label="Tech Stack"
+              label={t("Tech Stack", "Technologies")}
               {...a11yProps(2)}
             />
           </Tabs>
@@ -350,6 +347,8 @@ export default function FullWidthTabs() {
                       <ToggleButton
                         onClick={() => toggleShowMore('projects')}
                         isShowingMore={showAllProjects}
+                        seeMoreLabel={t("See More", "Voir plus")}
+                        seeLessLabel={t("See Less", "Voir moins")}
                       />
                     </div>
                   )}
@@ -366,7 +365,7 @@ export default function FullWidthTabs() {
                           data-aos={index % 3 === 0 ? "fade-up-right" : index % 3 === 1 ? "fade-up" : "fade-up-left"}
                           data-aos-duration={index % 3 === 0 ? "1000" : index % 3 === 1 ? "1200" : "1000"}
                         >
-                          <Certificate ImgSertif={certificate.Img} />
+                          <Certificate certificateImage={certificate.fileUrl} fileType={certificate.fileType} />
                         </div>
                       ))}
                     </div>
@@ -376,6 +375,8 @@ export default function FullWidthTabs() {
                       <ToggleButton
                         onClick={() => toggleShowMore('certificates')}
                         isShowingMore={showAllCertificates}
+                        seeMoreLabel={t("See More", "Voir plus")}
+                        seeLessLabel={t("See Less", "Voir moins")}
                       />
                     </div>
                   )}

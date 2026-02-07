@@ -12,7 +12,7 @@ export async function GET() {
     const [result] = await db.select().from(contact).where(eq(contact.id, "default"));
 
     if (!result) {
-      return NextResponse.json({ data: { email: "", phone: "", location: "", github: "", linkedin: "", twitter: "" } });
+      return NextResponse.json({ data: { email: "", phone: "", location: "", github: "", linkedin: "" } });
     }
 
     return NextResponse.json({ data: result });
@@ -28,7 +28,7 @@ export async function PUT(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { email, phone, location, github, linkedin, twitter } = body;
+    const { email, phone, location, github, linkedin} = body;
 
     const [updated] = await db
       .update(contact)
@@ -38,7 +38,6 @@ export async function PUT(request: NextRequest) {
         location: location ?? "",
         github: github ?? "",
         linkedin: linkedin ?? "",
-        twitter: twitter ?? "",
         updatedAt: new Date(),
       })
       .where(eq(contact.id, "default"))

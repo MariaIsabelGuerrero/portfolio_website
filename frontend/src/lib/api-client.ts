@@ -75,9 +75,12 @@ export async function deleteSkill(id: string) {
 }
 
 // ---- Projects ----
-export async function fetchProjects(featured?: string) {
-  const params = featured ? `?featured=${featured}` : "";
-  return apiFetch<{ data: Project[] }>(`/api/projects${params}`);
+export async function fetchProjects() {
+  return apiFetch<{ data: Project[] }>(`/api/projects`);
+}
+
+export async function fetchProject(id: string) {
+  return apiFetch<{ data: Project }>(`/api/projects/${id}`);
 }
 
 export async function createProject(data: Omit<Project, "id" | "createdAt" | "updatedAt">) {
@@ -264,7 +267,7 @@ export async function uploadResume(file: File) {
   return res.json() as Promise<{ filename: string; fileUrl: string; size: number; uploadedAt: string }>;
 }
 
-export async function createResume(data: { filename: string; fileUrl: string; language?: string }) {
+export async function createResume(data: { filename: string; fileUrl: string; language?: string; isActive?: boolean }) {
   return apiFetch<{ data: ResumeFile }>("/api/resume", {
     method: "POST",
     body: JSON.stringify(data),
@@ -280,6 +283,42 @@ export async function setActiveResume(id: string) {
 
 export async function deleteResume(id: string) {
   return apiFetch(`/api/resume/${id}`, { method: "DELETE" });
+}
+
+// ---- Certificates ----
+export async function fetchCertificates() {
+  return apiFetch<{ data: CertificateFile[] }>("/api/certificates");
+}
+
+export async function uploadCertificate(file: File) {
+  const headers = await getAuthHeaders();
+  delete headers["Content-Type"];
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const res = await fetch(`${apiUrl}/api/certificates/upload`, {
+    method: "POST",
+    headers: { Authorization: headers.Authorization || "" },
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error || "Upload failed");
+  }
+
+  return res.json() as Promise<{ filename: string; fileUrl: string; fileType: string; size: number; uploadedAt: string }>;
+}
+
+export async function createCertificate(data: { title: string; fileUrl: string; fileType: string }) {
+  return apiFetch<{ data: CertificateFile }>("/api/certificates", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteCertificate(id: string) {
+  return apiFetch(`/api/certificates/${id}`, { method: "DELETE" });
 }
 
 // ---- Project Image Upload ----
@@ -341,7 +380,7 @@ export interface Project {
   technologies: string[];
   github: string;
   live: string;
-  featured: boolean;
+  keyFeatures: string[];
   createdAt?: string;
   updatedAt?: string;
 }
@@ -387,7 +426,6 @@ export interface ContactInfo {
   location: string;
   github: string;
   linkedin: string;
-  twitter: string;
 }
 
 export interface Message {
@@ -416,6 +454,15 @@ export interface ResumeFile {
   fileUrl: string;
   isActive: boolean;
   language: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CertificateFile {
+  id: string;
+  title: string;
+  fileUrl: string;
+  fileType: string;
   createdAt?: string;
   updatedAt?: string;
 }

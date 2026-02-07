@@ -16,7 +16,7 @@ export const projects = pgTable("projects", {
   technologies: jsonb("technologies").$type<string[]>().default([]),
   github: text("github").default(""),
   live: text("live").default(""),
-  featured: boolean("featured").default(false),
+  keyFeatures: jsonb("key_features").$type<string[]>().default([]),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -63,7 +63,6 @@ export const contact = pgTable("contact", {
   location: text("location").default(""),
   github: text("github").default(""),
   linkedin: text("linkedin").default(""),
-  twitter: text("twitter").default(""),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
@@ -98,6 +97,15 @@ export const resumes = pgTable("resumes", {
   fileUrl: text("file_url").notNull(),
   isActive: boolean("is_active").default(false),
   language: text("language").default("en"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const certificates = pgTable("certificates", {
+  id: text("id").primaryKey(),
+  title: text("title").notNull(),
+  fileUrl: text("file_url").notNull(),
+  fileType: text("file_type").default("image"), // "image" or "pdf"
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

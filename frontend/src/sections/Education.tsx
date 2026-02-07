@@ -5,8 +5,9 @@ import { GraduationCap, Calendar, MapPin, Loader2 } from 'lucide-react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { getEducation, type EducationData } from '@/lib/public-api';
+import { useLanguage } from '@/lib/i18n';
 
-const EducationCard = ({ education, index }: { education: EducationData; index: number }) => {
+const EducationCard = ({ education, index, t }: { education: EducationData; index: number; t: (en: string, fr: string) => string }) => {
   return (
     <div
       className="relative"
@@ -64,7 +65,7 @@ const EducationCard = ({ education, index }: { education: EducationData; index: 
 
           {education.achievements && education.achievements.length > 0 && (
             <div className="mt-4">
-              <h4 className="text-white font-medium mb-3 text-lg">Highlights:</h4>
+              <h4 className="text-white font-medium mb-3 text-lg">{t("Highlights:", "Points forts :")}</h4>
               <ul className="space-y-2">
                 {education.achievements.map((achievement, i) => (
                   <li key={i} className="flex items-start gap-3 text-gray-300">
@@ -82,6 +83,7 @@ const EducationCard = ({ education, index }: { education: EducationData; index: 
 };
 
 const Education = () => {
+  const { t } = useLanguage();
   const [educationData, setEducationData] = useState<EducationData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -121,24 +123,24 @@ const Education = () => {
           data-aos="zoom-in-up"
           data-aos-duration="600"
         >
-          Education
+          {t("Education", "Formation")}
         </h2>
         <p
           className="mt-4 text-gray-400 max-w-2xl mx-auto text-lg sm:text-xl lg:text-2xl"
           data-aos="zoom-in-up"
           data-aos-duration="800"
         >
-          My academic journey and qualifications
+          {t("My academic journey and qualifications", "Mon parcours académique et mes qualifications")}
         </p>
       </div>
 
       <div className="max-w-4xl mx-auto space-y-8">
         {educationData.map((education, index) => (
-          <EducationCard key={education.id} education={education} index={index} />
+          <EducationCard key={education.id} education={education} index={index} t={t} />
         ))}
       </div>
     </section>
   );
 };
 
-export default Education;
+export default Education; 

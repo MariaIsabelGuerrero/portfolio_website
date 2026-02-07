@@ -5,8 +5,10 @@ import React from "react"
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Pencil, Trash2, X, Search, GraduationCap, Loader2 } from "lucide-react";
 import { fetchEducation as apiFetchEducation, createEducation, updateEducation, deleteEducation as apiDeleteEducation, type Education } from "@/lib/api-client";
+import { useLanguage } from "@/lib/i18n";
 
 export default function EducationManagement() {
+  const { t } = useLanguage();
   const [educations, setEducations] = useState<Education[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -106,15 +108,15 @@ export default function EducationManagement() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Education</h1>
-          <p className="text-[#B19EEF] mt-1">Manage your educational background</p>
+          <h1 className="text-3xl font-bold text-white">{t("Education", "Formation")}</h1>
+          <p className="text-[#B19EEF] mt-1">{t("Manage your educational background", "Gérez votre parcours scolaire")}</p>
         </div>
         <button
           onClick={openAddModal}
           className="flex items-center gap-2 px-6 py-3 bg-[#5227FF] text-white rounded-xl hover:bg-[#5227FF]/80 transition-colors shadow-lg shadow-[#5227FF]/30"
         >
           <Plus className="w-5 h-5" />
-          Add Education
+          {t("Add Education", "Ajouter une formation")}
         </button>
       </div>
 
@@ -123,7 +125,7 @@ export default function EducationManagement() {
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B19EEF]" />
         <input
           type="text"
-          placeholder="Search education..."
+          placeholder={t("Search education...", "Rechercher une formation...")}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full pl-12 pr-4 py-3 bg-[#0f0520] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
@@ -181,7 +183,7 @@ export default function EducationManagement() {
 
       {filteredEducation.length === 0 && (
         <div className="bg-[#0f0520] border border-[#5227FF]/30 rounded-2xl p-8 text-center text-[#B19EEF]">
-          No education records found.
+          {t("No education records found.", "Aucune formation trouvée.")}
         </div>
       )}
 
@@ -191,7 +193,7 @@ export default function EducationManagement() {
           <div className="bg-[#0f0520] border border-[#5227FF]/30 rounded-2xl w-full max-w-lg p-6">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-white">
-                {editingEducation ? "Edit Education" : "Add New Education"}
+                {editingEducation ? t("Edit Education", "Modifier la formation") : t("Add New Education", "Ajouter une nouvelle formation")}
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -202,39 +204,39 @@ export default function EducationManagement() {
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">Degree</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{t("Degree", "Diplôme")}</label>
                 <input
                   type="text"
                   value={formData.degree}
                   onChange={(e) => setFormData({ ...formData, degree: e.target.value })}
                   required
                   className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
-                  placeholder="Bachelor of Science in..."
+                  placeholder={t("Bachelor of Science in...", "Licence en...")}
                 />
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">Institution</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{t("Institution", "Établissement")}</label>
                 <input
                   type="text"
                   value={formData.institution}
                   onChange={(e) => setFormData({ ...formData, institution: e.target.value })}
                   required
                   className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
-                  placeholder="University Name"
+                  placeholder={t("University Name", "Nom de l'université")}
                 />
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">Location</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{t("Location", "Localisation")}</label>
                 <input
                   type="text"
                   value={formData.location}
                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                   className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
-                  placeholder="City, Country"
+                  placeholder={t("City, Country", "Ville, Pays")}
                 />
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">Period</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{t("Period", "Période")}</label>
                 <input
                   type="text"
                   value={formData.period}
@@ -245,23 +247,13 @@ export default function EducationManagement() {
                 />
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">Description</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{t("Description", "Description")}</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={3}
                   className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC] resize-none"
-                  placeholder="Brief description of your studies..."
-                />
-              </div>
-              <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">Achievements (one per line)</label>
-                <textarea
-                  value={formData.achievements}
-                  onChange={(e) => setFormData({ ...formData, achievements: e.target.value })}
-                  rows={3}
-                  className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC] resize-none"
-                  placeholder="Focused on Front-End Development&#10;Completed multiple projects&#10;..."
+                  placeholder={t("Brief description of your studies...", "Brève description de vos études...")}
                 />
               </div>
               <div className="flex gap-3 pt-4">
@@ -270,13 +262,13 @@ export default function EducationManagement() {
                   onClick={() => setIsModalOpen(false)}
                   className="flex-1 px-4 py-3 border border-[#5227FF]/30 text-[#B19EEF] rounded-xl hover:bg-[#5227FF]/20 transition-colors"
                 >
-                  Cancel
+                  {t("Cancel", "Annuler")}
                 </button>
                 <button
                   type="submit"
                   className="flex-1 px-4 py-3 bg-[#5227FF] text-white rounded-xl hover:bg-[#5227FF]/80 transition-colors"
                 >
-                  {editingEducation ? "Save Changes" : "Add Education"}
+                  {editingEducation ? t("Save Changes", "Enregistrer") : t("Add Education", "Ajouter la formation")}
                 </button>
               </div>
             </form>
@@ -291,20 +283,20 @@ export default function EducationManagement() {
             <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-4">
               <Trash2 className="w-8 h-8 text-red-400" />
             </div>
-            <h2 className="text-xl font-semibold text-white mb-2">Delete Education?</h2>
-            <p className="text-[#B19EEF] mb-6">This action cannot be undone.</p>
+            <h2 className="text-xl font-semibold text-white mb-2">{t("Delete Education?", "Supprimer la formation ?")}</h2>
+            <p className="text-[#B19EEF] mb-6">{t("This action cannot be undone.", "Cette action est irréversible.")}</p>
             <div className="flex gap-3">
               <button
                 onClick={() => setDeleteConfirm(null)}
                 className="flex-1 px-4 py-3 border border-[#5227FF]/30 text-[#B19EEF] rounded-xl hover:bg-[#5227FF]/20 transition-colors"
               >
-                Cancel
+                {t("Cancel", "Annuler")}
               </button>
               <button
                 onClick={() => handleDelete(deleteConfirm)}
                 className="flex-1 px-4 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors"
               >
-                Delete
+                {t("Delete", "Supprimer")}
               </button>
             </div>
           </div>

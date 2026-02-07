@@ -2,8 +2,10 @@
 
 import { useRouter } from 'next/navigation';
 import { Home, ArrowLeft } from 'lucide-react';
+import { useLanguage } from '@/lib/i18n';
 
 export default function NotFound() {
+  const { t } = useLanguage();
   const router = useRouter();
 
   return (
@@ -16,10 +18,13 @@ export default function NotFound() {
 
         <div className="mb-8">
           <h2 className="text-3xl font-semibold text-gray-700 mb-4">
-            Oops! Halaman Tidak Ditemukan
+            {t("Oops! Page Not Found", "Oops! Page introuvable")}
           </h2>
           <p className="text-lg text-gray-600 max-w-md mx-auto leading-relaxed">
-            Halaman yang Anda cari mungkin telah dipindahkan, dihapus, atau tidak pernah ada.
+            {t(
+              "The page you are looking for may have been moved, deleted, or never existed.",
+              "La page que vous recherchez a peut-être été déplacée, supprimée ou n'a jamais existé."
+            )}
           </p>
         </div>
 
@@ -35,7 +40,7 @@ export default function NotFound() {
             className="flex items-center gap-2 px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200 shadow-md hover:shadow-lg"
           >
             <ArrowLeft size={20} />
-            Kembali
+            {t("Go Back", "Retour")}
           </button>
 
           <button
@@ -43,7 +48,7 @@ export default function NotFound() {
             className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200 shadow-md hover:shadow-lg"
           >
             <Home size={20} />
-            Beranda
+            {t("Home", "Accueil")}
           </button>
         </div>
       </div>

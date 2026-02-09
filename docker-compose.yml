@@ -56,7 +56,7 @@ services:
         env_file:
             - .env
         environment:
-            NODE_ENV: development
+            NODE_ENV: production
             DATABASE_URL: postgresql://portfolio_user:portfolio_pass@portfolio-db:5432/portfolio_db
 
             # JWT validation (must match auth-service)
@@ -94,7 +94,7 @@ services:
         env_file:
             - .env
         environment:
-            NODE_ENV: development
+            NODE_ENV: production
 
             # DB for auth / Better Auth
             DATABASE_URL: postgres://auth_user:auth_pass@auth-db:5432/auth_db
@@ -133,15 +133,18 @@ services:
         build:
             context: ./frontend
             dockerfile: Dockerfile
+            args:
+                NEXT_PUBLIC_API_URL: http://138.197.155.6:3003
+                NEXT_PUBLIC_AUTH_SERVICE_URL: http://138.197.155.6:3001
         container_name: frontend
         restart: unless-stopped
         env_file:
             - .env
         environment:
-            NODE_ENV: development
+            NODE_ENV: production
             # Client-side (browser) uses localhost
-            NEXT_PUBLIC_API_URL: http://localhost:3003
-            NEXT_PUBLIC_AUTH_SERVICE_URL: http://localhost:3001
+            NEXT_PUBLIC_API_URL: http://138.197.155.6:3003
+            NEXT_PUBLIC_AUTH_SERVICE_URL: http://138.197.155.6:3001
             # Server-side (SSR) uses service names
             API_URL: http://backend:3003
             AUTH_SERVICE_URL: http://auth-service:3001

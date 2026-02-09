@@ -10,48 +10,57 @@ export const skills = pgTable("skills", {
 
 export const projects = pgTable("projects", {
   id: text("id").primaryKey(),
-  title: text("title").notNull(),
-  description: text("description").notNull(),
-  img: text("img").default(""), // Project image URL
+  title_en: text("title_en").notNull().default(""),
+  title_fr: text("title_fr").default(""),
+  description_en: text("description_en").notNull().default(""),
+  description_fr: text("description_fr").default(""),
+  img: text("img").default(""),
   technologies: jsonb("technologies").$type<string[]>().default([]),
   github: text("github").default(""),
   live: text("live").default(""),
-  keyFeatures: jsonb("key_features").$type<string[]>().default([]),
+  keyFeatures_en: jsonb("key_features_en").$type<string[]>().default([]),
+  keyFeatures_fr: jsonb("key_features_fr").$type<string[]>().default([]),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const experiences = pgTable("experiences", {
   id: text("id").primaryKey(),
-  title: text("title").notNull(),
+  title_en: text("title_en").notNull().default(""),
+  title_fr: text("title_fr").default(""),
   company: text("company").notNull(),
   location: text("location").default(""),
   period: text("period").notNull(),
-  type: text("type").default(""), // e.g., "Freelance", "Internship", "Full-time"
-  description: text("description").default(""),
-  responsibilities: jsonb("responsibilities").$type<string[]>().default([]),
+  type: text("type").default(""),
+  description_en: text("description_en").default(""),
+  description_fr: text("description_fr").default(""),
+  responsibilities_en: jsonb("responsibilities_en").$type<string[]>().default([]),
+  responsibilities_fr: jsonb("responsibilities_fr").$type<string[]>().default([]),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const education = pgTable("education", {
   id: text("id").primaryKey(),
-  degree: text("degree").notNull(),
+  degree_en: text("degree_en").notNull().default(""),
+  degree_fr: text("degree_fr").default(""),
   institution: text("institution").notNull(),
   location: text("location").default(""),
   period: text("period").notNull(),
-  description: text("description").default(""),
-  achievements: jsonb("achievements").$type<string[]>().default([]),
+  description_en: text("description_en").default(""),
+  description_fr: text("description_fr").default(""),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 export const hobbies = pgTable("hobbies", {
   id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  description: text("description").default(""),
-  icon: text("icon").default(""), // Lucide icon name (e.g., "Dumbbell", "Heart")
-  color: text("color").default(""), // Tailwind gradient class (e.g., "from-rose-500 to-pink-600")
+  name_en: text("name_en").notNull().default(""),
+  name_fr: text("name_fr").default(""),
+  description_en: text("description_en").default(""),
+  description_fr: text("description_fr").default(""),
+  icon: text("icon").default(""),
+  color: text("color").default(""),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

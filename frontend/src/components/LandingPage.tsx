@@ -17,13 +17,23 @@ import ContactPage from '../sections/Contact';
 import WelcomeScreen from '../sections/WelcomeScreen';
 
 export default function LandingPage() {
-  const [showWelcome, setShowWelcome] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !sessionStorage.getItem('welcomeSeen');
+    }
+    return true;
+  });
+
+  const handleWelcomeComplete = () => {
+    sessionStorage.setItem('welcomeSeen', 'true');
+    setShowWelcome(false);
+  };
 
   return (
     <>
       <AnimatePresence mode="wait">
         {showWelcome && (
-          <WelcomeScreen onLoadingComplete={() => setShowWelcome(false)} />
+          <WelcomeScreen onLoadingComplete={handleWelcomeComplete} />
         )}
       </AnimatePresence>
 

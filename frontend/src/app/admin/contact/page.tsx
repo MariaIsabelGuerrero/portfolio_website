@@ -13,6 +13,7 @@ export default function ContactManagement() {
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const loadContact = useCallback(async () => {
     try {
@@ -36,6 +37,15 @@ export default function ContactManagement() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const errors: Record<string, string> = {};
+    if (!contact.email.trim()) errors.email = "Required";
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+    setFormErrors({});
+
     setIsSaving(true);
     try {
       await apiUpdateContact(contact);
@@ -80,16 +90,17 @@ export default function ContactManagement() {
               <label className="block text-[#B19EEF] text-sm mb-2">
                 <span className="flex items-center gap-2">
                   <Mail className="w-4 h-4" />
-                  {t("Email Address", "Adresse e-mail")}
+                  {t("Email Address", "Adresse e-mail")} <span className="text-red-400">*</span>
                 </span>
               </label>
               <input
                 type="email"
                 value={contact.email}
-                onChange={(e) => setContact({ ...contact, email: e.target.value })}
-                className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
+                onChange={(e) => { setContact({ ...contact, email: e.target.value }); setFormErrors(prev => { const n = {...prev}; delete n.email; return n; }); }}
+                className={`w-full px-4 py-3 bg-[#0a0314] border ${formErrors.email ? "border-red-500/50" : "border-[#5227FF]/30"} rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]`}
                 placeholder="your@email.com"
               />
+              {formErrors.email && <p className="text-red-400 text-xs mt-1">{t("This field is required", "Ce champ est requis")}</p>}
             </div>
             <div>
               <label className="block text-[#B19EEF] text-sm mb-2">

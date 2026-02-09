@@ -7,7 +7,7 @@ import 'aos/dist/aos.css';
 import { getEducation, type EducationData } from '@/lib/public-api';
 import { useLanguage } from '@/lib/i18n';
 
-const EducationCard = ({ education, index, t }: { education: EducationData; index: number; t: (en: string, fr: string) => string }) => {
+const EducationCard = ({ education, index, l }: { education: EducationData; index: number; l: (en: string, fr: string) => string }) => {
   return (
     <div
       className="relative"
@@ -36,7 +36,7 @@ const EducationCard = ({ education, index, t }: { education: EducationData; inde
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
             <div>
               <h3 className="text-2xl md:text-3xl font-bold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-[#6366f1] group-hover:to-[#a855f7] transition-all duration-300">
-                {education.degree}
+                {l(education.degree_en, education.degree_fr)}
               </h3>
               <p className="text-xl text-[#a855f7] font-medium mt-1">
                 {education.institution}
@@ -57,24 +57,10 @@ const EducationCard = ({ education, index, t }: { education: EducationData; inde
             )}
           </div>
 
-          {education.description && (
+          {l(education.description_en, education.description_fr) && (
             <p className="text-gray-300 text-lg leading-relaxed mb-4">
-              {education.description}
+              {l(education.description_en, education.description_fr)}
             </p>
-          )}
-
-          {education.achievements && education.achievements.length > 0 && (
-            <div className="mt-4">
-              <h4 className="text-white font-medium mb-3 text-lg">{t("Highlights:", "Points forts :")}</h4>
-              <ul className="space-y-2">
-                {education.achievements.map((achievement, i) => (
-                  <li key={i} className="flex items-start gap-3 text-gray-300">
-                    <span className="w-2 h-2 rounded-full bg-gradient-to-r from-[#6366f1] to-[#a855f7] mt-2 flex-shrink-0" />
-                    <span className="text-lg">{achievement}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
           )}
         </div>
       </div>
@@ -83,7 +69,7 @@ const EducationCard = ({ education, index, t }: { education: EducationData; inde
 };
 
 const Education = () => {
-  const { t } = useLanguage();
+  const { t, l } = useLanguage();
   const [educationData, setEducationData] = useState<EducationData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -136,7 +122,7 @@ const Education = () => {
 
       <div className="max-w-4xl mx-auto space-y-8">
         {educationData.map((education, index) => (
-          <EducationCard key={education.id} education={education} index={index} t={t} />
+          <EducationCard key={education.id} education={education} index={index} l={l} />
         ))}
       </div>
     </section>

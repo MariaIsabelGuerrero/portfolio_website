@@ -374,46 +374,55 @@ export interface Skill {
 
 export interface Project {
   id: string;
-  title: string;
-  description: string;
+  title_en: string;
+  title_fr: string;
+  description_en: string;
+  description_fr: string;
   img: string;
   technologies: string[];
   github: string;
   live: string;
-  keyFeatures: string[];
+  keyFeatures_en: string[];
+  keyFeatures_fr: string[];
   createdAt?: string;
   updatedAt?: string;
 }
 
 export interface Experience {
   id: string;
-  title: string;
+  title_en: string;
+  title_fr: string;
   company: string;
   location: string;
   period: string;
   type: string;
-  description: string;
-  responsibilities: string[];
+  description_en: string;
+  description_fr: string;
+  responsibilities_en: string[];
+  responsibilities_fr: string[];
   createdAt?: string;
   updatedAt?: string;
 }
 
 export interface Education {
   id: string;
-  degree: string;
+  degree_en: string;
+  degree_fr: string;
   institution: string;
   location: string;
   period: string;
-  description: string;
-  achievements: string[];
+  description_en: string;
+  description_fr: string;
   createdAt?: string;
   updatedAt?: string;
 }
 
 export interface Hobby {
   id: string;
-  name: string;
-  description: string;
+  name_en: string;
+  name_fr: string;
+  description_en: string;
+  description_fr: string;
   icon: string;
   color: string;
   createdAt?: string;

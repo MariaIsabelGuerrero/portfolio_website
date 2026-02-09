@@ -30,7 +30,7 @@ const CardProject = ({ Img, Title, Description, Link: ProjectLink, id }) => {
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 opacity-50 group-hover:opacity-70 transition-opacity duration-300"></div>
 
         <div className="relative p-6 z-10">
-          <div className="relative overflow-hidden rounded-lg">
+          <div className="relative overflow-hidden rounded-lg aspect-[16/10]">
             <img
               src={Img}
               alt={Title}
@@ -56,7 +56,7 @@ const CardProject = ({ Img, Title, Description, Link: ProjectLink, id }) => {
                   onClick={handleLiveDemo}
                   className="inline-flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors duration-200"
                 >
-                  <span className="text-base font-medium">{t("Live Demo", "Démo en direct")}</span>
+                  <span className="text-lg font-medium">{t("Live Demo", "Démo en direct")}</span>
                   <ExternalLink className="w-5 h-5" />
                 </a>
               ) : (
@@ -69,9 +69,9 @@ const CardProject = ({ Img, Title, Description, Link: ProjectLink, id }) => {
                 <Link
                   href={`/project/${id}`}
                   onClick={handleDetails}
-                  className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/90 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                  className="inline-flex items-center space-x-2 px-6 py-3 rounded-lg bg-white/5 hover:bg-white/10 text-white/90 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                 >
-                  <span className="text-base font-medium">{t("Details", "Détails")}</span>
+                  <span className="text-lg font-medium">{t("Details", "Détails")}</span>
                   <ArrowRight className="w-5 h-5" />
                 </Link>
               ) : (

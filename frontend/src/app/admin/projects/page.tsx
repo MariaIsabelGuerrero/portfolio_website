@@ -8,23 +8,28 @@ import { fetchProjects as apiFetchProjects, createProject, updateProject, delete
 import { useLanguage } from "@/lib/i18n";
 
 export default function ProjectsManagement() {
-  const { t } = useLanguage();
+  const { t, l, language } = useLanguage();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [formData, setFormData] = useState({
-    title: "",
-    description: "",
+    title_en: "",
+    title_fr: "",
+    description_en: "",
+    description_fr: "",
     img: "",
     technologies: "",
     github: "",
     live: "",
-    keyFeatures: "",
+    keyFeatures_en: "",
+    keyFeatures_fr: "",
   });
+  const [formLang, setFormLang] = useState<"en" | "fr">("en");
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadProjects = useCallback(async () => {
@@ -41,34 +46,42 @@ export default function ProjectsManagement() {
   useEffect(() => { loadProjects(); }, [loadProjects]);
 
   const filteredProjects = projects.filter((project) => {
-    return project.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const title = l(project.title_en, project.title_fr);
+    return title.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
   const openAddModal = () => {
     setEditingProject(null);
     setFormData({
-      title: "",
-      description: "",
+      title_en: "", title_fr: "",
+      description_en: "", description_fr: "",
       img: "",
       technologies: "",
       github: "",
       live: "",
-      keyFeatures: "",
+      keyFeatures_en: "", keyFeatures_fr: "",
     });
+    setFormErrors({});
+    setFormLang(language === "fr" ? "fr" : "en");
     setIsModalOpen(true);
   };
 
   const openEditModal = (project: Project) => {
     setEditingProject(project);
     setFormData({
-      title: project.title,
-      description: project.description,
+      title_en: project.title_en || "",
+      title_fr: project.title_fr || "",
+      description_en: project.description_en || "",
+      description_fr: project.description_fr || "",
       img: project.img || "",
       technologies: project.technologies.join(", "),
       github: project.github,
       live: project.live,
-      keyFeatures: (project.keyFeatures || []).join("\n"),
+      keyFeatures_en: (project.keyFeatures_en || []).join("\n"),
+      keyFeatures_fr: (project.keyFeatures_fr || []).join("\n"),
     });
+    setFormErrors({});
+    setFormLang(language === "fr" ? "fr" : "en");
     setIsModalOpen(true);
   };
 
@@ -89,14 +102,35 @@ export default function ProjectsManagement() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const errors: Record<string, string> = {};
+    if (!formData.title_en.trim()) errors.title_en = "Required";
+    if (!formData.title_fr.trim()) errors.title_fr = "Required";
+    if (!formData.description_en.trim()) errors.description_en = "Required";
+    if (!formData.description_fr.trim()) errors.description_fr = "Required";
+    if (!formData.img) errors.img = "Required";
+    if (!formData.technologies.trim()) errors.technologies = "Required";
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      const hasEn = ["title_en", "description_en"].some(f => errors[f]);
+      const hasFr = ["title_fr", "description_fr"].some(f => errors[f]);
+      if (formLang === "en" && !hasEn && hasFr) setFormLang("fr");
+      if (formLang === "fr" && !hasFr && hasEn) setFormLang("en");
+      return;
+    }
+    setFormErrors({});
+
     const projectData = {
-      title: formData.title,
-      description: formData.description,
+      title_en: formData.title_en,
+      title_fr: formData.title_fr,
+      description_en: formData.description_en,
+      description_fr: formData.description_fr,
       img: formData.img,
-      technologies: formData.technologies.split(",").map((t) => t.trim()).filter(Boolean),
+      technologies: formData.technologies.split(",").map((s) => s.trim()).filter(Boolean),
       github: formData.github,
       live: formData.live,
-      keyFeatures: formData.keyFeatures.split("\n").map((f) => f.trim()).filter(Boolean),
+      keyFeatures_en: formData.keyFeatures_en.split("\n").map((f) => f.trim()).filter(Boolean),
+      keyFeatures_fr: formData.keyFeatures_fr.split("\n").map((f) => f.trim()).filter(Boolean),
     };
 
     try {
@@ -171,9 +205,9 @@ export default function ProjectsManagement() {
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
-                  <h3 className="text-xl font-semibold text-white">{project.title}</h3>
+                  <h3 className="text-xl font-semibold text-white">{l(project.title_en, project.title_fr)}</h3>
                 </div>
-                <p className="text-[#B19EEF] text-sm line-clamp-2">{project.description}</p>
+                <p className="text-[#B19EEF] text-sm line-clamp-2">{l(project.description_en, project.description_fr)}</p>
               </div>
             </div>
 
@@ -244,30 +278,43 @@ export default function ProjectsManagement() {
               </button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* EN/FR Language Tabs */}
+              <div className="flex gap-2">
+                <button type="button" onClick={() => setFormLang("en")}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors relative ${formLang === "en" ? "bg-[#5227FF] text-white" : "bg-[#5227FF]/20 text-[#B19EEF] hover:bg-[#5227FF]/30"}`}>
+                  EN
+                  {(formErrors.title_en || formErrors.description_en) && formLang !== "en" && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full" />}
+                </button>
+                <button type="button" onClick={() => setFormLang("fr")}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors relative ${formLang === "fr" ? "bg-[#5227FF] text-white" : "bg-[#5227FF]/20 text-[#B19EEF] hover:bg-[#5227FF]/30"}`}>
+                  FR
+                  {(formErrors.title_fr || formErrors.description_fr) && formLang !== "fr" && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full" />}
+                </button>
+              </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">{t("Project Title", "Titre du projet")}</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{formLang === "en" ? "Project Title" : "Titre du projet"} <span className="text-red-400">*</span></label>
                 <input
                   type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  required
-                  className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
-                  placeholder={t("Enter project title", "Entrez le titre du projet")}
+                  value={formData[`title_${formLang}`]}
+                  onChange={(e) => { setFormData({ ...formData, [`title_${formLang}`]: e.target.value }); setFormErrors(prev => { const n = {...prev}; delete n[`title_${formLang}`]; return n; }); }}
+                  className={`w-full px-4 py-3 bg-[#0a0314] border ${formErrors[`title_${formLang}`] ? "border-red-500/50" : "border-[#5227FF]/30"} rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]`}
+                  placeholder={formLang === "en" ? "Enter project title" : "Entrez le titre du projet"}
                 />
+                {formErrors[`title_${formLang}`] && <p className="text-red-400 text-xs mt-1">{formLang === "en" ? "This field is required" : "Ce champ est requis"}</p>}
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">{t("Description", "Description")}</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">Description <span className="text-red-400">*</span></label>
                 <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  required
+                  value={formData[`description_${formLang}`]}
+                  onChange={(e) => { setFormData({ ...formData, [`description_${formLang}`]: e.target.value }); setFormErrors(prev => { const n = {...prev}; delete n[`description_${formLang}`]; return n; }); }}
                   rows={3}
-                  className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC] resize-none"
-                  placeholder={t("Describe your project", "Décrivez votre projet")}
+                  className={`w-full px-4 py-3 bg-[#0a0314] border ${formErrors[`description_${formLang}`] ? "border-red-500/50" : "border-[#5227FF]/30"} rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC] resize-none`}
+                  placeholder={formLang === "en" ? "Describe your project" : "Décrivez votre projet"}
                 />
+                {formErrors[`description_${formLang}`] && <p className="text-red-400 text-xs mt-1">{formLang === "en" ? "This field is required" : "Ce champ est requis"}</p>}
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">{t("Project Image", "Image du projet")}</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{formLang === "en" ? "Project Image" : "Image du projet"} <span className="text-red-400">*</span></label>
                 {formData.img && (
                   <div className="mb-3 flex items-center gap-3 p-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl">
                     <img src={formData.img} alt="Project preview" className="w-16 h-10 object-cover rounded" />
@@ -297,40 +344,42 @@ export default function ProjectsManagement() {
                   {uploading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      {t("Uploading...", "Téléchargement...")}
+                      {formLang === "en" ? "Uploading..." : "Téléchargement..."}
                     </>
                   ) : (
                     <>
                       <Upload className="w-4 h-4" />
-                      {formData.img ? t("Replace Image", "Remplacer l'image") : t("Upload Image", "Télécharger une image")}
+                      {formData.img ? (formLang === "en" ? "Replace Image" : "Remplacer l'image") : (formLang === "en" ? "Upload Image" : "Télécharger une image")}
                     </>
                   )}
                 </button>
-                <p className="text-[#B19EEF]/50 text-xs mt-1">{t("PNG, JPG, WebP, or SVG (max 5MB)", "PNG, JPG, WebP ou SVG (max 5 Mo)")}</p>
+                <p className="text-[#B19EEF]/50 text-xs mt-1">{formLang === "en" ? "PNG, JPG, WebP, or SVG (max 5MB)" : "PNG, JPG, WebP ou SVG (max 5Mo)"}</p>
+                {formErrors.img && <p className="text-red-400 text-xs mt-1">{formLang === "en" ? "Image is required" : "L'image est requise"}</p>}
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">{t("Technologies (comma-separated)", "Technologies (séparées par des virgules)")}</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{formLang === "en" ? "Technologies (comma-separated)" : "Technologies (séparées par des virgules)"} <span className="text-red-400">*</span></label>
                 <input
                   type="text"
                   value={formData.technologies}
-                  onChange={(e) => setFormData({ ...formData, technologies: e.target.value })}
-                  className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
+                  onChange={(e) => { setFormData({ ...formData, technologies: e.target.value }); setFormErrors(prev => { const n = {...prev}; delete n.technologies; return n; }); }}
+                  className={`w-full px-4 py-3 bg-[#0a0314] border ${formErrors.technologies ? "border-red-500/50" : "border-[#5227FF]/30"} rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]`}
                   placeholder="React, TypeScript, Node.js"
                 />
+                {formErrors.technologies && <p className="text-red-400 text-xs mt-1">{formLang === "en" ? "This field is required" : "Ce champ est requis"}</p>}
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">{t("Key Features (one per line)", "Fonctionnalités clés (une par ligne)")}</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{formLang === "en" ? "Key Features (one per line)" : "Fonctionnalités clés (une par ligne)"}</label>
                 <textarea
-                  value={formData.keyFeatures}
-                  onChange={(e) => setFormData({ ...formData, keyFeatures: e.target.value })}
+                  value={formData[`keyFeatures_${formLang}`]}
+                  onChange={(e) => setFormData({ ...formData, [`keyFeatures_${formLang}`]: e.target.value })}
                   rows={3}
                   className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC] resize-none"
-                  placeholder={t("Enter each feature on a new line", "Entrez chaque fonctionnalité sur une nouvelle ligne")}
+                  placeholder={formLang === "en" ? "Enter each feature on a new line" : "Entrez chaque fonctionnalité sur une nouvelle ligne"}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[#B19EEF] text-sm mb-2">{t("GitHub URL", "URL GitHub")}</label>
+                  <label className="block text-[#B19EEF] text-sm mb-2">{formLang === "en" ? "GitHub URL" : "URL GitHub"}</label>
                   <input
                     type="url"
                     value={formData.github}
@@ -340,7 +389,7 @@ export default function ProjectsManagement() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[#B19EEF] text-sm mb-2">{t("Live URL", "URL en direct")}</label>
+                  <label className="block text-[#B19EEF] text-sm mb-2">{formLang === "en" ? "Live URL" : "URL en ligne"}</label>
                   <input
                     type="url"
                     value={formData.live}
@@ -356,13 +405,13 @@ export default function ProjectsManagement() {
                   onClick={() => setIsModalOpen(false)}
                   className="flex-1 px-4 py-3 border border-[#5227FF]/30 text-[#B19EEF] rounded-xl hover:bg-[#5227FF]/20 transition-colors"
                 >
-                  {t("Cancel", "Annuler")}
+                  {formLang === "en" ? "Cancel" : "Annuler"}
                 </button>
                 <button
                   type="submit"
                   className="flex-1 px-4 py-3 bg-[#5227FF] text-white rounded-xl hover:bg-[#5227FF]/80 transition-colors"
                 >
-                  {editingProject ? t("Save Changes", "Enregistrer") : t("Add Project", "Ajouter le projet")}
+                  {editingProject ? (formLang === "en" ? "Save Changes" : "Enregistrer") : (formLang === "en" ? "Add Project" : "Ajouter le projet")}
                 </button>
               </div>
             </form>

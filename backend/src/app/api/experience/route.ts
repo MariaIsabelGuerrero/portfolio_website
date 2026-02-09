@@ -23,22 +23,25 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { title, company, location, period, type, description, responsibilities } = body;
+    const { title_en, title_fr, company, location, period, type, description_en, description_fr, responsibilities_en, responsibilities_fr } = body;
 
-    if (!title || !company || !period) {
-      return NextResponse.json({ error: "Title, company, and period are required" }, { status: 400 });
+    if (!title_en || !company || !period) {
+      return NextResponse.json({ error: "English title, company, and period are required" }, { status: 400 });
     }
 
     const id = crypto.randomUUID();
     const [created] = await db.insert(experiences).values({
       id,
-      title,
+      title_en,
+      title_fr: title_fr || "",
       company,
       location: location || "",
       period,
       type: type || "",
-      description: description || "",
-      responsibilities: responsibilities || [],
+      description_en: description_en || "",
+      description_fr: description_fr || "",
+      responsibilities_en: responsibilities_en || [],
+      responsibilities_fr: responsibilities_fr || [],
     }).returning();
 
     return NextResponse.json({ data: created }, { status: 201 });

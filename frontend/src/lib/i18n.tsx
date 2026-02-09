@@ -16,6 +16,8 @@ interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (en: string, fr: string) => string;
+  l: (en: string, fr: string) => string;
+  la: (en: string[], fr: string[]) => string[];
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(
@@ -55,9 +57,23 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     [language]
   );
 
+  const l = useCallback(
+    (en: string, fr: string) => {
+      return language === "fr" && fr ? fr : en;
+    },
+    [language]
+  );
+
+  const la = useCallback(
+    (en: string[], fr: string[]) => {
+      return language === "fr" && fr && fr.length > 0 ? fr : en;
+    },
+    [language]
+  );
+
   const contextValue = useMemo(
-    () => ({ language, setLanguage, t }),
-    [language, setLanguage, t]
+    () => ({ language, setLanguage, t, l, la }),
+    [language, setLanguage, t, l, la]
   );
 
   return (

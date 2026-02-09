@@ -25,11 +25,11 @@ const TechBadge = ({ tech }: { tech: string }) => {
   const Icon = TECH_ICONS[tech] || TECH_ICONS["default"];
 
   return (
-    <div className="group relative overflow-hidden px-4 py-2.5 md:px-5 md:py-3 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-xl border border-blue-500/10 hover:border-blue-500/30 transition-all duration-300 cursor-default">
+    <div className="group relative overflow-hidden px-5 py-3 md:px-6 md:py-3.5 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-xl border border-blue-500/10 hover:border-blue-500/30 transition-all duration-300 cursor-default">
       <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/10 group-hover:to-purple-500/10 transition-all duration-500" />
       <div className="relative flex items-center gap-2 md:gap-2.5">
-        <Icon className="w-4 h-4 md:w-5 md:h-5 text-blue-400 group-hover:text-blue-300 transition-colors" />
-        <span className="text-sm md:text-base font-medium text-blue-300/90 group-hover:text-blue-200 transition-colors">
+        <Icon className="w-5 h-5 md:w-6 md:h-6 text-blue-400 group-hover:text-blue-300 transition-colors" />
+        <span className="text-base md:text-lg font-medium text-blue-300/90 group-hover:text-blue-200 transition-colors">
           {tech}
         </span>
       </div>
@@ -37,9 +37,8 @@ const TechBadge = ({ tech }: { tech: string }) => {
   );
 };
 
-const ProjectStats = ({ project, t }: { project: Project; t: (en: string, fr: string) => string }) => {
+const ProjectStats = ({ project, t, featuresCount }: { project: Project; t: (en: string, fr: string) => string; featuresCount: number }) => {
   const techCount = project.technologies?.length || 0;
-  const featuresCount = project.keyFeatures?.length || 0;
   const showFeatures = featuresCount > 0;
 
   return (
@@ -47,12 +46,12 @@ const ProjectStats = ({ project, t }: { project: Project; t: (en: string, fr: st
       <div className="p-3 md:p-4 bg-[#0a0a1a] rounded-xl overflow-hidden relative">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 to-purple-900/20 opacity-50 blur-2xl z-0" />
         <div className="relative z-10 flex items-center space-x-3 md:space-x-4 bg-white/5 p-3 md:p-4 rounded-lg border border-blue-500/20 transition-all duration-300 hover:scale-105 hover:border-blue-500/50 hover:shadow-lg">
-          <div className="bg-gradient-to-br from-blue-500/30 to-purple-500/30 p-2.5 md:p-3 rounded-xl">
-            <Code2 className="text-blue-300 w-5 h-5 md:w-7 md:h-7" strokeWidth={1.5} />
+          <div className="bg-gradient-to-br from-blue-500/30 to-purple-500/30 p-3 md:p-4 rounded-xl">
+            <Code2 className="text-blue-300 w-6 h-6 md:w-8 md:h-8" strokeWidth={1.5} />
           </div>
           <div className="flex-grow">
-            <div className="text-xl md:text-2xl font-bold text-white">{techCount}</div>
-            <div className="text-xs md:text-sm text-gray-400">{t("Total Technologies", "Technologies totales")}</div>
+            <div className="text-2xl md:text-4xl font-bold text-white">{techCount}</div>
+            <div className="text-sm md:text-base text-gray-400">{t("Total Technologies", "Technologies totales")}</div>
           </div>
         </div>
       </div>
@@ -61,12 +60,12 @@ const ProjectStats = ({ project, t }: { project: Project; t: (en: string, fr: st
         <div className="p-3 md:p-4 bg-[#0a0a1a] rounded-xl overflow-hidden relative">
           <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-pink-900/20 opacity-50 blur-2xl z-0" />
           <div className="relative z-10 flex items-center space-x-3 md:space-x-4 bg-white/5 p-3 md:p-4 rounded-lg border border-purple-500/20 transition-all duration-300 hover:scale-105 hover:border-purple-500/50 hover:shadow-lg">
-            <div className="bg-gradient-to-br from-purple-500/30 to-pink-500/30 p-2.5 md:p-3 rounded-xl">
-              <Layers className="text-purple-300 w-5 h-5 md:w-7 md:h-7" strokeWidth={1.5} />
+            <div className="bg-gradient-to-br from-purple-500/30 to-pink-500/30 p-3 md:p-4 rounded-xl">
+              <Layers className="text-purple-300 w-6 h-6 md:w-8 md:h-8" strokeWidth={1.5} />
             </div>
             <div className="flex-grow">
-              <div className="text-xl md:text-2xl font-bold text-white">{featuresCount}</div>
-              <div className="text-xs md:text-sm text-gray-400">{t("Key Features", "Fonctionnalités clés")}</div>
+              <div className="text-2xl md:text-4xl font-bold text-white">{featuresCount}</div>
+              <div className="text-sm md:text-base text-gray-400">{t("Key Features", "Fonctionnalités clés")}</div>
             </div>
           </div>
         </div>
@@ -79,17 +78,17 @@ const KeyFeaturesCard = ({ features, t }: { features: string[]; t: (en: string, 
   if (!features || features.length === 0) return null;
 
   return (
-    <div className="bg-[#0a0a1a] rounded-xl overflow-hidden relative p-5 md:p-6 border border-purple-500/20">
+    <div className="group/features bg-[#0a0a1a] rounded-xl overflow-hidden relative p-5 md:p-6 border border-purple-500/20">
       <div className="absolute inset-0 bg-gradient-to-br from-purple-900/10 to-pink-900/10 opacity-50 blur-2xl z-0" />
       <div className="relative z-10">
-        <h3 className="text-xl md:text-2xl font-bold text-white mb-5 flex items-center gap-3">
-          <Star className="w-5 h-5 md:w-6 md:h-6 text-yellow-400" />
+        <h3 className="text-2xl md:text-3xl font-bold text-white mb-5 flex items-center gap-3">
+          <Star className="w-6 h-6 md:w-7 md:h-7 text-yellow-400 group-hover/features:rotate-12 transition-transform duration-300" />
           {t("Key Features", "Fonctionnalités clés")}
         </h3>
         <ul className="space-y-3">
           {features.map((feature, index) => (
-            <li key={index} className="flex items-start gap-3 text-gray-300 text-base md:text-lg leading-relaxed p-3 rounded-lg border border-white/5 bg-white/[0.02]">
-              <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-[#6366f1] to-[#a855f7] mt-2 flex-shrink-0" />
+            <li key={index} className="flex items-start gap-3 text-gray-300 text-lg md:text-xl leading-relaxed p-3 rounded-lg border border-transparent hover:border-white/10 hover:bg-white/[0.03] transition-all duration-300">
+              <span className="w-3 h-3 rounded-full bg-gradient-to-r from-[#6366f1] to-[#a855f7] mt-2 flex-shrink-0" />
               <span>{feature}</span>
             </li>
           ))}
@@ -100,7 +99,7 @@ const KeyFeaturesCard = ({ features, t }: { features: string[]; t: (en: string, 
 };
 
 const ProjectDetails = () => {
-  const { t } = useLanguage();
+  const { t, l, la } = useLanguage();
   const params = useParams<{ id: string }>();
   const id = params?.id;
   const router = useRouter();
@@ -164,7 +163,7 @@ const ProjectDetails = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#030014] px-[2%] sm:px-0 relative overflow-hidden">
+    <div className="min-h-screen bg-[#030014] px-[3%] md:px-[5%] relative overflow-hidden">
       {/* Background animations */}
       <div className="fixed inset-0">
         <div className="absolute -inset-[10px] opacity-20">
@@ -176,27 +175,27 @@ const ProjectDetails = () => {
       </div>
 
       <div className="relative">
-        <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-16">
-          <div className="flex items-center space-x-2 md:space-x-4 mb-8 md:mb-12 animate-fadeIn">
+        <div className="w-full mx-auto py-8 md:py-16">
+          <div className="flex items-center space-x-2 md:space-x-4 mb-10 md:mb-16 animate-fadeIn">
             <button
-              onClick={() => router.back()}
-              className="group inline-flex items-center space-x-1.5 md:space-x-2 px-4 md:px-6 py-2.5 md:py-3 bg-white/5 backdrop-blur-xl rounded-xl text-white/90 hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20 text-base md:text-lg"
+              onClick={() => router.push('/#Portfolio')}
+              className="group inline-flex items-center space-x-1.5 md:space-x-2 px-4 md:px-6 py-2.5 md:py-3 bg-white/5 backdrop-blur-xl rounded-xl text-white/90 hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20 text-xl md:text-2xl"
             >
-              <ArrowLeft className="w-4 h-4 md:w-5 md:h-5 group-hover:-translate-x-1 transition-transform" />
+              <ArrowLeft className="w-6 h-6 md:w-7 md:h-7 group-hover:-translate-x-1 transition-transform" />
               <span>{t("Back", "Retour")}</span>
             </button>
-            <div className="flex items-center space-x-1 md:space-x-2 text-base md:text-lg text-white/50">
+            <div className="flex items-center space-x-1 md:space-x-2 text-xl md:text-2xl text-white/50">
               <span>{t("Projects", "Projets")}</span>
-              <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
-              <span className="text-white/90 truncate">{project.title}</span>
+              <ChevronRight className="w-6 h-6 md:w-7 md:h-7" />
+              <span className="text-white/90 truncate">{l(project.title_en, project.title_fr)}</span>
             </div>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-8 md:gap-16">
-            <div className="space-y-6 md:space-y-10 animate-slideInLeft">
-              <div className="space-y-4 md:space-y-6">
-                <h1 className="text-4xl md:text-7xl font-bold bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 bg-clip-text text-transparent leading-tight">
-                  {project.title}
+            <div className="space-y-8 md:space-y-12 animate-slideInLeft">
+              <div className="space-y-6 md:space-y-8">
+                <h1 className="text-5xl md:text-8xl font-bold bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200 bg-clip-text text-transparent leading-tight">
+                  {l(project.title_en, project.title_fr)}
                 </h1>
                 <div className="relative h-1 w-20 md:w-28">
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-pulse" />
@@ -205,12 +204,12 @@ const ProjectDetails = () => {
               </div>
 
               <div className="prose prose-invert max-w-none">
-                <p className="text-lg md:text-xl text-gray-300/90 leading-relaxed">
-                  {project.description}
+                <p className="text-2xl md:text-4xl text-gray-300/90 leading-relaxed">
+                  {l(project.description_en, project.description_fr)}
                 </p>
               </div>
 
-              <ProjectStats project={project} t={t} />
+              <ProjectStats project={project} t={t} featuresCount={la(project.keyFeatures_en || [], project.keyFeatures_fr || []).length} />
 
               <div className="flex flex-wrap gap-3 md:gap-4">
                 {project.live && (
@@ -218,10 +217,10 @@ const ProjectDetails = () => {
                     href={project.live}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group relative inline-flex items-center space-x-2 md:space-x-2.5 px-6 md:px-10 py-3 md:py-4 bg-gradient-to-r from-blue-600/10 to-purple-600/10 hover:from-blue-600/20 hover:to-purple-600/20 text-blue-300 rounded-xl transition-all duration-300 border border-blue-500/20 hover:border-blue-500/40 backdrop-blur-xl overflow-hidden text-base md:text-lg"
+                    className="group relative inline-flex items-center space-x-2.5 md:space-x-3 px-8 md:px-12 py-4 md:py-5 bg-gradient-to-r from-blue-600/10 to-purple-600/10 hover:from-blue-600/20 hover:to-purple-600/20 text-blue-300 rounded-xl transition-all duration-300 border border-blue-500/20 hover:border-blue-500/40 backdrop-blur-xl overflow-hidden text-xl md:text-2xl"
                   >
                     <div className="absolute inset-0 translate-y-[100%] bg-gradient-to-r from-blue-600/10 to-purple-600/10 transition-transform duration-300 group-hover:translate-y-[0%]" />
-                    <ExternalLink className="relative w-5 h-5 md:w-6 md:h-6 group-hover:rotate-12 transition-transform" />
+                    <ExternalLink className="relative w-7 h-7 md:w-8 md:h-8 group-hover:rotate-12 transition-transform" />
                     <span className="relative font-medium">{t("Live Demo", "Démo en direct")}</span>
                   </a>
                 )}
@@ -231,19 +230,19 @@ const ProjectDetails = () => {
                     href={project.github}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group relative inline-flex items-center space-x-2 md:space-x-2.5 px-6 md:px-10 py-3 md:py-4 bg-gradient-to-r from-purple-600/10 to-pink-600/10 hover:from-purple-600/20 hover:to-pink-600/20 text-purple-300 rounded-xl transition-all duration-300 border border-purple-500/20 hover:border-purple-500/40 backdrop-blur-xl overflow-hidden text-base md:text-lg"
+                    className="group relative inline-flex items-center space-x-2.5 md:space-x-3 px-8 md:px-12 py-4 md:py-5 bg-gradient-to-r from-purple-600/10 to-pink-600/10 hover:from-purple-600/20 hover:to-pink-600/20 text-purple-300 rounded-xl transition-all duration-300 border border-purple-500/20 hover:border-purple-500/40 backdrop-blur-xl overflow-hidden text-xl md:text-2xl"
                     onClick={(e) => !handleGithubClick(project.github) && e.preventDefault()}
                   >
                     <div className="absolute inset-0 translate-y-[100%] bg-gradient-to-r from-purple-600/10 to-pink-600/10 transition-transform duration-300 group-hover:translate-y-[0%]" />
-                    <Github className="relative w-5 h-5 md:w-6 md:h-6 group-hover:rotate-12 transition-transform" />
+                    <Github className="relative w-7 h-7 md:w-8 md:h-8 group-hover:rotate-12 transition-transform" />
                     <span className="relative font-medium">Github</span>
                   </a>
                 )}
               </div>
 
               <div className="space-y-4 md:space-y-6">
-                <h3 className="text-xl md:text-2xl font-semibold text-white/90 mt-[3rem] md:mt-0 flex items-center gap-2 md:gap-3">
-                  <Code2 className="w-5 h-5 md:w-6 md:h-6 text-blue-400" />
+                <h3 className="text-2xl md:text-3xl font-semibold text-white/90 mt-[3rem] md:mt-0 flex items-center gap-2 md:gap-3">
+                  <Code2 className="w-6 h-6 md:w-7 md:h-7 text-blue-400" />
                   {t("Technologies Used", "Technologies utilisées")}
                 </h3>
                 {project.technologies && project.technologies.length > 0 ? (
@@ -264,14 +263,14 @@ const ProjectDetails = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-[#030014] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <img
                     src={project.img}
-                    alt={project.title}
+                    alt={l(project.title_en, project.title_fr)}
                     className="w-full object-cover transform transition-transform duration-700 will-change-transform group-hover:scale-105"
                   />
                   <div className="absolute inset-0 border-2 border-white/0 group-hover:border-white/10 transition-colors duration-300 rounded-2xl" />
                 </div>
               )}
 
-              <KeyFeaturesCard features={project.keyFeatures} t={t} />
+              <KeyFeaturesCard features={la(project.keyFeatures_en || [], project.keyFeatures_fr || [])} t={t} />
             </div>
           </div>
         </div>

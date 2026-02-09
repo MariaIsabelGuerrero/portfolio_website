@@ -71,40 +71,49 @@ export interface SkillData {
 
 export interface ProjectData {
   id: string;
-  title: string;
-  description: string;
+  title_en: string;
+  title_fr: string;
+  description_en: string;
+  description_fr: string;
   img: string;
   technologies: string[];
   github: string;
   live: string;
-  keyFeatures: string[];
+  keyFeatures_en: string[];
+  keyFeatures_fr: string[];
 }
 
 export interface ExperienceData {
   id: string;
-  title: string;
+  title_en: string;
+  title_fr: string;
   company: string;
   location: string;
   period: string;
   type: string;
-  description: string;
-  responsibilities: string[];
+  description_en: string;
+  description_fr: string;
+  responsibilities_en: string[];
+  responsibilities_fr: string[];
 }
 
 export interface EducationData {
   id: string;
-  degree: string;
+  degree_en: string;
+  degree_fr: string;
   institution: string;
   location: string;
   period: string;
-  description: string;
-  achievements: string[];
+  description_en: string;
+  description_fr: string;
 }
 
 export interface HobbyData {
   id: string;
-  name: string;
-  description: string;
+  name_en: string;
+  name_fr: string;
+  description_en: string;
+  description_fr: string;
   icon: string;
   color: string;
 }

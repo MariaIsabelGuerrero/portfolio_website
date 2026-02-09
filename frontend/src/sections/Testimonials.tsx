@@ -73,10 +73,12 @@ const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
     const [userName, setUserName] = useState('');
     const [position, setPosition] = useState('');
     const [company, setCompany] = useState('');
+    const [formErrors, setFormErrors] = useState<Record<string, string>>({});
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const handleTextareaChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setNewComment(e.target.value);
+        setFormErrors(prev => { const n = {...prev}; delete n.content; return n; });
         if (textareaRef.current) {
             textareaRef.current.style.height = 'auto';
             textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
@@ -85,7 +87,17 @@ const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
 
     const handleSubmit = useCallback((e: React.FormEvent) => {
         e.preventDefault();
-        if (!newComment.trim() || !userName.trim() || !position.trim()) return;
+        const errors: Record<string, string> = {};
+        if (!userName.trim()) errors.name = "Required";
+        if (!position.trim()) errors.position = "Required";
+        if (!company.trim()) errors.company = "Required";
+        if (!newComment.trim()) errors.content = "Required";
+
+        if (Object.keys(errors).length > 0) {
+            setFormErrors(errors);
+            return;
+        }
+        setFormErrors({});
 
         onSubmit({ newComment, userName, position, company });
         setNewComment('');
@@ -104,12 +116,12 @@ const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
                 <input
                     type="text"
                     value={userName}
-                    onChange={(e) => setUserName(e.target.value)}
+                    onChange={(e) => { setUserName(e.target.value); setFormErrors(prev => { const n = {...prev}; delete n.name; return n; }); }}
                     maxLength={30}
                     placeholder={t("Enter your name", "Entrez votre nom")}
-                    className="w-full p-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
-                    required
+                    className={`w-full p-3 rounded-xl bg-white/5 border ${formErrors.name ? "border-red-500/50" : "border-white/10"} text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all`}
                 />
+                {formErrors.name && <p className="text-red-400 text-xs mt-1">{t("This field is required", "Ce champ est requis")}</p>}
             </div>
 
             <div className="space-y-2" data-aos="fade-up" data-aos-duration="1100">
@@ -119,26 +131,27 @@ const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
                 <input
                     type="text"
                     value={position}
-                    onChange={(e) => setPosition(e.target.value)}
+                    onChange={(e) => { setPosition(e.target.value); setFormErrors(prev => { const n = {...prev}; delete n.position; return n; }); }}
                     maxLength={30}
                     placeholder={t("e.g. Software Engineer", "ex: Ingenieur logiciel")}
-                    className="w-full p-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
-                    required
+                    className={`w-full p-3 rounded-xl bg-white/5 border ${formErrors.position ? "border-red-500/50" : "border-white/10"} text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all`}
                 />
+                {formErrors.position && <p className="text-red-400 text-xs mt-1">{t("This field is required", "Ce champ est requis")}</p>}
             </div>
 
             <div className="space-y-2" data-aos="fade-up" data-aos-duration="1200">
                 <label className="block text-sm font-medium text-white">
-                    {t("Company", "Entreprise")} <span className="text-gray-400">({t("optional", "facultatif")})</span>
+                    {t("Company", "Entreprise")} <span className="text-red-400">*</span>
                 </label>
                 <input
                     type="text"
                     value={company}
-                    onChange={(e) => setCompany(e.target.value)}
+                    onChange={(e) => { setCompany(e.target.value); setFormErrors(prev => { const n = {...prev}; delete n.company; return n; }); }}
                     maxLength={30}
                     placeholder={t("e.g. Google", "ex: Google")}
-                    className="w-full p-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                    className={`w-full p-3 rounded-xl bg-white/5 border ${formErrors.company ? "border-red-500/50" : "border-white/10"} text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all`}
                 />
+                {formErrors.company && <p className="text-red-400 text-xs mt-1">{t("This field is required", "Ce champ est requis")}</p>}
             </div>
 
             <div className="space-y-2" data-aos="fade-up" data-aos-duration="1300">
@@ -151,9 +164,9 @@ const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
                     maxLength={300}
                     onChange={handleTextareaChange}
                     placeholder={t("Share your experience working with me...", "Partagez votre expérience de travail avec moi...")}
-                    className="w-full p-4 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all resize-none min-h-[100px]"
-                    required
+                    className={`w-full p-4 rounded-xl bg-white/5 border ${formErrors.content ? "border-red-500/50" : "border-white/10"} text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all resize-none min-h-[100px]`}
                 />
+                {formErrors.content && <p className="text-red-400 text-xs mt-1">{t("This field is required", "Ce champ est requis")}</p>}
             </div>
 
             <button

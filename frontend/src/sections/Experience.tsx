@@ -7,7 +7,7 @@ import 'aos/dist/aos.css';
 import { getExperience, type ExperienceData } from '@/lib/public-api';
 import { useLanguage } from '@/lib/i18n';
 
-const ExperienceCard = ({ experience, index, t }: { experience: ExperienceData; index: number; t: (en: string, fr: string) => string }) => {
+const ExperienceCard = ({ experience, index, t, l, la }: { experience: ExperienceData; index: number; t: (en: string, fr: string) => string; l: (en: string, fr: string) => string; la: (en: string[], fr: string[]) => string[] }) => {
   const isEven = index % 2 === 0;
 
   return (
@@ -32,7 +32,7 @@ const ExperienceCard = ({ experience, index, t }: { experience: ExperienceData; 
             )}
 
             <h3 className="text-2xl md:text-3xl font-bold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-[#6366f1] group-hover:to-[#a855f7] transition-all duration-300">
-              {experience.title}
+              {l(experience.title_en, experience.title_fr)}
             </h3>
 
             <div className={`flex flex-wrap gap-4 mt-3 mb-4 text-gray-400 lg:justify-start`}>
@@ -55,17 +55,17 @@ const ExperienceCard = ({ experience, index, t }: { experience: ExperienceData; 
               )}
             </div>
 
-            {experience.description && (
+            {l(experience.description_en, experience.description_fr) && (
               <p className="text-gray-300 text-lg leading-relaxed mb-4">
-                {experience.description}
+                {l(experience.description_en, experience.description_fr)}
               </p>
             )}
 
-            {experience.responsibilities && experience.responsibilities.length > 0 && (
+            {la(experience.responsibilities_en || [], experience.responsibilities_fr || []).length > 0 && (
               <div className="mt-4">
                 <h4 className="text-white font-medium mb-3 text-lg lg:text-left">{t("Key Responsibilities:", "Responsabilités clés:")}</h4>
                 <ul className="space-y-2 lg:text-left">
-                  {experience.responsibilities.map((item, i) => (
+                  {la(experience.responsibilities_en || [], experience.responsibilities_fr || []).map((item, i) => (
                     <li key={i} className="flex items-start gap-3 text-gray-300">
                       <span className="w-2 h-2 rounded-full bg-gradient-to-r from-[#6366f1] to-[#a855f7] mt-2 flex-shrink-0" />
                       <span>{item}</span>
@@ -92,7 +92,7 @@ const ExperienceCard = ({ experience, index, t }: { experience: ExperienceData; 
 };
 
 const Experience = () => {
-  const { t } = useLanguage();
+  const { t, l, la } = useLanguage();
   const [experienceData, setExperienceData] = useState<ExperienceData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -151,7 +151,7 @@ const Experience = () => {
         </div>
 
         {experienceData.map((experience, index) => (
-          <ExperienceCard key={experience.id} experience={experience} index={index} t={t} />
+          <ExperienceCard key={experience.id} experience={experience} index={index} t={t} l={l} la={la} />
         ))}
       </div>
     </section>

@@ -22,17 +22,19 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { name, description, icon, color } = body;
+    const { name_en, name_fr, description_en, description_fr, icon, color } = body;
 
-    if (!name) {
-      return NextResponse.json({ error: "Name is required" }, { status: 400 });
+    if (!name_en) {
+      return NextResponse.json({ error: "English name is required" }, { status: 400 });
     }
 
     const id = crypto.randomUUID();
     const [created] = await db.insert(hobbies).values({
       id,
-      name,
-      description: description || "",
+      name_en,
+      name_fr: name_fr || "",
+      description_en: description_en || "",
+      description_fr: description_fr || "",
       icon: icon || "",
       color: color || "",
     }).returning();

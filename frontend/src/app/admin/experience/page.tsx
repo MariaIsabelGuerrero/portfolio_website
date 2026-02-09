@@ -8,21 +8,26 @@ import { fetchExperience as apiFetchExperience, createExperience, updateExperien
 import { useLanguage } from "@/lib/i18n";
 
 export default function ExperienceManagement() {
-  const { t } = useLanguage();
+  const { t, l, la, language } = useLanguage();
   const [experiences, setExperiences] = useState<Experience[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingExperience, setEditingExperience] = useState<Experience | null>(null);
   const [formData, setFormData] = useState({
-    title: "",
+    title_en: "",
+    title_fr: "",
     company: "",
     location: "",
     period: "",
     type: "",
-    description: "",
-    responsibilities: "",
+    description_en: "",
+    description_fr: "",
+    responsibilities_en: "",
+    responsibilities_fr: "",
   });
+  const [formLang, setFormLang] = useState<"en" | "fr">("en");
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
   const loadExperience = useCallback(async () => {
@@ -39,40 +44,66 @@ export default function ExperienceManagement() {
   useEffect(() => { loadExperience(); }, [loadExperience]);
 
   const filteredExperiences = experiences.filter((exp) =>
-    exp.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    l(exp.title_en, exp.title_fr).toLowerCase().includes(searchTerm.toLowerCase()) ||
     exp.company.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const openAddModal = () => {
     setEditingExperience(null);
-    setFormData({ title: "", company: "", location: "", period: "", type: "", description: "", responsibilities: "" });
+    setFormData({ title_en: "", title_fr: "", company: "", location: "", period: "", type: "", description_en: "", description_fr: "", responsibilities_en: "", responsibilities_fr: "" });
+    setFormErrors({});
+    setFormLang(language === "fr" ? "fr" : "en");
     setIsModalOpen(true);
   };
 
   const openEditModal = (exp: Experience) => {
     setEditingExperience(exp);
     setFormData({
-      title: exp.title,
+      title_en: exp.title_en || "",
+      title_fr: exp.title_fr || "",
       company: exp.company,
       location: exp.location || "",
       period: exp.period,
       type: exp.type || "",
-      description: exp.description || "",
-      responsibilities: exp.responsibilities.join("\n"),
+      description_en: exp.description_en || "",
+      description_fr: exp.description_fr || "",
+      responsibilities_en: (exp.responsibilities_en || []).join("\n"),
+      responsibilities_fr: (exp.responsibilities_fr || []).join("\n"),
     });
+    setFormErrors({});
+    setFormLang(language === "fr" ? "fr" : "en");
     setIsModalOpen(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const errors: Record<string, string> = {};
+    if (!formData.title_en.trim()) errors.title_en = "Required";
+    if (!formData.title_fr.trim()) errors.title_fr = "Required";
+    if (!formData.company.trim()) errors.company = "Required";
+    if (!formData.period.trim()) errors.period = "Required";
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      const hasEn = !!errors.title_en;
+      const hasFr = !!errors.title_fr;
+      if (formLang === "en" && !hasEn && hasFr) setFormLang("fr");
+      if (formLang === "fr" && !hasFr && hasEn) setFormLang("en");
+      return;
+    }
+    setFormErrors({});
+
     const expData = {
-      title: formData.title,
+      title_en: formData.title_en,
+      title_fr: formData.title_fr,
       company: formData.company,
       location: formData.location,
       period: formData.period,
       type: formData.type,
-      description: formData.description,
-      responsibilities: formData.responsibilities.split("\n").filter(Boolean),
+      description_en: formData.description_en,
+      description_fr: formData.description_fr,
+      responsibilities_en: formData.responsibilities_en.split("\n").filter(Boolean),
+      responsibilities_fr: formData.responsibilities_fr.split("\n").filter(Boolean),
     };
 
     try {
@@ -148,7 +179,7 @@ export default function ExperienceManagement() {
                   <Briefcase className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-semibold text-white">{exp.title}</h3>
+                  <h3 className="text-xl font-semibold text-white">{l(exp.title_en, exp.title_fr)}</h3>
                   <p className="text-[#FF9FFC]">{exp.company}</p>
                   <div className="flex flex-wrap items-center gap-3 mt-1">
                     <p className="text-[#B19EEF] text-sm">{exp.period}</p>
@@ -164,7 +195,7 @@ export default function ExperienceManagement() {
                       </span>
                     )}
                   </div>
-                  {exp.description && <p className="text-[#B19EEF]/80 text-sm mt-2">{exp.description}</p>}
+                  {l(exp.description_en, exp.description_fr) && <p className="text-[#B19EEF]/80 text-sm mt-2">{l(exp.description_en, exp.description_fr)}</p>}
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -183,7 +214,7 @@ export default function ExperienceManagement() {
               </div>
             </div>
             <ul className="mt-4 space-y-2 pl-16">
-              {exp.responsibilities.map((resp, idx) => (
+              {la(exp.responsibilities_en || [], exp.responsibilities_fr || []).map((resp, idx) => (
                 <li key={idx} className="text-[#B19EEF] text-sm flex items-start gap-2">
                   <span className="text-[#5227FF] mt-1.5">•</span>
                   {resp}
@@ -216,82 +247,95 @@ export default function ExperienceManagement() {
               </button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">{t("Job Title", "Intitulé du poste")}</label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  required
-                  className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
-                  placeholder={t("Software Developer", "Développeur logiciel")}
-                />
+              {/* EN/FR Language Tabs */}
+              <div className="flex gap-2">
+                <button type="button" onClick={() => setFormLang("en")}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors relative ${formLang === "en" ? "bg-[#5227FF] text-white" : "bg-[#5227FF]/20 text-[#B19EEF] hover:bg-[#5227FF]/30"}`}>
+                  EN
+                  {formErrors.title_en && formLang !== "en" && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full" />}
+                </button>
+                <button type="button" onClick={() => setFormLang("fr")}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors relative ${formLang === "fr" ? "bg-[#5227FF] text-white" : "bg-[#5227FF]/20 text-[#B19EEF] hover:bg-[#5227FF]/30"}`}>
+                  FR
+                  {formErrors.title_fr && formLang !== "fr" && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full" />}
+                </button>
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">{t("Company", "Entreprise")}</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{formLang === "en" ? "Job Title" : "Intitulé du poste"} <span className="text-red-400">*</span></label>
+                <input
+                  type="text"
+                  value={formData[`title_${formLang}`]}
+                  onChange={(e) => { setFormData({ ...formData, [`title_${formLang}`]: e.target.value }); setFormErrors(prev => { const n = {...prev}; delete n[`title_${formLang}`]; return n; }); }}
+                  className={`w-full px-4 py-3 bg-[#0a0314] border ${formErrors[`title_${formLang}`] ? "border-red-500/50" : "border-[#5227FF]/30"} rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]`}
+                  placeholder={formLang === "en" ? "Software Developer" : "Développeur logiciel"}
+                />
+                {formErrors[`title_${formLang}`] && <p className="text-red-400 text-xs mt-1">{formLang === "en" ? "This field is required" : "Ce champ est requis"}</p>}
+              </div>
+              <div>
+                <label className="block text-[#B19EEF] text-sm mb-2">{formLang === "en" ? "Company" : "Entreprise"} <span className="text-red-400">*</span></label>
                 <input
                   type="text"
                   value={formData.company}
-                  onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                  required
-                  className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
-                  placeholder={t("Company Name", "Nom de l'entreprise")}
+                  onChange={(e) => { setFormData({ ...formData, company: e.target.value }); setFormErrors(prev => { const n = {...prev}; delete n.company; return n; }); }}
+                  className={`w-full px-4 py-3 bg-[#0a0314] border ${formErrors.company ? "border-red-500/50" : "border-[#5227FF]/30"} rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]`}
+                  placeholder={formLang === "en" ? "Company Name" : "Nom de l'entreprise"}
                 />
+                {formErrors.company && <p className="text-red-400 text-xs mt-1">{formLang === "en" ? "This field is required" : "Ce champ est requis"}</p>}
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">{t("Location", "Localisation")}</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{formLang === "en" ? "Location" : "Localisation"}</label>
                 <input
                   type="text"
                   value={formData.location}
                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                   className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
-                  placeholder={t("Remote, City, Country", "Télétravail, Ville, Pays")}
+                  placeholder={formLang === "en" ? "Remote, City, Country" : "Télétravail, Ville, Pays"}
                 />
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">{t("Period", "Période")}</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{formLang === "en" ? "Period" : "Période"} <span className="text-red-400">*</span></label>
                 <input
                   type="text"
                   value={formData.period}
-                  onChange={(e) => setFormData({ ...formData, period: e.target.value })}
-                  required
-                  className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
-                  placeholder={t("2022 - Present", "2022 - Présent")}
+                  onChange={(e) => { setFormData({ ...formData, period: e.target.value }); setFormErrors(prev => { const n = {...prev}; delete n.period; return n; }); }}
+                  className={`w-full px-4 py-3 bg-[#0a0314] border ${formErrors.period ? "border-red-500/50" : "border-[#5227FF]/30"} rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]`}
+                  placeholder={formLang === "en" ? "2022 - Present" : "2022 - Présent"}
                 />
+                {formErrors.period && <p className="text-red-400 text-xs mt-1">{formLang === "en" ? "This field is required" : "Ce champ est requis"}</p>}
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">{t("Employment Type", "Type d'emploi")}</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{formLang === "en" ? "Employment Type" : "Type d'emploi"}</label>
                 <select
                   value={formData.type}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                   className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white focus:outline-none focus:border-[#FF9FFC]"
                 >
-                  <option value="">{t("Select type", "Sélectionner le type")}</option>
-                  <option value="Full-time">{t("Full-time", "Temps plein")}</option>
-                  <option value="Part-time">{t("Part-time", "Temps partiel")}</option>
-                  <option value="Freelance">{t("Freelance", "Freelance")}</option>
-                  <option value="Internship">{t("Internship", "Stage")}</option>
-                  <option value="Contract">{t("Contract", "Contrat")}</option>
+                  <option value="">{formLang === "en" ? "Select type" : "Sélectionner le type"}</option>
+                  <option value="Full-time">{formLang === "en" ? "Full-time" : "Temps plein"}</option>
+                  <option value="Part-time">{formLang === "en" ? "Part-time" : "Temps partiel"}</option>
+                  <option value="Freelance">Freelance</option>
+                  <option value="Internship">{formLang === "en" ? "Internship" : "Stage"}</option>
+                  <option value="Contract">{formLang === "en" ? "Contract" : "Contrat"}</option>
                 </select>
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">{t("Description", "Description")}</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">Description</label>
                 <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  value={formData[`description_${formLang}`]}
+                  onChange={(e) => setFormData({ ...formData, [`description_${formLang}`]: e.target.value })}
                   rows={2}
                   className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC] resize-none"
-                  placeholder={t("Brief overview of your role...", "Bref aperçu de votre rôle...")}
+                  placeholder={formLang === "en" ? "Brief overview of your role..." : "Bref aperçu de votre rôle..."}
                 />
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">{t("Responsibilities (one per line)", "Responsabilités (une par ligne)")}</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{formLang === "en" ? "Responsibilities (one per line)" : "Responsabilités (une par ligne)"}</label>
                 <textarea
-                  value={formData.responsibilities}
-                  onChange={(e) => setFormData({ ...formData, responsibilities: e.target.value })}
+                  value={formData[`responsibilities_${formLang}`]}
+                  onChange={(e) => setFormData({ ...formData, [`responsibilities_${formLang}`]: e.target.value })}
                   rows={4}
                   className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC] resize-none"
-                  placeholder={t("Developed web applications\nCollaborated with teams\n...", "Développé des applications web\nCollaboré avec des équipes\n...")}
+                  placeholder={formLang === "en" ? "Developed web applications\nCollaborated with teams\n..." : "Développé des applications web\nCollaboré avec des équipes\n..."}
                 />
               </div>
               <div className="flex gap-3 pt-4">
@@ -300,13 +344,13 @@ export default function ExperienceManagement() {
                   onClick={() => setIsModalOpen(false)}
                   className="flex-1 px-4 py-3 border border-[#5227FF]/30 text-[#B19EEF] rounded-xl hover:bg-[#5227FF]/20 transition-colors"
                 >
-                  {t("Cancel", "Annuler")}
+                  {formLang === "en" ? "Cancel" : "Annuler"}
                 </button>
                 <button
                   type="submit"
                   className="flex-1 px-4 py-3 bg-[#5227FF] text-white rounded-xl hover:bg-[#5227FF]/80 transition-colors"
                 >
-                  {editingExperience ? t("Save Changes", "Enregistrer") : t("Add Experience", "Ajouter l'expérience")}
+                  {editingExperience ? (formLang === "en" ? "Save Changes" : "Enregistrer") : (formLang === "en" ? "Add Experience" : "Ajouter l'expérience")}
                 </button>
               </div>
             </form>

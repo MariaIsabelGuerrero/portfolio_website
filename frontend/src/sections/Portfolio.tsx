@@ -130,7 +130,7 @@ const tabVariants = {
 };
 
 export default function FullWidthTabs() {
-  const { t } = useLanguage();
+  const { t, l } = useLanguage();
   const [value, setValue] = useState(0);
   const [direction, setDirection] = useState(0);
   const [projects, setProjects] = useState<ProjectData[]>([]);
@@ -192,7 +192,7 @@ export default function FullWidthTabs() {
 
   if (loading) {
     return (
-      <div className="md:px-[10%] px-[5%] w-full sm:mt-0 mt-[3rem] bg-[#030014] overflow-hidden" id="Portfolio">
+      <div className="md:px-[5%] px-[3%] w-full sm:mt-0 mt-[3rem] bg-[#030014] overflow-hidden" id="Portfolio">
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 text-[#6366f1] animate-spin" />
         </div>
@@ -201,7 +201,7 @@ export default function FullWidthTabs() {
   }
 
   return (
-    <div className="md:px-[10%] px-[5%] w-full sm:mt-0 mt-[3rem] bg-[#030014] overflow-hidden" id="Portfolio">
+    <div className="md:px-[5%] px-[3%] w-full sm:mt-0 mt-[3rem] bg-[#030014] overflow-hidden" id="Portfolio">
       <div className="text-center pb-12" data-aos="fade-up" data-aos-duration="1000">
         <h2 className="inline-block text-5xl md:text-6xl lg:text-7xl font-bold text-center mx-auto text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]">
           <span style={{
@@ -323,8 +323,8 @@ export default function FullWidthTabs() {
             >
               {value === 0 && (
                 <TabPanel value={value} index={0}>
-                  <div className="container mx-auto flex justify-center items-center overflow-hidden">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3 gap-5">
+                  <div className="w-full overflow-hidden">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full">
                       {displayedProjects.map((project, index) => (
                         <div
                           key={project.id || index}
@@ -333,8 +333,8 @@ export default function FullWidthTabs() {
                         >
                           <CardProject
                             Img={project.img}
-                            Title={project.title}
-                            Description={project.description}
+                            Title={l(project.title_en, project.title_fr)}
+                            Description={l(project.description_en, project.description_fr)}
                             Link={project.live}
                             id={project.id}
                           />
@@ -357,8 +357,8 @@ export default function FullWidthTabs() {
 
               {value === 1 && (
                 <TabPanel value={value} index={1}>
-                  <div className="container mx-auto flex justify-center items-center overflow-hidden">
-                    <div className="grid grid-cols-1 md:grid-cols-3 md:gap-5 gap-4">
+                  <div className="w-full overflow-hidden">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5 w-full">
                       {displayedCertificates.map((certificate, index) => (
                         <div
                           key={certificate.id || index}

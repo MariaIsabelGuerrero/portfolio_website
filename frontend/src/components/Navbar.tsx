@@ -149,7 +149,7 @@ const Navbar = () => {
                             title={language === 'en' ? 'Admin Login' : 'Connexion Admin'}
                         >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src="/admin-icon.svg" alt="Login" className="w-7 h-7" />
+                            <img src="/user.png" alt="Login" className="w-7 h-7" />
                         </Link>
                     </div>
 
@@ -172,7 +172,7 @@ const Navbar = () => {
                             title={language === 'en' ? 'Admin Login' : 'Connexion Admin'}
                         >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src="/admin-icon.svg" alt="Login" className="w-7 h-7" />
+                            <img src="/user.png" alt="Login" className="w-7 h-7" />
                         </Link>
 
                         {/* Menu Button */}
@@ -244,7 +244,7 @@ const Navbar = () => {
                             onClick={() => setIsOpen(false)}
                         >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src="/admin-icon.svg" alt="Login" className="w-6 h-6" />
+                            <img src="/user.png" alt="Login" className="w-6 h-6" />
                             <span className="text-base">
                                 {language === 'en' ? 'Admin' : 'Admin'}
                             </span>

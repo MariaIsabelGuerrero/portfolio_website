@@ -43,13 +43,15 @@ function getIcon(iconName: string): React.ElementType | null {
 }
 
 export default function HobbiesManagement() {
-  const { t } = useLanguage();
+  const { t, l, language } = useLanguage();
   const [hobbies, setHobbies] = useState<Hobby[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingHobby, setEditingHobby] = useState<Hobby | null>(null);
-  const [formData, setFormData] = useState({ name: "", description: "", icon: "", color: "" });
+  const [formData, setFormData] = useState({ name_en: "", name_fr: "", description_en: "", description_fr: "", icon: "", color: "" });
+  const [formLang, setFormLang] = useState<"en" | "fr">("en");
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [iconError, setIconError] = useState(false);
 
@@ -67,30 +69,52 @@ export default function HobbiesManagement() {
   useEffect(() => { loadHobbies(); }, [loadHobbies]);
 
   const filteredHobbies = hobbies.filter((hobby) =>
-    hobby.name.toLowerCase().includes(searchTerm.toLowerCase())
+    l(hobby.name_en, hobby.name_fr).toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const openAddModal = () => {
     setEditingHobby(null);
-    setFormData({ name: "", description: "", icon: "", color: "" });
+    setFormData({ name_en: "", name_fr: "", description_en: "", description_fr: "", icon: "", color: "" });
+    setFormErrors({});
+    setFormLang(language === "fr" ? "fr" : "en");
     setIsModalOpen(true);
   };
 
   const openEditModal = (hobby: Hobby) => {
     setEditingHobby(hobby);
-    setFormData({ name: hobby.name, description: hobby.description || "", icon: hobby.icon || "", color: hobby.color || "" });
+    setFormData({ name_en: hobby.name_en || "", name_fr: hobby.name_fr || "", description_en: hobby.description_en || "", description_fr: hobby.description_fr || "", icon: hobby.icon || "", color: hobby.color || "" });
+    setFormErrors({});
+    setFormLang(language === "fr" ? "fr" : "en");
     setIsModalOpen(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.icon) {
-      setIconError(true);
+    const errors: Record<string, string> = {};
+    if (!formData.name_en.trim()) errors.name_en = "Required";
+    if (!formData.name_fr.trim()) errors.name_fr = "Required";
+    if (!formData.description_en.trim()) errors.description_en = "Required";
+    if (!formData.description_fr.trim()) errors.description_fr = "Required";
+    if (!formData.icon) errors.icon = "Required";
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      setIconError(!!errors.icon);
+      const hasEn = ["name_en", "description_en"].some(f => errors[f]);
+      const hasFr = ["name_fr", "description_fr"].some(f => errors[f]);
+      if (formLang === "en" && !hasEn && hasFr) setFormLang("fr");
+      if (formLang === "fr" && !hasFr && hasEn) setFormLang("en");
       return;
     }
+    setFormErrors({});
     setIconError(false);
+
     const dataToSave = {
-      ...formData,
+      name_en: formData.name_en,
+      name_fr: formData.name_fr,
+      description_en: formData.description_en,
+      description_fr: formData.description_fr,
+      icon: formData.icon,
       color: iconColorMap[formData.icon] || "from-violet-500 to-purple-600",
     };
     try {
@@ -182,8 +206,8 @@ export default function HobbiesManagement() {
                   </button>
                 </div>
               </div>
-              <h3 className="text-xl font-semibold text-white">{hobby.name}</h3>
-              {hobby.description && <p className="text-[#B19EEF]/70 text-sm mt-1">{hobby.description}</p>}
+              <h3 className="text-xl font-semibold text-white">{l(hobby.name_en, hobby.name_fr)}</h3>
+              {l(hobby.description_en, hobby.description_fr) && <p className="text-[#B19EEF]/70 text-sm mt-1">{l(hobby.description_en, hobby.description_fr)}</p>}
             </div>
           );
         })}
@@ -211,35 +235,49 @@ export default function HobbiesManagement() {
               </button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">{t("Hobby Name", "Nom du loisir")}</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                  className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
-                  placeholder={t("Enter hobby name", "Entrez le nom du loisir")}
-                />
+              {/* EN/FR Language Tabs */}
+              <div className="flex gap-2">
+                <button type="button" onClick={() => setFormLang("en")}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors relative ${formLang === "en" ? "bg-[#5227FF] text-white" : "bg-[#5227FF]/20 text-[#B19EEF] hover:bg-[#5227FF]/30"}`}>
+                  EN
+                  {(formErrors.name_en || formErrors.description_en) && formLang !== "en" && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full" />}
+                </button>
+                <button type="button" onClick={() => setFormLang("fr")}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors relative ${formLang === "fr" ? "bg-[#5227FF] text-white" : "bg-[#5227FF]/20 text-[#B19EEF] hover:bg-[#5227FF]/30"}`}>
+                  FR
+                  {(formErrors.name_fr || formErrors.description_fr) && formLang !== "fr" && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full" />}
+                </button>
               </div>
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">{t("Description", "Description")}</label>
-                <textarea
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows={2}
-                  className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC] resize-none"
-                  placeholder={t("Brief description of this hobby", "Brève description de ce loisir")}
+                <label className="block text-[#B19EEF] text-sm mb-2">{formLang === "en" ? "Hobby Name" : "Nom du loisir"} <span className="text-red-400">*</span></label>
+                <input
+                  type="text"
+                  value={formData[`name_${formLang}`]}
+                  onChange={(e) => { setFormData({ ...formData, [`name_${formLang}`]: e.target.value }); setFormErrors(prev => { const n = {...prev}; delete n[`name_${formLang}`]; return n; }); }}
+                  className={`w-full px-4 py-3 bg-[#0a0314] border ${formErrors[`name_${formLang}`] ? "border-red-500/50" : "border-[#5227FF]/30"} rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]`}
+                  placeholder={formLang === "en" ? "Enter hobby name..." : "Entrez le nom du loisir..."}
                 />
+                {formErrors[`name_${formLang}`] && <p className="text-red-400 text-xs mt-1">{formLang === "en" ? "This field is required" : "Ce champ est requis"}</p>}
+              </div>
+              <div>
+                <label className="block text-[#B19EEF] text-sm mb-2">Description <span className="text-red-400">*</span></label>
+                <textarea
+                  value={formData[`description_${formLang}`]}
+                  onChange={(e) => { setFormData({ ...formData, [`description_${formLang}`]: e.target.value }); setFormErrors(prev => { const n = {...prev}; delete n[`description_${formLang}`]; return n; }); }}
+                  rows={2}
+                  className={`w-full px-4 py-3 bg-[#0a0314] border ${formErrors[`description_${formLang}`] ? "border-red-500/50" : "border-[#5227FF]/30"} rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC] resize-none`}
+                  placeholder={formLang === "en" ? "Brief description of this hobby..." : "Brève description de ce loisir..."}
+                />
+                {formErrors[`description_${formLang}`] && <p className="text-red-400 text-xs mt-1">{formLang === "en" ? "This field is required" : "Ce champ est requis"}</p>}
               </div>
 
               {/* Icon Picker */}
               <div>
                 <label className="block text-[#B19EEF] text-sm mb-2">
-                  {t("Icon", "Icône")} <span className="text-red-400">*</span>
+                  {formLang === "en" ? "Icon" : "Icône"} <span className="text-red-400">*</span>
                 </label>
                 {iconError && (
-                  <p className="text-red-400 text-sm mb-2">{t("Please select an icon", "Veuillez sélectionner une icône")}</p>
+                  <p className="text-red-400 text-sm mb-2">{formLang === "en" ? "Please select an icon" : "Veuillez sélectionner une icône"}</p>
                 )}
                 <div className="grid grid-cols-6 gap-2">
                   {iconOptions.map((name) => {
@@ -274,13 +312,13 @@ export default function HobbiesManagement() {
                   onClick={() => setIsModalOpen(false)}
                   className="flex-1 px-4 py-3 border border-[#5227FF]/30 text-[#B19EEF] rounded-xl hover:bg-[#5227FF]/20 transition-colors"
                 >
-                  {t("Cancel", "Annuler")}
+                  {formLang === "en" ? "Cancel" : "Annuler"}
                 </button>
                 <button
                   type="submit"
                   className="flex-1 px-4 py-3 bg-[#5227FF] text-white rounded-xl hover:bg-[#5227FF]/80 transition-colors"
                 >
-                  {editingHobby ? t("Save Changes", "Enregistrer") : t("Add Hobby", "Ajouter le loisir")}
+                  {editingHobby ? (formLang === "en" ? "Save Changes" : "Enregistrer") : (formLang === "en" ? "Add Hobby" : "Ajouter le loisir")}
                 </button>
               </div>
             </form>

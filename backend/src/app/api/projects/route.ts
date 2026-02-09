@@ -23,22 +23,25 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { title, description, img, technologies, github, live, keyFeatures } = body;
+    const { title_en, title_fr, description_en, description_fr, img, technologies, github, live, keyFeatures_en, keyFeatures_fr } = body;
 
-    if (!title || !description) {
-      return NextResponse.json({ error: "Title and description are required" }, { status: 400 });
+    if (!title_en) {
+      return NextResponse.json({ error: "English title is required" }, { status: 400 });
     }
 
     const id = crypto.randomUUID();
     const [created] = await db.insert(projects).values({
       id,
-      title,
-      description,
+      title_en,
+      title_fr: title_fr || "",
+      description_en: description_en || "",
+      description_fr: description_fr || "",
       img: img || "",
       technologies: technologies || [],
       github: github || "",
       live: live || "",
-      keyFeatures: keyFeatures || [],
+      keyFeatures_en: keyFeatures_en || [],
+      keyFeatures_fr: keyFeatures_fr || [],
     }).returning();
 
     return NextResponse.json({ data: created }, { status: 201 });

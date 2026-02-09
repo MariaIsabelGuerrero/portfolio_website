@@ -9,6 +9,7 @@ import {
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { getHobbies, type HobbyData } from '@/lib/public-api';
+import { useLanguage } from '@/lib/i18n';
 
 // Map icon string names to Lucide components
 const iconMap: Record<string, React.ElementType> = {
@@ -16,22 +17,42 @@ const iconMap: Record<string, React.ElementType> = {
   Bike, Mountain, Coffee, Utensils, Headphones, Tv, PenTool, Globe, Star,
 };
 
+const iconColorMap: Record<string, string> = {
+  Dumbbell: "from-rose-500 to-pink-600",
+  Heart: "from-pink-500 to-fuchsia-600",
+  Plane: "from-cyan-500 to-teal-600",
+  Music: "from-violet-500 to-purple-600",
+  Gamepad2: "from-indigo-500 to-blue-600",
+  Camera: "from-orange-500 to-red-600",
+  Book: "from-emerald-500 to-green-600",
+  Palette: "from-pink-500 to-fuchsia-600",
+  Bike: "from-blue-500 to-indigo-600",
+  Mountain: "from-emerald-500 to-green-600",
+  Coffee: "from-orange-500 to-red-600",
+  Utensils: "from-rose-500 to-pink-600",
+  Headphones: "from-violet-500 to-purple-600",
+  Tv: "from-indigo-500 to-blue-600",
+  PenTool: "from-cyan-500 to-teal-600",
+  Globe: "from-blue-500 to-indigo-600",
+  Star: "from-orange-500 to-red-600",
+};
+
 function getIcon(iconName: string): React.ElementType | null {
   return iconMap[iconName] || null;
 }
 
-const HobbyCard = ({ hobby, index }: { hobby: HobbyData; index: number }) => {
+const HobbyCard = ({ hobby, index, l }: { hobby: HobbyData; index: number; l: (en: string, fr: string) => string }) => {
   const Icon = getIcon(hobby.icon);
-  const color = hobby.color || "from-violet-500 to-purple-600";
+  const color = iconColorMap[hobby.icon] || hobby.color || "from-violet-500 to-purple-600";
 
   return (
     <div
       data-aos="fade-up"
       data-aos-delay={index * 100}
       data-aos-duration="800"
-      className="group relative"
+      className="group relative h-full"
     >
-      <div className="relative bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 md:p-8 hover:bg-white/10 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/10 overflow-hidden">
+      <div className="relative h-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 md:p-8 hover:bg-white/10 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/10 overflow-hidden">
         {/* Background gradient on hover */}
         <div className={`absolute inset-0 bg-gradient-to-br ${color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
 
@@ -42,12 +63,12 @@ const HobbyCard = ({ hobby, index }: { hobby: HobbyData; index: number }) => {
 
         {/* Content */}
         <h3 className="text-2xl md:text-3xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-[#6366f1] group-hover:to-[#a855f7] transition-all duration-300">
-          {hobby.name}
+          {l(hobby.name_en, hobby.name_fr)}
         </h3>
 
-        {hobby.description && (
+        {l(hobby.description_en, hobby.description_fr) && (
           <p className="text-gray-400 text-lg leading-relaxed">
-            {hobby.description}
+            {l(hobby.description_en, hobby.description_fr)}
           </p>
         )}
 
@@ -59,6 +80,7 @@ const HobbyCard = ({ hobby, index }: { hobby: HobbyData; index: number }) => {
 };
 
 const Hobbies = () => {
+  const { t, l } = useLanguage();
   const [hobbiesData, setHobbiesData] = useState<HobbyData[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -98,20 +120,20 @@ const Hobbies = () => {
           data-aos="zoom-in-up"
           data-aos-duration="600"
         >
-          Hobbies
+          {t("Hobbies", "Loisirs")}
         </h2>
         <p
           className="mt-4 text-gray-400 max-w-2xl mx-auto text-lg sm:text-xl lg:text-2xl"
           data-aos="zoom-in-up"
           data-aos-duration="800"
         >
-          What I enjoy doing in my free time
+          {t("What I enjoy doing in my free time", "Ce que j'aime faire pendant mon temps libre")}
         </p>
       </div>
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
         {hobbiesData.map((hobby, index) => (
-          <HobbyCard key={hobby.id} hobby={hobby} index={index} />
+          <HobbyCard key={hobby.id} hobby={hobby} index={index} l={l} />
         ))}
       </div>
     </section>

@@ -178,7 +178,7 @@ const ProjectDetails = () => {
         <div className="w-full mx-auto py-8 md:py-16">
           <div className="flex items-center space-x-2 md:space-x-4 mb-10 md:mb-16 animate-fadeIn">
             <button
-              onClick={() => router.push('/#Portfolio')}
+              onClick={() => router.back()}
               className="group inline-flex items-center space-x-1.5 md:space-x-2 px-4 md:px-6 py-2.5 md:py-3 bg-white/5 backdrop-blur-xl rounded-xl text-white/90 hover:bg-white/10 transition-all duration-300 border border-white/10 hover:border-white/20 text-xl md:text-2xl"
             >
               <ArrowLeft className="w-6 h-6 md:w-7 md:h-7 group-hover:-translate-x-1 transition-transform" />

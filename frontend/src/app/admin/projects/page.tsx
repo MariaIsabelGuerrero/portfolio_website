@@ -30,7 +30,35 @@ export default function ProjectsManagement() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const requiredFields = ["title_en", "title_fr", "description_en", "description_fr", "img", "technologies"];
+
+  const validateField = (name: string, value: string): string | null => {
+    if (requiredFields.includes(name) && !value.trim()) return "Required";
+    return null;
+  };
+
+  const handleFieldChange = (name: string, value: string) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (touched[name]) {
+      const error = validateField(name, value);
+      setFormErrors(prev => {
+        if (error) return { ...prev, [name]: error };
+        const n = { ...prev }; delete n[name]; return n;
+      });
+    }
+  };
+
+  const handleFieldBlur = (name: string, value: string) => {
+    setTouched(prev => ({ ...prev, [name]: true }));
+    const error = validateField(name, value);
+    setFormErrors(prev => {
+      if (error) return { ...prev, [name]: error };
+      const n = { ...prev }; delete n[name]; return n;
+    });
+  };
 
   const loadProjects = useCallback(async () => {
     try {
@@ -62,6 +90,7 @@ export default function ProjectsManagement() {
       keyFeatures_en: "", keyFeatures_fr: "",
     });
     setFormErrors({});
+    setTouched({});
     setFormLang(language === "fr" ? "fr" : "en");
     setIsModalOpen(true);
   };
@@ -81,6 +110,7 @@ export default function ProjectsManagement() {
       keyFeatures_fr: (project.keyFeatures_fr || []).join("\n"),
     });
     setFormErrors({});
+    setTouched({});
     setFormLang(language === "fr" ? "fr" : "en");
     setIsModalOpen(true);
   };
@@ -102,6 +132,7 @@ export default function ProjectsManagement() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setTouched(Object.fromEntries(requiredFields.map(f => [f, true])));
     const errors: Record<string, string> = {};
     if (!formData.title_en.trim()) errors.title_en = "Required";
     if (!formData.title_fr.trim()) errors.title_fr = "Required";
@@ -296,7 +327,8 @@ export default function ProjectsManagement() {
                 <input
                   type="text"
                   value={formData[`title_${formLang}`]}
-                  onChange={(e) => { setFormData({ ...formData, [`title_${formLang}`]: e.target.value }); setFormErrors(prev => { const n = {...prev}; delete n[`title_${formLang}`]; return n; }); }}
+                  onChange={(e) => handleFieldChange(`title_${formLang}`, e.target.value)}
+                  onBlur={(e) => handleFieldBlur(`title_${formLang}`, e.target.value)}
                   className={`w-full px-4 py-3 bg-[#0a0314] border ${formErrors[`title_${formLang}`] ? "border-red-500/50" : "border-[#5227FF]/30"} rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]`}
                   placeholder={formLang === "en" ? "Enter project title" : "Entrez le titre du projet"}
                 />
@@ -306,7 +338,8 @@ export default function ProjectsManagement() {
                 <label className="block text-[#B19EEF] text-sm mb-2">Description <span className="text-red-400">*</span></label>
                 <textarea
                   value={formData[`description_${formLang}`]}
-                  onChange={(e) => { setFormData({ ...formData, [`description_${formLang}`]: e.target.value }); setFormErrors(prev => { const n = {...prev}; delete n[`description_${formLang}`]; return n; }); }}
+                  onChange={(e) => handleFieldChange(`description_${formLang}`, e.target.value)}
+                  onBlur={(e) => handleFieldBlur(`description_${formLang}`, e.target.value)}
                   rows={3}
                   className={`w-full px-4 py-3 bg-[#0a0314] border ${formErrors[`description_${formLang}`] ? "border-red-500/50" : "border-[#5227FF]/30"} rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC] resize-none`}
                   placeholder={formLang === "en" ? "Describe your project" : "Décrivez votre projet"}
@@ -361,7 +394,8 @@ export default function ProjectsManagement() {
                 <input
                   type="text"
                   value={formData.technologies}
-                  onChange={(e) => { setFormData({ ...formData, technologies: e.target.value }); setFormErrors(prev => { const n = {...prev}; delete n.technologies; return n; }); }}
+                  onChange={(e) => handleFieldChange("technologies", e.target.value)}
+                  onBlur={(e) => handleFieldBlur("technologies", e.target.value)}
                   className={`w-full px-4 py-3 bg-[#0a0314] border ${formErrors.technologies ? "border-red-500/50" : "border-[#5227FF]/30"} rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]`}
                   placeholder="React, TypeScript, Node.js"
                 />

@@ -15,6 +15,8 @@ export default function SkillsManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
   const [formData, setFormData] = useState({ name: "", icon: "" });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -36,15 +38,39 @@ export default function SkillsManagement() {
     skill.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleFieldChange = (name: string, value: string) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (touched[name]) {
+      const error = !value.trim() ? "Required" : null;
+      setFormErrors(prev => {
+        if (error) return { ...prev, [name]: error };
+        const n = { ...prev }; delete n[name]; return n;
+      });
+    }
+  };
+
+  const handleFieldBlur = (name: string, value: string) => {
+    setTouched(prev => ({ ...prev, [name]: true }));
+    const error = !value.trim() ? "Required" : null;
+    setFormErrors(prev => {
+      if (error) return { ...prev, [name]: error };
+      const n = { ...prev }; delete n[name]; return n;
+    });
+  };
+
   const openAddModal = () => {
     setEditingSkill(null);
     setFormData({ name: "", icon: "" });
+    setFormErrors({});
+    setTouched({});
     setIsModalOpen(true);
   };
 
   const openEditModal = (skill: Skill) => {
     setEditingSkill(skill);
     setFormData({ name: skill.name, icon: skill.icon || "" });
+    setFormErrors({});
+    setTouched({});
     setIsModalOpen(true);
   };
 
@@ -65,6 +91,14 @@ export default function SkillsManagement() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setTouched({ name: true });
+    const errors: Record<string, string> = {};
+    if (!formData.name.trim()) errors.name = "Required";
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+    setFormErrors({});
     try {
       if (editingSkill) {
         await updateSkill(editingSkill.id, formData);
@@ -194,15 +228,16 @@ export default function SkillsManagement() {
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-[#B19EEF] text-sm mb-2">{t("Skill Name", "Nom de la compétence")}</label>
+                <label className="block text-[#B19EEF] text-sm mb-2">{t("Skill Name", "Nom de la compétence")} <span className="text-red-400">*</span></label>
                 <input
                   type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                  className="w-full px-4 py-3 bg-[#0a0314] border border-[#5227FF]/30 rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]"
+                  onChange={(e) => handleFieldChange("name", e.target.value)}
+                  onBlur={(e) => handleFieldBlur("name", e.target.value)}
+                  className={`w-full px-4 py-3 bg-[#0a0314] border ${formErrors.name ? "border-red-500/50" : "border-[#5227FF]/30"} rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]`}
                   placeholder={t("Enter skill name", "Nom de la compétence")}
                 />
+                {formErrors.name && <p className="text-red-400 text-xs mt-1">{t("This field is required", "Ce champ est requis")}</p>}
               </div>
               <div>
                 <label className="block text-[#B19EEF] text-sm mb-2">{t("Icon", "Icône")}</label>

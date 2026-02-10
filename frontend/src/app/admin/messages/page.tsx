@@ -118,7 +118,7 @@ export default function MessagesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">{t("Messages", "Messages")}</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-white">{t("Messages", "Messages")}</h1>
           <p className="text-[#B19EEF] mt-1">
             {t(
               `${unreadCount} unread message${unreadCount !== 1 ? "s" : ""}`,
@@ -173,35 +173,35 @@ export default function MessagesPage() {
                 }`}
                 onClick={() => openMessage(message)}
               >
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3 sm:gap-4">
                   {/* Read Status Indicator */}
-                  <div className="pt-1">
+                  <div className="pt-1 flex-shrink-0">
                     {message.read ? (
-                      <CheckCircle className="w-5 h-5 text-[#5227FF]/50" />
+                      <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-[#5227FF]/50" />
                     ) : (
-                      <Circle className="w-5 h-5 text-[#FF9FFC] fill-[#FF9FFC]" />
+                      <Circle className="w-4 h-4 sm:w-5 sm:h-5 text-[#FF9FFC] fill-[#FF9FFC]" />
                     )}
                   </div>
 
                   {/* Message Content */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between gap-4 mb-1">
+                    <div className="flex items-start sm:items-center justify-between gap-2 sm:gap-4 mb-1">
                       <h3 className={`font-semibold truncate ${!message.read ? "text-white" : "text-[#B19EEF]"}`}>
                         {message.name}
                       </h3>
-                      <span className="text-xs text-[#B19EEF]/70 whitespace-nowrap flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
+                      <span className="text-[10px] sm:text-xs text-[#B19EEF]/70 whitespace-nowrap flex items-center gap-1 flex-shrink-0">
+                        <Clock className="w-3 h-3 hidden sm:block" />
                         {formatDate(message.date)}
                       </span>
                     </div>
-                    <p className="text-sm text-[#B19EEF]/70 mb-1">{message.email}</p>
-                    <p className={`text-sm truncate ${!message.read ? "text-white/80" : "text-[#B19EEF]/60"}`}>
+                    <p className="text-xs sm:text-sm text-[#B19EEF]/70 mb-1 truncate">{message.email}</p>
+                    <p className={`text-xs sm:text-sm truncate ${!message.read ? "text-white/80" : "text-[#B19EEF]/60"}`}>
                       {message.message}
                     </p>
                   </div>
 
-                  {/* Actions */}
-                  <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                  {/* Actions - hidden on mobile since card is clickable */}
+                  <div className="hidden sm:flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
                     <button
                       onClick={() => openMessage(message)}
                       className="p-2 rounded-lg hover:bg-[#5227FF]/20 text-[#B19EEF] hover:text-white transition-colors"
@@ -264,10 +264,10 @@ export default function MessagesPage() {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-4 bg-[#5227FF]/10 rounded-xl">
-                    <Mail className="w-5 h-5 text-[#FF9FFC]" />
-                    <div>
+                    <Mail className="w-5 h-5 text-[#FF9FFC] flex-shrink-0" />
+                    <div className="min-w-0">
                       <p className="text-xs text-[#B19EEF]">{t("Email", "E-mail")}</p>
-                      <p className="text-white font-medium">{selectedMessage.email}</p>
+                      <p className="text-white font-medium break-all">{selectedMessage.email}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-4 bg-[#5227FF]/10 rounded-xl">

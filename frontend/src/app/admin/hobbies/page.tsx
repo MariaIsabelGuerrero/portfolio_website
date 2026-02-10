@@ -52,8 +52,36 @@ export default function HobbiesManagement() {
   const [formData, setFormData] = useState({ name_en: "", name_fr: "", description_en: "", description_fr: "", icon: "", color: "" });
   const [formLang, setFormLang] = useState<"en" | "fr">("en");
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [iconError, setIconError] = useState(false);
+
+  const requiredFields = ["name_en", "name_fr", "description_en", "description_fr", "icon"];
+
+  const validateField = (name: string, value: string): string | null => {
+    if (requiredFields.includes(name) && !value.trim()) return "Required";
+    return null;
+  };
+
+  const handleFieldChange = (name: string, value: string) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+    if (touched[name]) {
+      const error = validateField(name, value);
+      setFormErrors(prev => {
+        if (error) return { ...prev, [name]: error };
+        const n = { ...prev }; delete n[name]; return n;
+      });
+    }
+  };
+
+  const handleFieldBlur = (name: string, value: string) => {
+    setTouched(prev => ({ ...prev, [name]: true }));
+    const error = validateField(name, value);
+    setFormErrors(prev => {
+      if (error) return { ...prev, [name]: error };
+      const n = { ...prev }; delete n[name]; return n;
+    });
+  };
 
   const loadHobbies = useCallback(async () => {
     try {
@@ -76,6 +104,7 @@ export default function HobbiesManagement() {
     setEditingHobby(null);
     setFormData({ name_en: "", name_fr: "", description_en: "", description_fr: "", icon: "", color: "" });
     setFormErrors({});
+    setTouched({});
     setFormLang(language === "fr" ? "fr" : "en");
     setIsModalOpen(true);
   };
@@ -84,12 +113,14 @@ export default function HobbiesManagement() {
     setEditingHobby(hobby);
     setFormData({ name_en: hobby.name_en || "", name_fr: hobby.name_fr || "", description_en: hobby.description_en || "", description_fr: hobby.description_fr || "", icon: hobby.icon || "", color: hobby.color || "" });
     setFormErrors({});
+    setTouched({});
     setFormLang(language === "fr" ? "fr" : "en");
     setIsModalOpen(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setTouched(Object.fromEntries(requiredFields.map(f => [f, true])));
     const errors: Record<string, string> = {};
     if (!formData.name_en.trim()) errors.name_en = "Required";
     if (!formData.name_fr.trim()) errors.name_fr = "Required";
@@ -253,7 +284,8 @@ export default function HobbiesManagement() {
                 <input
                   type="text"
                   value={formData[`name_${formLang}`]}
-                  onChange={(e) => { setFormData({ ...formData, [`name_${formLang}`]: e.target.value }); setFormErrors(prev => { const n = {...prev}; delete n[`name_${formLang}`]; return n; }); }}
+                  onChange={(e) => handleFieldChange(`name_${formLang}`, e.target.value)}
+                  onBlur={(e) => handleFieldBlur(`name_${formLang}`, e.target.value)}
                   className={`w-full px-4 py-3 bg-[#0a0314] border ${formErrors[`name_${formLang}`] ? "border-red-500/50" : "border-[#5227FF]/30"} rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC]`}
                   placeholder={formLang === "en" ? "Enter hobby name..." : "Entrez le nom du loisir..."}
                 />
@@ -263,7 +295,8 @@ export default function HobbiesManagement() {
                 <label className="block text-[#B19EEF] text-sm mb-2">Description <span className="text-red-400">*</span></label>
                 <textarea
                   value={formData[`description_${formLang}`]}
-                  onChange={(e) => { setFormData({ ...formData, [`description_${formLang}`]: e.target.value }); setFormErrors(prev => { const n = {...prev}; delete n[`description_${formLang}`]; return n; }); }}
+                  onChange={(e) => handleFieldChange(`description_${formLang}`, e.target.value)}
+                  onBlur={(e) => handleFieldBlur(`description_${formLang}`, e.target.value)}
                   rows={2}
                   className={`w-full px-4 py-3 bg-[#0a0314] border ${formErrors[`description_${formLang}`] ? "border-red-500/50" : "border-[#5227FF]/30"} rounded-xl text-white placeholder-[#B19EEF]/50 focus:outline-none focus:border-[#FF9FFC] resize-none`}
                   placeholder={formLang === "en" ? "Brief description of this hobby..." : "Brève description de ce loisir..."}

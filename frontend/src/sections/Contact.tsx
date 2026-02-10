@@ -20,6 +20,7 @@ const ContactPage = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     AOS.init({
@@ -27,17 +28,44 @@ const ContactPage = () => {
     });
   }, []);
 
+  const validateField = (name: string, value: string): string | null => {
+    if (name === "email") {
+      if (!value.trim()) return "Required";
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Invalid";
+      return null;
+    }
+    if (!value.trim()) return "Required";
+    return null;
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
-    setFormErrors(prev => { const n = {...prev}; delete n[name]; return n; });
+    if (touched[name]) {
+      const error = validateField(name, value);
+      setFormErrors(prev => {
+        if (error) return { ...prev, [name]: error };
+        const n = { ...prev }; delete n[name]; return n;
+      });
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setTouched(prev => ({ ...prev, [name]: true }));
+    const error = validateField(name, value);
+    setFormErrors(prev => {
+      if (error) return { ...prev, [name]: error };
+      const n = { ...prev }; delete n[name]; return n;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setTouched({ name: true, email: true, message: true });
     const errors: Record<string, string> = {};
     if (!formData.name.trim()) errors.name = "Required";
     if (!formData.email.trim()) errors.email = "Required";
@@ -100,6 +128,7 @@ const ContactPage = () => {
         email: "",
         message: "",
       });
+      setTouched({});
 
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.request && error.request.status === 0) {
@@ -204,6 +233,7 @@ const ContactPage = () => {
                   placeholder={t("Your Name", "Votre nom")}
                   value={formData.name}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   disabled={isSubmitting}
                   maxLength={100}
                   className={`w-full p-5 pl-14 text-lg bg-white/10 rounded-xl border ${formErrors.name ? "border-red-500/50" : "border-white/20"} placeholder-gray-500 text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1]/30 transition-all duration-300 hover:border-[#6366f1]/30 disabled:opacity-50`}
@@ -222,6 +252,7 @@ const ContactPage = () => {
                   placeholder={t("Your Email", "Votre e-mail")}
                   value={formData.email}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   disabled={isSubmitting}
                   maxLength={254}
                   className={`w-full p-5 pl-14 text-lg bg-white/10 rounded-xl border ${formErrors.email ? "border-red-500/50" : "border-white/20"} placeholder-gray-500 text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1]/30 transition-all duration-300 hover:border-[#6366f1]/30 disabled:opacity-50`}
@@ -239,6 +270,7 @@ const ContactPage = () => {
                   placeholder={t("Your Message", "Votre message")}
                   value={formData.message}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   disabled={isSubmitting}
                   maxLength={1000}
                   className={`w-full resize-none p-5 pl-14 text-lg bg-white/10 rounded-xl border ${formErrors.message ? "border-red-500/50" : "border-white/20"} placeholder-gray-500 text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1]/30 transition-all duration-300 hover:border-[#6366f1]/30 h-[12rem] disabled:opacity-50`}

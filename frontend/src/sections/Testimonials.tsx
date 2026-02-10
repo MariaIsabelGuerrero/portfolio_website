@@ -74,19 +74,42 @@ const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
     const [position, setPosition] = useState('');
     const [company, setCompany] = useState('');
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+    const [touched, setTouched] = useState<Record<string, boolean>>({});
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    const validateField = (value: string): string | null => {
+        if (!value.trim()) return "Required";
+        return null;
+    };
+
+    const handleBlur = useCallback((fieldName: string) => {
+        setTouched(prev => ({ ...prev, [fieldName]: true }));
+        const value = fieldName === 'name' ? userName : fieldName === 'position' ? position : fieldName === 'company' ? company : newComment;
+        const error = validateField(value);
+        setFormErrors(prev => {
+            if (error) return { ...prev, [fieldName]: error };
+            const n = { ...prev }; delete n[fieldName]; return n;
+        });
+    }, [userName, position, company, newComment]);
 
     const handleTextareaChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setNewComment(e.target.value);
-        setFormErrors(prev => { const n = {...prev}; delete n.content; return n; });
+        if (touched.content) {
+            const error = validateField(e.target.value);
+            setFormErrors(prev => {
+                if (error) return { ...prev, content: error };
+                const n = { ...prev }; delete n.content; return n;
+            });
+        }
         if (textareaRef.current) {
             textareaRef.current.style.height = 'auto';
             textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
         }
-    }, []);
+    }, [touched.content]);
 
     const handleSubmit = useCallback((e: React.FormEvent) => {
         e.preventDefault();
+        setTouched({ name: true, position: true, company: true, content: true });
         const errors: Record<string, string> = {};
         if (!userName.trim()) errors.name = "Required";
         if (!position.trim()) errors.position = "Required";
@@ -104,6 +127,7 @@ const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
         setUserName('');
         setPosition('');
         setCompany('');
+        setTouched({});
         if (textareaRef.current) textareaRef.current.style.height = 'auto';
     }, [newComment, userName, position, company, onSubmit]);
 
@@ -116,7 +140,8 @@ const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
                 <input
                     type="text"
                     value={userName}
-                    onChange={(e) => { setUserName(e.target.value); setFormErrors(prev => { const n = {...prev}; delete n.name; return n; }); }}
+                    onChange={(e) => { setUserName(e.target.value); if (touched.name) { const err = validateField(e.target.value); setFormErrors(prev => { if (err) return { ...prev, name: err }; const n = {...prev}; delete n.name; return n; }); } }}
+                    onBlur={() => handleBlur('name')}
                     maxLength={30}
                     placeholder={t("Enter your name", "Entrez votre nom")}
                     className={`w-full p-3 rounded-xl bg-white/5 border ${formErrors.name ? "border-red-500/50" : "border-white/10"} text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all`}
@@ -131,7 +156,8 @@ const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
                 <input
                     type="text"
                     value={position}
-                    onChange={(e) => { setPosition(e.target.value); setFormErrors(prev => { const n = {...prev}; delete n.position; return n; }); }}
+                    onChange={(e) => { setPosition(e.target.value); if (touched.position) { const err = validateField(e.target.value); setFormErrors(prev => { if (err) return { ...prev, position: err }; const n = {...prev}; delete n.position; return n; }); } }}
+                    onBlur={() => handleBlur('position')}
                     maxLength={30}
                     placeholder={t("e.g. Software Engineer", "ex: Ingenieur logiciel")}
                     className={`w-full p-3 rounded-xl bg-white/5 border ${formErrors.position ? "border-red-500/50" : "border-white/10"} text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all`}
@@ -146,7 +172,8 @@ const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
                 <input
                     type="text"
                     value={company}
-                    onChange={(e) => { setCompany(e.target.value); setFormErrors(prev => { const n = {...prev}; delete n.company; return n; }); }}
+                    onChange={(e) => { setCompany(e.target.value); if (touched.company) { const err = validateField(e.target.value); setFormErrors(prev => { if (err) return { ...prev, company: err }; const n = {...prev}; delete n.company; return n; }); } }}
+                    onBlur={() => handleBlur('company')}
                     maxLength={30}
                     placeholder={t("e.g. Google", "ex: Google")}
                     className={`w-full p-3 rounded-xl bg-white/5 border ${formErrors.company ? "border-red-500/50" : "border-white/10"} text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all`}
@@ -163,6 +190,7 @@ const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
                     value={newComment}
                     maxLength={300}
                     onChange={handleTextareaChange}
+                    onBlur={() => handleBlur('content')}
                     placeholder={t("Share your experience working with me...", "Partagez votre expérience de travail avec moi...")}
                     className={`w-full p-4 rounded-xl bg-white/5 border ${formErrors.content ? "border-red-500/50" : "border-white/10"} text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all resize-none min-h-[100px]`}
                 />

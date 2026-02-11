@@ -34,11 +34,33 @@ export async function POST(request: NextRequest) {
   // Public endpoint - contact form submission (no auth required)
   try {
     const body = await request.json();
-    const { name, email, message } = body;
+    const { name, email, message, recaptchaToken } = body;
 
     if (!name || !email || !message) {
       return NextResponse.json(
         { error: "Name, email, and message are required" },
+        { status: 400 }
+      );
+    }
+
+    // Verify reCAPTCHA token
+    if (!recaptchaToken) {
+      return NextResponse.json(
+        { error: "reCAPTCHA verification is required" },
+        { status: 400 }
+      );
+    }
+
+    const recaptchaRes = await fetch("https://www.google.com/recaptcha/api/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${recaptchaToken}`,
+    });
+    const recaptchaData = await recaptchaRes.json();
+
+    if (!recaptchaData.success) {
+      return NextResponse.json(
+        { error: "reCAPTCHA verification failed" },
         { status: 400 }
       );
     }

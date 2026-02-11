@@ -54,7 +54,7 @@ export async function submitTestimonial(data: { name: string; position: string; 
   });
 }
 
-export async function submitMessage(data: { name: string; email: string; message: string }) {
+export async function submitMessage(data: { name: string; email: string; message: string; recaptchaToken: string }) {
   return publicFetch<{ data: MessageData }>("/api/messages", {
     method: "POST",
     body: JSON.stringify(data),

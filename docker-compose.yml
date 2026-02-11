@@ -74,6 +74,9 @@ services:
             DO_SPACES_ENDPOINT: ${DO_SPACES_ENDPOINT}
             DO_SPACES_BUCKET: ${DO_SPACES_BUCKET}
             DO_SPACES_REGION: ${DO_SPACES_REGION:-tor1}
+
+            # reCAPTCHA
+            RECAPTCHA_SECRET_KEY: ${RECAPTCHA_SECRET_KEY}
         depends_on:
             portfolio-db:
                 condition: service_healthy

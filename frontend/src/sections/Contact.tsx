@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Share2, User, Mail, MessageSquare, Send } from "lucide-react";
 import SocialLinks from "../components/SocialLinks";
 import Testimonials from "./Testimonials";
@@ -8,6 +8,7 @@ import Swal from "sweetalert2";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import axios from "axios";
+import ReCAPTCHA from "react-google-recaptcha";
 import { submitMessage } from "@/lib/public-api";
 import { useLanguage } from "@/lib/i18n";
 
@@ -21,6 +22,7 @@ const ContactPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   useEffect(() => {
     AOS.init({
@@ -72,6 +74,11 @@ const ContactPage = () => {
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.email = "Invalid";
     if (!formData.message.trim()) errors.message = "Required";
 
+    const recaptchaToken = recaptchaRef.current?.getValue();
+    if (!recaptchaToken) {
+      errors.recaptcha = "Required";
+    }
+
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
       return;
@@ -94,6 +101,7 @@ const ContactPage = () => {
         name: formData.name,
         email: formData.email,
         message: formData.message,
+        recaptchaToken: recaptchaToken!,
       });
 
       // Also send via FormSubmit for email notification
@@ -129,6 +137,7 @@ const ContactPage = () => {
         message: "",
       });
       setTouched({});
+      recaptchaRef.current?.reset();
 
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.request && error.request.status === 0) {
@@ -156,6 +165,7 @@ const ContactPage = () => {
       }
     } finally {
       setIsSubmitting(false);
+      recaptchaRef.current?.reset();
     }
   };
 
@@ -276,6 +286,15 @@ const ContactPage = () => {
                   className={`w-full resize-none p-5 pl-14 text-lg bg-white/10 rounded-xl border ${formErrors.message ? "border-red-500/50" : "border-white/20"} placeholder-gray-500 text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1]/30 transition-all duration-300 hover:border-[#6366f1]/30 h-[12rem] disabled:opacity-50`}
                 />
                 {formErrors.message && <p className="text-red-400 text-xs mt-1">{t("This field is required", "Ce champ est requis")}</p>}
+              </div>
+              <div data-aos="fade-up" data-aos-delay="350">
+                <ReCAPTCHA
+                  ref={recaptchaRef}
+                  sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
+                  theme="dark"
+                  onChange={() => setFormErrors(prev => { const n = { ...prev }; delete n.recaptcha; return n; })}
+                />
+                {formErrors.recaptcha && <p className="text-red-400 text-xs mt-1">{t("Please complete the reCAPTCHA", "Veuillez completer le reCAPTCHA")}</p>}
               </div>
               <button
                 data-aos="fade-up"

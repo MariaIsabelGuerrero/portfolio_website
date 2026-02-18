@@ -6,6 +6,7 @@ import { authClient } from "@/lib/auth-client";
  * Client-side auth guard hook.
  * Checks if the current user has an active session with ADMIN role.
  * Redirects to /admin/login if not authenticated or not authorized.
+ * Only checks once on mount — sidebar navigation won't re-trigger loading.
  */
 export function useAdminAccess() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export function useAdminAccess() {
         const session = await authClient.getSession();
         if (!session.data?.session) {
           router.push("/admin/login");
+          setLoading(false);
           return;
         }
 
@@ -64,7 +66,8 @@ export function useAdminAccess() {
     };
 
     checkAccess();
-  }, [router]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return { authorized, loading };
 }

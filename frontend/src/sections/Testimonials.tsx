@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback, memo } from 'react';
-import { MessageCircle, UserCircle2, Loader2, AlertCircle, Send, Pin, CheckCircle } from 'lucide-react';
+import { MessageCircle, UserCircle2, Loader2, AlertCircle, Send, CheckCircle } from 'lucide-react';
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { getTestimonials, submitTestimonial, type TestimonialData } from '@/lib/public-api';
@@ -10,47 +10,33 @@ import { useLanguage } from '@/lib/i18n';
 interface CommentProps {
     comment: TestimonialData;
     formatDate: (timestamp: string) => string;
-    isPinned?: boolean;
 }
 
 interface CommentFormProps {
-    onSubmit: (data: { newComment: string; userName: string; position: string; company: string }) => void;
+    onSubmit: (data: { newComment: string; userName: string; relationship: string }) => void;
     isSubmitting: boolean;
 }
 
-const Comment = memo(({ comment, formatDate, isPinned = false }: CommentProps) => {
-    const { t } = useLanguage();
+const Comment = memo(({ comment, formatDate }: CommentProps) => {
     return (
     <div
-        className={`px-4 pt-4 pb-4 rounded-xl border transition-all group hover:shadow-lg hover:-translate-y-0.5 ${
-            isPinned
-                ? 'bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border-indigo-500/30 hover:bg-gradient-to-r hover:from-indigo-500/15 hover:to-purple-500/15'
-                : 'bg-white/5 border-white/10 hover:bg-white/10'
-        }`}
+        className="px-4 pt-4 pb-4 rounded-xl border transition-all group hover:shadow-lg hover:-translate-y-0.5 bg-white/5 border-white/10 hover:bg-white/10"
     >
-        {isPinned && (
-            <div className="flex items-center gap-2 mb-3 text-indigo-400">
-                <Pin className="w-4 h-4" />
-                <span className="text-xs font-medium uppercase tracking-wide">{t("Featured", "En vedette")}</span>
-            </div>
-        )}
         <div className="flex items-start gap-3">
-            <div className={`p-2 rounded-full text-indigo-400 group-hover:bg-indigo-500/30 transition-colors ${
-                isPinned ? 'bg-indigo-500/30' : 'bg-indigo-500/20'
-            }`}>
+            <div className="p-2 rounded-full text-indigo-400 bg-indigo-500/20 group-hover:bg-indigo-500/30 transition-colors">
                 <UserCircle2 className="w-5 h-5" />
             </div>
             <div className="flex-grow min-w-0">
                 <div className="flex items-center justify-between gap-4 mb-1">
                     <div className="flex flex-col">
-                        <h4 className={`font-medium ${
-                            isPinned ? 'text-indigo-200' : 'text-white'
-                        }`}>
+                        <h4 className="font-medium text-white">
                             {comment.name}
                         </h4>
-                        <span className="text-xs text-indigo-400">
-                            {comment.position} {comment.company && `${t("at", "chez")} ${comment.company}`}
-                        </span>
+                        {comment.relationship && (
+                            <span className="text-xs text-indigo-400">
+                                {comment.relationship}
+                            </span>
+                        )}
                     </div>
                     <span className="text-xs text-gray-400 whitespace-nowrap">
                         {formatDate(comment.date)}
@@ -71,8 +57,7 @@ const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
     const { t } = useLanguage();
     const [newComment, setNewComment] = useState('');
     const [userName, setUserName] = useState('');
-    const [position, setPosition] = useState('');
-    const [company, setCompany] = useState('');
+    const [relationship, setRelationship] = useState('');
     const [formErrors, setFormErrors] = useState<Record<string, string>>({});
     const [touched, setTouched] = useState<Record<string, boolean>>({});
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -84,13 +69,13 @@ const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
 
     const handleBlur = useCallback((fieldName: string) => {
         setTouched(prev => ({ ...prev, [fieldName]: true }));
-        const value = fieldName === 'name' ? userName : fieldName === 'position' ? position : fieldName === 'company' ? company : newComment;
+        const value = fieldName === 'name' ? userName : fieldName === 'relationship' ? relationship : newComment;
         const error = validateField(value);
         setFormErrors(prev => {
             if (error) return { ...prev, [fieldName]: error };
             const n = { ...prev }; delete n[fieldName]; return n;
         });
-    }, [userName, position, company, newComment]);
+    }, [userName, relationship, newComment]);
 
     const handleTextareaChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setNewComment(e.target.value);
@@ -109,11 +94,10 @@ const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
 
     const handleSubmit = useCallback((e: React.FormEvent) => {
         e.preventDefault();
-        setTouched({ name: true, position: true, company: true, content: true });
+        setTouched({ name: true, relationship: true, content: true });
         const errors: Record<string, string> = {};
         if (!userName.trim()) errors.name = "Required";
-        if (!position.trim()) errors.position = "Required";
-        if (!company.trim()) errors.company = "Required";
+        if (!relationship.trim()) errors.relationship = "Required";
         if (!newComment.trim()) errors.content = "Required";
 
         if (Object.keys(errors).length > 0) {
@@ -122,19 +106,18 @@ const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
         }
         setFormErrors({});
 
-        onSubmit({ newComment, userName, position, company });
+        onSubmit({ newComment, userName, relationship });
         setNewComment('');
         setUserName('');
-        setPosition('');
-        setCompany('');
+        setRelationship('');
         setTouched({});
         if (textareaRef.current) textareaRef.current.style.height = 'auto';
-    }, [newComment, userName, position, company, onSubmit]);
+    }, [newComment, userName, relationship, onSubmit]);
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2" data-aos="fade-up" data-aos-duration="1000">
-                <label className="block text-sm font-medium text-white">
+            <div className="space-y-1.5" data-aos="fade-up" data-aos-duration="1000">
+                <label className="block text-xs font-medium text-white">
                     {t("Name", "Nom")} <span className="text-red-400">*</span>
                 </label>
                 <input
@@ -144,45 +127,29 @@ const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
                     onBlur={() => handleBlur('name')}
                     maxLength={30}
                     placeholder={t("Enter your name", "Entrez votre nom")}
-                    className={`w-full p-3 rounded-xl bg-white/5 border ${formErrors.name ? "border-red-500/50" : "border-white/10"} text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all`}
+                    className={`w-full p-2.5 text-sm rounded-xl bg-white/5 border ${formErrors.name ? "border-red-500/50" : "border-white/10"} text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all`}
                 />
                 {formErrors.name && <p className="text-red-400 text-xs mt-1">{t("This field is required", "Ce champ est requis")}</p>}
             </div>
 
-            <div className="space-y-2" data-aos="fade-up" data-aos-duration="1100">
-                <label className="block text-sm font-medium text-white">
-                    {t("Position", "Poste")} <span className="text-red-400">*</span>
+            <div className="space-y-1.5" data-aos="fade-up" data-aos-duration="1100">
+                <label className="block text-xs font-medium text-white">
+                    {t("Relationship", "Relation")} <span className="text-red-400">*</span>
                 </label>
                 <input
                     type="text"
-                    value={position}
-                    onChange={(e) => { setPosition(e.target.value); if (touched.position) { const err = validateField(e.target.value); setFormErrors(prev => { if (err) return { ...prev, position: err }; const n = {...prev}; delete n.position; return n; }); } }}
-                    onBlur={() => handleBlur('position')}
-                    maxLength={30}
-                    placeholder={t("e.g. Software Engineer", "ex: Ingenieur logiciel")}
-                    className={`w-full p-3 rounded-xl bg-white/5 border ${formErrors.position ? "border-red-500/50" : "border-white/10"} text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all`}
+                    value={relationship}
+                    onChange={(e) => { setRelationship(e.target.value); if (touched.relationship) { const err = validateField(e.target.value); setFormErrors(prev => { if (err) return { ...prev, relationship: err }; const n = {...prev}; delete n.relationship; return n; }); } }}
+                    onBlur={() => handleBlur('relationship')}
+                    maxLength={50}
+                    placeholder={t("e.g. Colleague, Manager, Client", "ex: Collègue, Manager, Client")}
+                    className={`w-full p-2.5 text-sm rounded-xl bg-white/5 border ${formErrors.relationship ? "border-red-500/50" : "border-white/10"} text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all`}
                 />
-                {formErrors.position && <p className="text-red-400 text-xs mt-1">{t("This field is required", "Ce champ est requis")}</p>}
+                {formErrors.relationship && <p className="text-red-400 text-xs mt-1">{t("This field is required", "Ce champ est requis")}</p>}
             </div>
 
-            <div className="space-y-2" data-aos="fade-up" data-aos-duration="1200">
-                <label className="block text-sm font-medium text-white">
-                    {t("Company", "Entreprise")} <span className="text-red-400">*</span>
-                </label>
-                <input
-                    type="text"
-                    value={company}
-                    onChange={(e) => { setCompany(e.target.value); if (touched.company) { const err = validateField(e.target.value); setFormErrors(prev => { if (err) return { ...prev, company: err }; const n = {...prev}; delete n.company; return n; }); } }}
-                    onBlur={() => handleBlur('company')}
-                    maxLength={30}
-                    placeholder={t("e.g. Google", "ex: Google")}
-                    className={`w-full p-3 rounded-xl bg-white/5 border ${formErrors.company ? "border-red-500/50" : "border-white/10"} text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all`}
-                />
-                {formErrors.company && <p className="text-red-400 text-xs mt-1">{t("This field is required", "Ce champ est requis")}</p>}
-            </div>
-
-            <div className="space-y-2" data-aos="fade-up" data-aos-duration="1300">
-                <label className="block text-sm font-medium text-white">
+            <div className="space-y-1.5" data-aos="fade-up" data-aos-duration="1300">
+                <label className="block text-xs font-medium text-white">
                     {t("Testimonial", "Témoignage")} <span className="text-red-400">*</span>
                 </label>
                 <textarea
@@ -192,7 +159,7 @@ const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
                     onChange={handleTextareaChange}
                     onBlur={() => handleBlur('content')}
                     placeholder={t("Share your experience working with me...", "Partagez votre expérience de travail avec moi...")}
-                    className={`w-full p-4 rounded-xl bg-white/5 border ${formErrors.content ? "border-red-500/50" : "border-white/10"} text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all resize-none min-h-[100px]`}
+                    className={`w-full p-3 text-sm rounded-xl bg-white/5 border ${formErrors.content ? "border-red-500/50" : "border-white/10"} text-white placeholder-gray-400 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all resize-none min-h-[80px]`}
                 />
                 {formErrors.content && <p className="text-red-400 text-xs mt-1">{t("This field is required", "Ce champ est requis")}</p>}
             </div>
@@ -201,7 +168,7 @@ const CommentForm = memo(({ onSubmit, isSubmitting }: CommentFormProps) => {
                 type="submit"
                 disabled={isSubmitting}
                 data-aos="fade-up" data-aos-duration="1400"
-                className="relative w-full h-12 bg-gradient-to-r from-[#6366f1] to-[#a855f7] rounded-xl font-medium text-white overflow-hidden group transition-all duration-300 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed"
+                className="relative w-full h-10 bg-gradient-to-r from-[#6366f1] to-[#a855f7] rounded-xl font-medium text-sm text-white overflow-hidden group transition-all duration-300 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed"
             >
                 <div className="absolute inset-0 bg-white/20 translate-y-12 group-hover:translate-y-0 transition-transform duration-300" />
                 <div className="relative flex items-center justify-center gap-2">
@@ -227,7 +194,6 @@ CommentForm.displayName = 'CommentForm';
 const Testimonials = () => {
     const { t } = useLanguage();
     const [comments, setComments] = useState<TestimonialData[]>([]);
-    const [pinnedComment, setPinnedComment] = useState<TestimonialData | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -243,11 +209,7 @@ const Testimonials = () => {
         const fetchData = async () => {
             try {
                 const res = await getTestimonials();
-                const approved = res.data;
-                const pinned = approved.find(t => t.isPinned);
-                const rest = approved.filter(t => !t.isPinned);
-                setPinnedComment(pinned || null);
-                setComments(rest);
+                setComments(res.data);
             } catch (err) {
                 console.error('Error fetching testimonials:', err);
             }
@@ -256,7 +218,7 @@ const Testimonials = () => {
         fetchData();
     }, []);
 
-    const handleCommentSubmit = useCallback(async ({ newComment, userName, position, company }: { newComment: string; userName: string; position: string; company: string }) => {
+    const handleCommentSubmit = useCallback(async ({ newComment, userName, relationship }: { newComment: string; userName: string; relationship: string }) => {
         setError('');
         setSuccess('');
         setIsSubmitting(true);
@@ -264,8 +226,7 @@ const Testimonials = () => {
         try {
             await submitTestimonial({
                 name: userName,
-                position,
-                company,
+                relationship,
                 content: newComment,
             });
             setSuccess(t('Thank you! Your testimonial has been submitted and is pending review.', 'Merci ! Votre témoignage a été soumis et est en attente de validation.'));
@@ -298,7 +259,7 @@ const Testimonials = () => {
         }).format(date);
     }, [t]);
 
-    const totalComments = comments.length + (pinnedComment ? 1 : 0);
+    const totalComments = comments.length;
 
     return (
         <div className="w-full bg-gradient-to-b from-white/10 to-white/5 rounded-2xl backdrop-blur-xl shadow-xl" data-aos="fade-up" data-aos-duration="1000">
@@ -307,7 +268,7 @@ const Testimonials = () => {
                     <div className="p-2 rounded-xl bg-indigo-500/20">
                         <MessageCircle className="w-6 h-6 text-indigo-400" />
                     </div>
-                    <h3 className="text-xl font-semibold text-white">
+                    <h3 className="text-lg font-semibold text-white">
                         {t("Testimonials", "Témoignages")} <span className="text-indigo-400">({totalComments})</span>
                     </h3>
                 </div>
@@ -332,17 +293,7 @@ const Testimonials = () => {
                 </div>
 
                 <div className="space-y-4 h-[328px] overflow-y-auto overflow-x-hidden custom-scrollbar pt-1 pr-1" data-aos="fade-up" data-aos-delay="200">
-                    {pinnedComment && (
-                        <div data-aos="fade-down" data-aos-duration="800">
-                            <Comment
-                                comment={pinnedComment}
-                                formatDate={formatDate}
-                                isPinned={true}
-                            />
-                        </div>
-                    )}
-
-                    {comments.length === 0 && !pinnedComment ? (
+                    {comments.length === 0 ? (
                         <div className="text-center py-8" data-aos="fade-in">
                             <UserCircle2 className="w-12 h-12 text-indigo-400 mx-auto mb-3 opacity-50" />
                             <p className="text-gray-400">{t("No testimonials yet. Be the first to share your experience!", "Aucun témoignage pour le moment. Soyez le premier a partager votre expérience !")}</p>
@@ -353,7 +304,6 @@ const Testimonials = () => {
                                 key={comment.id}
                                 comment={comment}
                                 formatDate={formatDate}
-                                isPinned={false}
                             />
                         ))
                     )}

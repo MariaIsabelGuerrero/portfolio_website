@@ -12,9 +12,8 @@ import CardProject from "../components/CardProject";
 import TechStackIcon from "../components/TechStackIcon";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import Certificate from "../components/Certificate";
-import { Code, Award, Boxes, Loader2 } from "lucide-react";
-import { getProjects, getSkills, getCertificates, type ProjectData, type SkillData, type CertificateData } from "@/lib/public-api";
+import { Code, Boxes, Loader2 } from "lucide-react";
+import { getProjects, getSkills, type ProjectData, type SkillData } from "@/lib/public-api";
 import { useLanguage } from "@/lib/i18n";
 
 interface ToggleButtonProps {
@@ -28,10 +27,10 @@ const ToggleButton = ({ onClick, isShowingMore, seeMoreLabel, seeLessLabel }: To
   <button
     onClick={onClick}
     className="
-      px-5 py-3
+      px-4 py-2.5
       text-slate-300
       hover:text-white
-      text-base
+      text-sm
       font-medium
       transition-all
       duration-300
@@ -135,9 +134,7 @@ export default function FullWidthTabs() {
   const [direction, setDirection] = useState(0);
   const [projects, setProjects] = useState<ProjectData[]>([]);
   const [techStacks, setTechStacks] = useState<SkillData[]>([]);
-  const [certificates, setCertificates] = useState<CertificateData[]>([]);
   const [showAllProjects, setShowAllProjects] = useState(false);
-  const [showAllCertificates, setShowAllCertificates] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -155,14 +152,12 @@ export default function FullWidthTabs() {
 
   const fetchData = useCallback(async () => {
     try {
-      const [projectsRes, skillsRes, certificatesRes] = await Promise.allSettled([
+      const [projectsRes, skillsRes] = await Promise.allSettled([
         getProjects(),
         getSkills(),
-        getCertificates(),
       ]);
       if (projectsRes.status === "fulfilled") setProjects(projectsRes.value.data);
       if (skillsRes.status === "fulfilled") setTechStacks(skillsRes.value.data);
-      if (certificatesRes.status === "fulfilled") setCertificates(certificatesRes.value.data);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -179,16 +174,11 @@ export default function FullWidthTabs() {
     setValue(newValue);
   };
 
-  const toggleShowMore = useCallback((type: string) => {
-    if (type === 'projects') {
-      setShowAllProjects(prev => !prev);
-    } else {
-      setShowAllCertificates(prev => !prev);
-    }
+  const toggleShowMore = useCallback(() => {
+    setShowAllProjects(prev => !prev);
   }, []);
 
   const displayedProjects = showAllProjects ? projects : projects.slice(0, initialItems);
-  const displayedCertificates = showAllCertificates ? certificates : certificates.slice(0, initialItems);
 
   if (loading) {
     return (
@@ -203,7 +193,7 @@ export default function FullWidthTabs() {
   return (
     <div className="md:px-[5%] px-[3%] w-full sm:mt-0 mt-[3rem] bg-[#030014] overflow-hidden" id="Portfolio">
       <div className="text-center pb-12" data-aos="fade-up" data-aos-duration="1000">
-        <h2 className="inline-block text-5xl md:text-6xl lg:text-7xl font-bold text-center mx-auto text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]">
+        <h2 className="inline-block text-3xl md:text-4xl lg:text-5xl font-bold text-center mx-auto text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]">
           <span style={{
             color: '#6366f1',
             backgroundImage: 'linear-gradient(45deg, #6366f1 10%, #a855f7 93%)',
@@ -214,10 +204,10 @@ export default function FullWidthTabs() {
             {t("Portfolio Showcase", "Vitrine du portfolio")}
           </span>
         </h2>
-        <p className="text-slate-400 max-w-3xl mx-auto text-lg md:text-xl lg:text-2xl mt-4">
+        <p className="text-slate-400 max-w-3xl mx-auto text-sm md:text-base lg:text-lg mt-3">
           {t(
-            "Explore my journey through projects, certifications, and technical expertise. Each section represents a milestone in my continuous learning path.",
-            "Explorez mon parcours à travers mes projets, certifications et expertises techniques. Chaque section représente une étape de mon apprentissage continu."
+            "Explore my journey through projects and technical expertise. Each section represents a milestone in my continuous learning path.",
+            "Explorez mon parcours à travers mes projets et expertises techniques. Chaque section représente une étape de mon apprentissage continu."
           )}
         </p>
       </div>
@@ -253,9 +243,9 @@ export default function FullWidthTabs() {
             indicatorColor="secondary"
             variant="fullWidth"
             sx={{
-              minHeight: "80px",
+              minHeight: "64px",
               "& .MuiTab-root": {
-                fontSize: { xs: "1rem", md: "1.125rem" },
+                fontSize: { xs: "0.875rem", md: "1rem" },
                 fontWeight: "600",
                 color: "#94a3b8",
                 textTransform: "none",
@@ -290,19 +280,14 @@ export default function FullWidthTabs() {
             }}
           >
             <Tab
-              icon={<Code className="mb-2 w-6 h-6 transition-all duration-300" />}
+              icon={<Code className="mb-1 w-5 h-5 transition-all duration-300" />}
               label={t("Projects", "Projets")}
               {...a11yProps(0)}
             />
             <Tab
-              icon={<Award className="mb-2 w-6 h-6 transition-all duration-300" />}
-              label={t("Certificates", "Certificats")}
-              {...a11yProps(1)}
-            />
-            <Tab
-              icon={<Boxes className="mb-2 w-6 h-6 transition-all duration-300" />}
+              icon={<Boxes className="mb-1 w-5 h-5 transition-all duration-300" />}
               label={t("Tech Stack", "Technologies")}
-              {...a11yProps(2)}
+              {...a11yProps(1)}
             />
           </Tabs>
         </AppBar>
@@ -345,7 +330,7 @@ export default function FullWidthTabs() {
                   {projects.length > initialItems && (
                     <div className="mt-6 w-full flex justify-start">
                       <ToggleButton
-                        onClick={() => toggleShowMore('projects')}
+                        onClick={() => toggleShowMore()}
                         isShowingMore={showAllProjects}
                         seeMoreLabel={t("See More", "Voir plus")}
                         seeLessLabel={t("See Less", "Voir moins")}
@@ -357,34 +342,6 @@ export default function FullWidthTabs() {
 
               {value === 1 && (
                 <TabPanel value={value} index={1}>
-                  <div className="w-full overflow-hidden">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5 w-full">
-                      {displayedCertificates.map((certificate, index) => (
-                        <div
-                          key={certificate.id || index}
-                          data-aos={index % 3 === 0 ? "fade-up-right" : index % 3 === 1 ? "fade-up" : "fade-up-left"}
-                          data-aos-duration={index % 3 === 0 ? "1000" : index % 3 === 1 ? "1200" : "1000"}
-                        >
-                          <Certificate certificateImage={certificate.fileUrl} fileType={certificate.fileType} />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  {certificates.length > initialItems && (
-                    <div className="mt-6 w-full flex justify-start">
-                      <ToggleButton
-                        onClick={() => toggleShowMore('certificates')}
-                        isShowingMore={showAllCertificates}
-                        seeMoreLabel={t("See More", "Voir plus")}
-                        seeLessLabel={t("See Less", "Voir moins")}
-                      />
-                    </div>
-                  )}
-                </TabPanel>
-              )}
-
-              {value === 2 && (
-                <TabPanel value={value} index={2}>
                   <div className="container mx-auto flex justify-center items-center overflow-hidden pb-[5%]">
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 lg:gap-8 gap-5">
                       {techStacks.map((stack, index) => (

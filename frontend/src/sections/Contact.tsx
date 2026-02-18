@@ -8,7 +8,7 @@ import Swal from "sweetalert2";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import axios from "axios";
-import ReCAPTCHA from "react-google-recaptcha";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { submitMessage } from "@/lib/public-api";
 import { useLanguage } from "@/lib/i18n";
 
@@ -22,7 +22,8 @@ const ContactPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileInstance>(null);
 
   useEffect(() => {
     AOS.init({
@@ -74,9 +75,8 @@ const ContactPage = () => {
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.email = "Invalid";
     if (!formData.message.trim()) errors.message = "Required";
 
-    const recaptchaToken = recaptchaRef.current?.getValue();
-    if (!recaptchaToken) {
-      errors.recaptcha = "Required";
+    if (!turnstileToken) {
+      errors.turnstile = "Required";
     }
 
     if (Object.keys(errors).length > 0) {
@@ -101,7 +101,7 @@ const ContactPage = () => {
         name: formData.name,
         email: formData.email,
         message: formData.message,
-        recaptchaToken: recaptchaToken!,
+        turnstileToken: turnstileToken!,
       });
 
       // Also send via FormSubmit for email notification
@@ -137,7 +137,8 @@ const ContactPage = () => {
         message: "",
       });
       setTouched({});
-      recaptchaRef.current?.reset();
+      setTurnstileToken(null);
+      turnstileRef.current?.reset();
 
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.request && error.request.status === 0) {
@@ -165,7 +166,7 @@ const ContactPage = () => {
       }
     } finally {
       setIsSubmitting(false);
-      recaptchaRef.current?.reset();
+      turnstileRef.current?.reset();
     }
   };
 
@@ -175,7 +176,7 @@ const ContactPage = () => {
         <h2
           data-aos="fade-down"
           data-aos-duration="1000"
-          className="inline-block text-5xl md:text-6xl lg:text-7xl font-bold text-center mx-auto text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]"
+          className="inline-block text-3xl md:text-4xl lg:text-5xl font-bold text-center mx-auto text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]"
         >
           <span
             style={{
@@ -193,7 +194,7 @@ const ContactPage = () => {
         <p
           data-aos="fade-up"
           data-aos-duration="1100"
-          className="text-slate-400 max-w-2xl mx-auto text-lg md:text-xl lg:text-2xl mt-4"
+          className="text-slate-400 max-w-2xl mx-auto text-sm md:text-base lg:text-lg mt-3"
         >
           {t(
             "Have a question? Send me a message, and I'll get back to you soon.",
@@ -213,17 +214,17 @@ const ContactPage = () => {
           >
             <div className="flex justify-between items-start mb-10">
               <div>
-                <h2 className="text-4xl lg:text-5xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]">
+                <h2 className="text-2xl lg:text-3xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]">
                   {t("Get in Touch", "Prenez contact")}
                 </h2>
-                <p className="text-gray-400 text-lg lg:text-xl">
+                <p className="text-gray-400 text-sm lg:text-base">
                   {t(
                     "Want to discuss something? Send me a message and let's talk.",
                     "Vous souhaitez discuter ? Envoyez-moi un message et parlons-en."
                   )}
                 </p>
               </div>
-              <Share2 className="w-12 h-12 text-[#6366f1] opacity-50" />
+              <Share2 className="w-10 h-10 text-[#6366f1] opacity-50" />
             </div>
 
             <form
@@ -236,7 +237,7 @@ const ContactPage = () => {
                 data-aos-delay="100"
                 className="relative group"
               >
-                <User className="absolute left-5 top-5 w-6 h-6 text-gray-400 group-focus-within:text-[#6366f1] transition-colors" />
+                <User className="absolute left-4 top-4 w-5 h-5 text-gray-400 group-focus-within:text-[#6366f1] transition-colors" />
                 <input
                   type="text"
                   name="name"
@@ -246,7 +247,7 @@ const ContactPage = () => {
                   onBlur={handleBlur}
                   disabled={isSubmitting}
                   maxLength={100}
-                  className={`w-full p-5 pl-14 text-lg bg-white/10 rounded-xl border ${formErrors.name ? "border-red-500/50" : "border-white/20"} placeholder-gray-500 text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1]/30 transition-all duration-300 hover:border-[#6366f1]/30 disabled:opacity-50`}
+                  className={`w-full p-3 pl-11 text-sm bg-white/10 rounded-xl border ${formErrors.name ? "border-red-500/50" : "border-white/20"} placeholder-gray-500 text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1]/30 transition-all duration-300 hover:border-[#6366f1]/30 disabled:opacity-50`}
                 />
                 {formErrors.name && <p className="text-red-400 text-xs mt-1">{t("This field is required", "Ce champ est requis")}</p>}
               </div>
@@ -255,7 +256,7 @@ const ContactPage = () => {
                 data-aos-delay="200"
                 className="relative group"
               >
-                <Mail className="absolute left-5 top-5 w-6 h-6 text-gray-400 group-focus-within:text-[#6366f1] transition-colors" />
+                <Mail className="absolute left-4 top-4 w-5 h-5 text-gray-400 group-focus-within:text-[#6366f1] transition-colors" />
                 <input
                   type="email"
                   name="email"
@@ -265,7 +266,7 @@ const ContactPage = () => {
                   onBlur={handleBlur}
                   disabled={isSubmitting}
                   maxLength={254}
-                  className={`w-full p-5 pl-14 text-lg bg-white/10 rounded-xl border ${formErrors.email ? "border-red-500/50" : "border-white/20"} placeholder-gray-500 text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1]/30 transition-all duration-300 hover:border-[#6366f1]/30 disabled:opacity-50`}
+                  className={`w-full p-3 pl-11 text-sm bg-white/10 rounded-xl border ${formErrors.email ? "border-red-500/50" : "border-white/20"} placeholder-gray-500 text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1]/30 transition-all duration-300 hover:border-[#6366f1]/30 disabled:opacity-50`}
                 />
                 {formErrors.email && <p className="text-red-400 text-xs mt-1">{formErrors.email === "Invalid" ? t("Please enter a valid email", "Veuillez entrer un e-mail valide") : t("This field is required", "Ce champ est requis")}</p>}
               </div>
@@ -274,7 +275,7 @@ const ContactPage = () => {
                 data-aos-delay="300"
                 className="relative group"
               >
-                <MessageSquare className="absolute left-5 top-5 w-6 h-6 text-gray-400 group-focus-within:text-[#6366f1] transition-colors" />
+                <MessageSquare className="absolute left-4 top-4 w-5 h-5 text-gray-400 group-focus-within:text-[#6366f1] transition-colors" />
                 <textarea
                   name="message"
                   placeholder={t("Your Message", "Votre message")}
@@ -283,27 +284,45 @@ const ContactPage = () => {
                   onBlur={handleBlur}
                   disabled={isSubmitting}
                   maxLength={1000}
-                  className={`w-full resize-none p-5 pl-14 text-lg bg-white/10 rounded-xl border ${formErrors.message ? "border-red-500/50" : "border-white/20"} placeholder-gray-500 text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1]/30 transition-all duration-300 hover:border-[#6366f1]/30 h-[12rem] disabled:opacity-50`}
+                  className={`w-full resize-none p-3 pl-11 text-sm bg-white/10 rounded-xl border ${formErrors.message ? "border-red-500/50" : "border-white/20"} placeholder-gray-500 text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1]/30 transition-all duration-300 hover:border-[#6366f1]/30 h-[8rem] disabled:opacity-50`}
                 />
                 {formErrors.message && <p className="text-red-400 text-xs mt-1">{t("This field is required", "Ce champ est requis")}</p>}
               </div>
+
+              {/* Cloudflare Turnstile Widget */}
               <div data-aos="fade-up" data-aos-delay="350">
-                <ReCAPTCHA
-                  ref={recaptchaRef}
-                  sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""}
-                  theme="dark"
-                  onChange={() => setFormErrors(prev => { const n = { ...prev }; delete n.recaptcha; return n; })}
-                />
-                {formErrors.recaptcha && <p className="text-red-400 text-xs mt-1">{t("Please complete the reCAPTCHA", "Veuillez completer le reCAPTCHA")}</p>}
+                {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? (
+                  <Turnstile
+                    ref={turnstileRef}
+                    siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+                    onSuccess={(token) => {
+                      setTurnstileToken(token);
+                      setFormErrors(prev => { const n = { ...prev }; delete n.turnstile; return n; });
+                    }}
+                    onExpire={() => {
+                      setTurnstileToken(null);
+                    }}
+                    onError={() => {
+                      setTurnstileToken(null);
+                    }}
+                    options={{
+                      theme: "dark",
+                    }}
+                  />
+                ) : (
+                  <p className="text-yellow-400 text-xs">{t("Turnstile not configured", "Turnstile non configuré")}</p>
+                )}
+                {formErrors.turnstile && <p className="text-red-400 text-xs mt-1">{t("Please complete the verification", "Veuillez completer la verification")}</p>}
               </div>
+
               <button
                 data-aos="fade-up"
                 data-aos-delay="400"
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white py-5 rounded-xl text-lg font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-[#6366f1]/20 active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="w-full bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white py-3 rounded-xl text-sm font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-[#6366f1]/20 active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
-                <Send className="w-6 h-6" />
+                <Send className="w-5 h-5" />
                 {isSubmitting ? t('Sending...', 'Envoi...') : t('Send Message', 'Envoyer le message')}
               </button>
             </form>

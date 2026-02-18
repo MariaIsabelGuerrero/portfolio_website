@@ -85,13 +85,13 @@ const Navbar = () => {
             }`}
         >
             <div className="mx-auto px-[5%] sm:px-[5%] lg:px-[10%]">
-                <div className="flex items-center justify-between h-20">
+                <div className="flex items-center justify-between h-16">
                     {/* Logo */}
                     <div className="flex-shrink-0">
                         <a
                             href="#Home"
                             onClick={(e) => scrollToSection(e, "#Home")}
-                            className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-[#a855f7] to-[#6366f1] bg-clip-text text-transparent"
+                            className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-[#a855f7] to-[#6366f1] bg-clip-text text-transparent"
                         >
                             Maria
                         </a>
@@ -99,13 +99,13 @@ const Navbar = () => {
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:block">
-                        <div className="ml-10 flex items-center space-x-10">
+                        <div className="ml-10 flex items-center space-x-8">
                             {navItems.map((item) => (
                                 <a
                                     key={item.href}
                                     href={item.href}
                                     onClick={(e) => scrollToSection(e, item.href)}
-                                    className="group relative px-1 py-2 text-base lg:text-lg font-medium"
+                                    className="group relative px-1 py-2 text-sm lg:text-base font-medium"
                                 >
                                     <span
                                         className={`relative z-10 transition-colors duration-300 ${
@@ -129,15 +129,15 @@ const Navbar = () => {
                     </div>
 
                     {/* Right side buttons - Desktop */}
-                    <div className="hidden md:flex items-center space-x-8">
+                    <div className="hidden md:flex items-center space-x-6">
                         {/* Language Toggle */}
                         <button
                             onClick={toggleLanguage}
-                            className="group flex items-center gap-2 hover:opacity-80 transition-all duration-300"
+                            className="group flex items-center gap-1.5 hover:opacity-80 transition-all duration-300"
                             title={language === 'en' ? 'Switch to French' : 'Switch to English'}
                         >
-                            <Globe className="w-6 h-6 text-[#e2d3fd] group-hover:text-white transition-colors" />
-                            <span className="text-base font-medium text-[#e2d3fd] group-hover:text-white transition-colors uppercase">
+                            <Globe className="w-5 h-5 text-[#e2d3fd] group-hover:text-white transition-colors" />
+                            <span className="text-sm font-medium text-[#e2d3fd] group-hover:text-white transition-colors uppercase">
                                 {language}
                             </span>
                         </button>
@@ -149,7 +149,7 @@ const Navbar = () => {
                             title={language === 'en' ? 'Admin Login' : 'Connexion Admin'}
                         >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src="/user.png" alt="Login" className="w-7 h-7" />
+                            <img src="/user.png" alt="Login" className="w-6 h-6" />
                         </Link>
                     </div>
 

@@ -10,10 +10,8 @@ export const runtime = "nodejs";
 export async function GET(request: NextRequest) {
   const auth = requireAdmin(request);
   if (auth.error) return auth.error;
-
   try {
     const status = request.nextUrl.searchParams.get("status");
-
     let result;
     if (status === "read") {
       result = await db.select().from(messages).where(eq(messages.read, true)).orderBy(desc(messages.date));
@@ -22,7 +20,6 @@ export async function GET(request: NextRequest) {
     } else {
       result = await db.select().from(messages).orderBy(desc(messages.date));
     }
-
     return NextResponse.json({ data: result, count: result.length });
   } catch (error) {
     console.error("Failed to fetch messages:", error);
@@ -34,7 +31,7 @@ export async function POST(request: NextRequest) {
   // Public endpoint - contact form submission (no auth required)
   try {
     const body = await request.json();
-    const { name, email, message, recaptchaToken } = body;
+    const { name, email, message, turnstileToken } = body;
 
     if (!name || !email || !message) {
       return NextResponse.json(
@@ -43,28 +40,47 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify reCAPTCHA token
-    if (!recaptchaToken) {
+    // Verify Cloudflare Turnstile token
+    if (!turnstileToken) {
       return NextResponse.json(
-        { error: "reCAPTCHA verification is required" },
+        { error: "Turnstile verification is required" },
         { status: 400 }
       );
     }
 
-    const recaptchaRes = await fetch("https://www.google.com/recaptcha/api/siteverify", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${recaptchaToken}`,
-    });
-    const recaptchaData = await recaptchaRes.json();
-
-    if (!recaptchaData.success) {
+    const turnstileSecretKey = process.env.TURNSTILE_SECRET_KEY;
+    if (!turnstileSecretKey) {
+      console.error("TURNSTILE_SECRET_KEY is not configured");
       return NextResponse.json(
-        { error: "reCAPTCHA verification failed" },
-        { status: 400 }
+        { error: "Server configuration error" },
+        { status: 500 }
       );
     }
 
+    // Call Cloudflare's siteverify API
+    const turnstileResponse = await fetch(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          secret: turnstileSecretKey,
+          response: turnstileToken,
+        }),
+      }
+    );
+
+    const turnstileResult = await turnstileResponse.json();
+
+    if (!turnstileResult.success) {
+      console.error("Turnstile verification failed:", turnstileResult);
+      return NextResponse.json(
+        { error: "Verification failed. Please try again." },
+        { status: 403 }
+      );
+    }
+
+    // Turnstile passed — save the message
     const id = crypto.randomUUID();
     const [created] = await db.insert(messages).values({
       id,

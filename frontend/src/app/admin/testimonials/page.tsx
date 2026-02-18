@@ -9,15 +9,14 @@ import {
   Check,
   X,
   Clock,
-  Briefcase,
-  Pin,
+  Users,
   Filter,
   CheckCircle,
   XCircle,
   AlertCircle,
   Loader2
 } from "lucide-react";
-import { fetchTestimonials as apiFetchTestimonials, updateTestimonialStatus as apiUpdateStatus, updateTestimonialPin as apiUpdatePin, deleteTestimonial as apiDeleteTestimonial, type Testimonial } from "@/lib/api-client";
+import { fetchTestimonials as apiFetchTestimonials, updateTestimonialStatus as apiUpdateStatus, deleteTestimonial as apiDeleteTestimonial, type Testimonial } from "@/lib/api-client";
 import { useLanguage } from "@/lib/i18n";
 
 type TestimonialStatus = "pending" | "approved" | "rejected";
@@ -77,7 +76,7 @@ export default function TestimonialsPage() {
   const filteredTestimonials = testimonials.filter(t => {
     const matchesSearch =
       t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      t.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      t.relationship.toLowerCase().includes(searchTerm.toLowerCase()) ||
       t.content.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesFilter = filterStatus === "all" || t.status === filterStatus;
@@ -107,15 +106,6 @@ export default function TestimonialsPage() {
       }
     } catch (err) {
       console.error("Failed to delete testimonial:", err);
-    }
-  };
-
-  const togglePin = async (id: string, isPinned: boolean) => {
-    try {
-      await apiUpdatePin(id, isPinned);
-      setTestimonials(testimonials.map(t => t.id === id ? { ...t, isPinned } : t));
-    } catch (err) {
-      console.error("Failed to toggle pin:", err);
     }
   };
 
@@ -155,18 +145,7 @@ export default function TestimonialsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-[#0f0520] border border-yellow-400/30 rounded-xl p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-yellow-400/20 flex items-center justify-center">
-              <AlertCircle className="w-5 h-5 text-yellow-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-white">{pendingCount}</p>
-              <p className="text-sm text-[#B19EEF]">{t("Pending", "En attente")}</p>
-            </div>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="bg-[#0f0520] border border-green-400/30 rounded-xl p-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-green-400/20 flex items-center justify-center">
@@ -253,16 +232,10 @@ export default function TestimonialsPage() {
                         <StatusIcon className="w-3 h-3" />
                         {t(status.label, statusLabelsFr[testimonial.status])}
                       </span>
-                      {testimonial.isPinned && (
-                        <span className="px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 bg-[#FF9FFC]/20 text-[#FF9FFC]">
-                          <Pin className="w-3 h-3" />
-                          {t("Pinned", "Épinglé")}
-                        </span>
-                      )}
                     </div>
                     <p className="text-sm text-[#B19EEF] mb-3 flex items-center gap-2">
-                      <Briefcase className="w-4 h-4" />
-                      {testimonial.position} {t("at", "chez")} {testimonial.company}
+                      <Users className="w-4 h-4" />
+                      {testimonial.relationship}
                     </p>
                     <p className="text-[#B19EEF]/80 mb-4 line-clamp-3">
                       &ldquo;{testimonial.content}&rdquo;
@@ -293,17 +266,6 @@ export default function TestimonialsPage() {
                         <span className="text-sm">{t("Reject", "Rejeter")}</span>
                       </button>
                     )}
-                    <button
-                      onClick={() => togglePin(testimonial.id, !testimonial.isPinned)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
-                        testimonial.isPinned
-                          ? "bg-[#FF9FFC]/20 border border-[#FF9FFC]/50 text-[#FF9FFC]"
-                          : "bg-[#5227FF]/20 border border-[#5227FF]/50 text-[#B19EEF] hover:text-white hover:border-[#FF9FFC]"
-                      }`}
-                    >
-                      <Pin className="w-4 h-4" />
-                      <span className="text-sm">{testimonial.isPinned ? t("Unpin", "Désépingler") : t("Pin", "Épingler")}</span>
-                    </button>
                     <button
                       onClick={() => setDeleteConfirm(testimonial.id)}
                       className="flex items-center gap-2 px-4 py-2 bg-[#5227FF]/20 border border-[#5227FF]/50 rounded-xl text-[#B19EEF] hover:text-white hover:border-[#FF9FFC] transition-colors"

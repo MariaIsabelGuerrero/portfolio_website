@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
   // Public endpoint - visitors submit testimonials (no auth required)
   try {
     const body = await request.json();
-    const { name, position, company, content } = body;
+    const { name, relationship, content } = body;
 
     if (!name || !content) {
       return NextResponse.json({ error: "Name and content are required" }, { status: 400 });
@@ -50,8 +50,7 @@ export async function POST(request: NextRequest) {
     const [created] = await db.insert(testimonials).values({
       id,
       name,
-      position: position || "",
-      company: company || "",
+      relationship: relationship || "",
       content,
       status: "pending",
     }).returning();

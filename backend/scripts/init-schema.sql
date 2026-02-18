@@ -91,13 +91,26 @@ CREATE TABLE IF NOT EXISTS messages (
 CREATE TABLE IF NOT EXISTS testimonials (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
-    position TEXT DEFAULT '',
-    company TEXT DEFAULT '',
+    relationship TEXT DEFAULT '',
     content TEXT NOT NULL,
     date TIMESTAMP DEFAULT NOW() NOT NULL,
-    status TEXT NOT NULL DEFAULT 'pending',
-    is_pinned BOOLEAN DEFAULT FALSE
+    status TEXT NOT NULL DEFAULT 'pending'
 );
+
+-- Migration: merge position+company into relationship
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'testimonials' AND column_name = 'relationship') THEN
+        ALTER TABLE testimonials ADD COLUMN relationship TEXT DEFAULT '';
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'testimonials' AND column_name = 'position') THEN
+        UPDATE testimonials SET relationship = CONCAT(position, CASE WHEN company != '' THEN ' at ' || company ELSE '' END) WHERE (relationship IS NULL OR relationship = '') AND (position != '' OR company != '');
+        ALTER TABLE testimonials DROP COLUMN position;
+    END IF;
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'testimonials' AND column_name = 'company') THEN
+        ALTER TABLE testimonials DROP COLUMN company;
+    END IF;
+END $$;
 
 -- Resumes table
 CREATE TABLE IF NOT EXISTS resumes (

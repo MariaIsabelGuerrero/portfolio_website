@@ -43,18 +43,14 @@ export async function getTestimonials() {
   return publicFetch<{ data: TestimonialData[] }>("/api/testimonials");
 }
 
-export async function getCertificates() {
-  return publicFetch<{ data: CertificateData[] }>("/api/certificates");
-}
-
-export async function submitTestimonial(data: { name: string; position: string; company: string; content: string }) {
+export async function submitTestimonial(data: { name: string; relationship: string; content: string }) {
   return publicFetch<{ data: TestimonialData }>("/api/testimonials", {
     method: "POST",
     body: JSON.stringify(data),
   });
 }
 
-export async function submitMessage(data: { name: string; email: string; message: string; recaptchaToken: string }) {
+export async function submitMessage(data: { name: string; email: string; message: string; turnstileToken: string }) {
   return publicFetch<{ data: MessageData }>("/api/messages", {
     method: "POST",
     body: JSON.stringify(data),
@@ -121,12 +117,10 @@ export interface HobbyData {
 export interface TestimonialData {
   id: string;
   name: string;
-  position: string;
-  company: string;
+  relationship: string;
   content: string;
   date: string;
   status: string;
-  isPinned: boolean;
 }
 
 export interface MessageData {
@@ -138,11 +132,3 @@ export interface MessageData {
   read: boolean;
 }
 
-export interface CertificateData {
-  id: string;
-  title: string;
-  fileUrl: string;
-  fileType: string;
-  createdAt?: string;
-  updatedAt?: string;
-}

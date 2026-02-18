@@ -24,10 +24,6 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       updateData.status = body.status;
     }
 
-    if (body.isPinned !== undefined) {
-      updateData.isPinned = body.isPinned;
-    }
-
     if (Object.keys(updateData).length === 0) {
       return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
     }

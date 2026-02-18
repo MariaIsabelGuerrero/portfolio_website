@@ -215,13 +215,6 @@ export async function updateTestimonialStatus(id: string, status: string) {
   });
 }
 
-export async function updateTestimonialPin(id: string, isPinned: boolean) {
-  return apiFetch<{ data: Testimonial }>(`/api/testimonials/${id}`, {
-    method: "PATCH",
-    body: JSON.stringify({ isPinned }),
-  });
-}
-
 export async function deleteTestimonial(id: string) {
   return apiFetch(`/api/testimonials/${id}`, { method: "DELETE" });
 }
@@ -283,42 +276,6 @@ export async function setActiveResume(id: string) {
 
 export async function deleteResume(id: string) {
   return apiFetch(`/api/resume/${id}`, { method: "DELETE" });
-}
-
-// ---- Certificates ----
-export async function fetchCertificates() {
-  return apiFetch<{ data: CertificateFile[] }>("/api/certificates");
-}
-
-export async function uploadCertificate(file: File) {
-  const headers = await getAuthHeaders();
-  delete headers["Content-Type"];
-  const formData = new FormData();
-  formData.append("file", file);
-
-  const res = await fetch(`${apiUrl}/api/certificates/upload`, {
-    method: "POST",
-    headers: { Authorization: headers.Authorization || "" },
-    body: formData,
-  });
-
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || "Upload failed");
-  }
-
-  return res.json() as Promise<{ filename: string; fileUrl: string; fileType: string; size: number; uploadedAt: string }>;
-}
-
-export async function createCertificate(data: { title: string; fileUrl: string; fileType: string }) {
-  return apiFetch<{ data: CertificateFile }>("/api/certificates", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
-}
-
-export async function deleteCertificate(id: string) {
-  return apiFetch(`/api/certificates/${id}`, { method: "DELETE" });
 }
 
 // ---- Project Image Upload ----
@@ -449,12 +406,10 @@ export interface Message {
 export interface Testimonial {
   id: string;
   name: string;
-  position: string;
-  company: string;
+  relationship: string;
   content: string;
   date: string;
   status: "pending" | "approved" | "rejected";
-  isPinned: boolean;
 }
 
 export interface ResumeFile {
@@ -467,11 +422,3 @@ export interface ResumeFile {
   updatedAt?: string;
 }
 
-export interface CertificateFile {
-  id: string;
-  title: string;
-  fileUrl: string;
-  fileType: string;
-  createdAt?: string;
-  updatedAt?: string;
-}

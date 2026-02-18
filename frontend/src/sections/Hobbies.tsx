@@ -52,22 +52,22 @@ const HobbyCard = ({ hobby, index, l }: { hobby: HobbyData; index: number; l: (e
       data-aos-duration="800"
       className="group relative h-full"
     >
-      <div className="relative h-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 md:p-8 hover:bg-white/10 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/10 overflow-hidden">
+      <div className="relative h-full bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-4 md:p-5 hover:bg-white/10 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/10 overflow-hidden">
         {/* Background gradient on hover */}
         <div className={`absolute inset-0 bg-gradient-to-br ${color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`} />
 
         {/* Icon */}
-        <div className={`w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gradient-to-br ${color} flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500`}>
-          {Icon && <Icon className="w-8 h-8 md:w-10 md:h-10 text-white" />}
+        <div className={`w-11 h-11 md:w-12 md:h-12 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-500`}>
+          {Icon && <Icon className="w-5 h-5 md:w-6 md:h-6 text-white" />}
         </div>
 
         {/* Content */}
-        <h3 className="text-2xl md:text-3xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-[#6366f1] group-hover:to-[#a855f7] transition-all duration-300">
+        <h3 className="text-lg md:text-xl font-bold text-white mb-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-[#6366f1] group-hover:to-[#a855f7] transition-all duration-300">
           {l(hobby.name_en, hobby.name_fr)}
         </h3>
 
         {l(hobby.description_en, hobby.description_fr) && (
-          <p className="text-gray-400 text-lg leading-relaxed">
+          <p className="text-gray-400 text-sm leading-relaxed">
             {l(hobby.description_en, hobby.description_fr)}
           </p>
         )}
@@ -102,7 +102,7 @@ const Hobbies = () => {
 
   if (loading) {
     return (
-      <section className="py-20 px-[5%] sm:px-[5%] lg:px-[10%] bg-[#030014]" id="Hobbies">
+      <section className="py-16 px-[5%] sm:px-[5%] lg:px-[10%] bg-[#030014]" id="Hobbies">
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 text-[#6366f1] animate-spin" />
         </div>
@@ -113,17 +113,17 @@ const Hobbies = () => {
   if (hobbiesData.length === 0) return null;
 
   return (
-    <section className="py-20 px-[5%] sm:px-[5%] lg:px-[10%] bg-[#030014]" id="Hobbies">
-      <div className="text-center mb-16">
+    <section className="py-16 px-[5%] sm:px-[5%] lg:px-[10%] bg-[#030014]" id="Hobbies">
+      <div className="text-center mb-12">
         <h2
-          className="text-5xl md:text-6xl lg:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]"
+          className="text-3xl md:text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]"
           data-aos="zoom-in-up"
           data-aos-duration="600"
         >
           {t("Hobbies", "Loisirs")}
         </h2>
         <p
-          className="mt-4 text-gray-400 max-w-2xl mx-auto text-lg sm:text-xl lg:text-2xl"
+          className="mt-3 text-gray-400 max-w-2xl mx-auto text-sm sm:text-base lg:text-lg"
           data-aos="zoom-in-up"
           data-aos-duration="800"
         >
@@ -131,7 +131,7 @@ const Hobbies = () => {
         </p>
       </div>
 
-      <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
         {hobbiesData.map((hobby, index) => (
           <HobbyCard key={hobby.id} hobby={hobby} index={index} l={l} />
         ))}

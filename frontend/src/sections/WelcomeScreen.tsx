@@ -42,8 +42,8 @@ const BackgroundEffect = () => (
 const IconButton = ({ Icon }) => (
   <div className="relative group hover:scale-110 transition-transform duration-300">
     <div className="absolute -inset-2 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full blur opacity-30 group-hover:opacity-75 transition duration-300" />
-    <div className="relative p-2 sm:p-3 bg-black/50 backdrop-blur-sm rounded-full border border-white/10">
-      <Icon className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-white" />
+    <div className="relative p-1.5 sm:p-2 bg-black/50 backdrop-blur-sm rounded-full border border-white/10">
+      <Icon className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" />
     </div>
   </div>
 );
@@ -125,8 +125,8 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
                 className="text-center mb-6 sm:mb-8 md:mb-12"
                 variants={childVariants}
               >
-                <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold space-y-2 sm:space-y-4">
-                  <div className="mb-2 sm:mb-4 whitespace-nowrap">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold space-y-2 sm:space-y-3">
+                  <div className="mb-1 sm:mb-3 whitespace-nowrap">
                     <span data-aos="fade-right" data-aos-delay="200" className="inline-block px-2 bg-gradient-to-r from-white via-blue-100 to-purple-200 bg-clip-text text-transparent">
                       {t("Welcome", "Bienvenue")}
                     </span>{' '}
@@ -157,13 +157,13 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
               >
                 <a
                   href="https://www.mariaguerrero.me"
-                  className="inline-flex items-center gap-2 px-4 py-2 sm:px-6 sm:py-3 rounded-full relative group hover:scale-105 transition-transform duration-300"
+                  className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-full relative group hover:scale-105 transition-transform duration-300"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 rounded-full blur-md group-hover:blur-lg transition-all duration-300" />
-                  <div className="relative flex items-center gap-2 text-lg sm:text-xl md:text-2xl">
-                    <Globe className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600" />
+                  <div className="relative flex items-center gap-2 text-base sm:text-lg md:text-xl">
+                    <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-600" />
                     <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                       <TypewriterEffect text="www.mariaguerrero.me" />
                     </span>

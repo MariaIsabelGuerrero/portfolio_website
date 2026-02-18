@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useEffect, useState, memo, useMemo } from "react"
-import { FileText, Code, Award, Globe, ArrowUpRight, Sparkles } from "lucide-react"
-import { fetchResumes, fetchCertificates, type ResumeFile } from "@/lib/api-client"
+import { FileText, Code, Globe, ArrowUpRight, Sparkles } from "lucide-react"
+import { fetchResumes, type ResumeFile } from "@/lib/api-client"
 import { getProjects } from "@/lib/public-api"
 import { useLanguage } from "@/lib/i18n"
 import AOS from 'aos'
@@ -11,10 +11,10 @@ import 'aos/dist/aos.css'
 // Memoized Components
 const Header = memo(function Header({ t }: { t: (en: string, fr: string) => string }) {
   return (
-    <div className="text-center lg:mb-10 mb-4 px-[5%]">
+    <div className="text-center lg:mb-8 mb-4 px-[5%]">
       <div className="inline-block relative group">
         <h2
-          className="text-5xl md:text-6xl lg:text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]"
+          className="text-3xl md:text-4xl lg:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]"
           data-aos="zoom-in-up"
           data-aos-duration="600"
         >
@@ -22,13 +22,13 @@ const Header = memo(function Header({ t }: { t: (en: string, fr: string) => stri
         </h2>
       </div>
       <p
-        className="mt-4 text-gray-400 max-w-2xl mx-auto text-lg sm:text-xl lg:text-2xl flex items-center justify-center gap-3"
+        className="mt-3 text-gray-400 max-w-2xl mx-auto text-sm sm:text-base lg:text-lg flex items-center justify-center gap-3"
         data-aos="zoom-in-up"
         data-aos-duration="800"
       >
-        <Sparkles className="w-6 h-6 text-purple-400" />
+        <Sparkles className="w-5 h-5 text-purple-400" />
         {t("Transforming ideas into digital experiences", "Transformer les idées en expériences numériques")}
-        <Sparkles className="w-6 h-6 text-purple-400" />
+        <Sparkles className="w-5 h-5 text-purple-400" />
       </p>
     </div>
   );
@@ -50,7 +50,7 @@ const ProfileImage = memo(function ProfileImage() {
         </div>
 
         <div className="relative">
-          <div className="w-80 h-80 sm:w-[26rem] sm:h-[26rem] lg:w-[30rem] lg:h-[30rem] rounded-full overflow-hidden shadow-[0_0_40px_rgba(120,119,198,0.3)] transform transition-all duration-700 group-hover:scale-105">
+          <div className="w-56 h-56 sm:w-72 sm:h-72 lg:w-80 lg:h-80 rounded-full overflow-hidden shadow-[0_0_40px_rgba(120,119,198,0.3)] transform transition-all duration-700 group-hover:scale-105">
             <div className="absolute inset-0 border-4 border-white/20 rounded-full z-20 transition-all duration-700 group-hover:border-white/40 group-hover:scale-105" />
 
             {/* Optimized overlay effects - disabled on mobile */}
@@ -90,15 +90,15 @@ interface StatCardProps {
 const StatCard = memo(function StatCard({ icon: Icon, color, value, label, description, animation }: StatCardProps) {
   return (
     <div data-aos={animation} data-aos-duration={1300} className="relative group">
-      <div className="relative z-10 bg-gray-900/50 backdrop-blur-lg rounded-2xl p-8 border border-white/10 overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl h-full flex flex-col justify-between">
+      <div className="relative z-10 bg-gray-900/50 backdrop-blur-lg rounded-2xl p-5 border border-white/10 overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl h-full flex flex-col justify-between">
         <div className={`absolute -z-10 inset-0 bg-gradient-to-br ${color} opacity-10 group-hover:opacity-20 transition-opacity duration-300`}></div>
 
-        <div className="flex items-center justify-between mb-6">
-          <div className="w-20 h-20 rounded-full flex items-center justify-center bg-white/10 transition-transform group-hover:rotate-6">
-            <Icon className="w-10 h-10 text-white" />
+        <div className="flex items-center justify-between mb-4">
+          <div className="w-12 h-12 rounded-full flex items-center justify-center bg-white/10 transition-transform group-hover:rotate-6">
+            <Icon className="w-6 h-6 text-white" />
           </div>
           <span
-            className="text-5xl lg:text-6xl font-bold text-white"
+            className="text-3xl lg:text-4xl font-bold text-white"
             data-aos="fade-up-left"
             data-aos-duration="1500"
             data-aos-anchor-placement="top-bottom"
@@ -109,7 +109,7 @@ const StatCard = memo(function StatCard({ icon: Icon, color, value, label, descr
 
         <div>
           <p
-            className="text-base lg:text-lg uppercase tracking-wider text-gray-300 mb-2"
+            className="text-xs lg:text-sm uppercase tracking-wider text-gray-300 mb-1"
             data-aos="fade-up"
             data-aos-duration="800"
             data-aos-anchor-placement="top-bottom"
@@ -118,7 +118,7 @@ const StatCard = memo(function StatCard({ icon: Icon, color, value, label, descr
           </p>
           <div className="flex items-center justify-between">
             <p
-              className="text-sm lg:text-base text-gray-400"
+              className="text-xs text-gray-400"
               data-aos="fade-up"
               data-aos-duration="1000"
               data-aos-anchor-placement="top-bottom"
@@ -137,7 +137,6 @@ const AboutPage = () => {
   const { t, language } = useLanguage();
   const [activeResumes, setActiveResumes] = useState<ResumeFile[]>([]);
   const [totalProjects, setTotalProjects] = useState(0);
-  const [totalCertificates, setTotalCertificates] = useState(0);
 
   useEffect(() => {
     fetchResumes()
@@ -145,9 +144,6 @@ const AboutPage = () => {
       .catch(() => {});
     getProjects()
       .then((res) => setTotalProjects(res.data.length))
-      .catch(() => {});
-    fetchCertificates()
-      .then((res) => setTotalCertificates(res.data.length))
       .catch(() => {});
   }, []);
 
@@ -196,14 +192,6 @@ const AboutPage = () => {
       animation: "fade-right",
     },
     {
-      icon: Award,
-      color: "from-[#a855f7] to-[#6366f1]",
-      value: totalCertificates,
-      label: t("Certificates", "Certificats"),
-      description: t("Professional skills validated", "Compétences professionnelles validées"),
-      animation: "fade-up",
-    },
-    {
       icon: Globe,
       color: "from-[#6366f1] to-[#a855f7]",
       value: YearExperience,
@@ -211,7 +199,7 @@ const AboutPage = () => {
       description: t("Continuous learning journey", "Parcours d'apprentissage continu"),
       animation: "fade-left",
     },
-  ], [totalProjects, totalCertificates, YearExperience, t]);
+  ], [totalProjects, YearExperience, t]);
 
   return (
     <div
@@ -224,7 +212,7 @@ const AboutPage = () => {
         <div className="flex flex-col-reverse lg:grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           <div className="space-y-8 text-center lg:text-left">
             <h2
-              className="text-5xl sm:text-6xl lg:text-7xl font-bold"
+              className="text-3xl sm:text-4xl lg:text-5xl font-bold"
               data-aos="fade-right"
               data-aos-duration="1000"
             >
@@ -241,7 +229,7 @@ const AboutPage = () => {
             </h2>
 
             <p
-              className="text-xl sm:text-2xl lg:text-3xl text-gray-400 leading-relaxed text-justify pb-4 sm:pb-0"
+              className="text-base sm:text-lg lg:text-xl text-gray-400 leading-relaxed text-justify pb-4 sm:pb-0"
               data-aos="fade-right"
               data-aos-duration="1500"
             >
@@ -268,7 +256,7 @@ const AboutPage = () => {
                 </svg>
               </div>
 
-              <blockquote className="text-gray-300 text-center lg:text-left italic font-medium text-lg lg:text-xl relative z-10 pl-8">
+              <blockquote className="text-gray-300 text-center lg:text-left italic font-medium text-sm lg:text-base relative z-10 pl-8">
                 &quot;{t(
                   "Driven by curiosity, fueled by clean code, and committed to continuous learning.",
                   "Guidée par la curiosité, alimentée par un code propre, et engagée dans l'apprentissage continu."
@@ -287,9 +275,9 @@ const AboutPage = () => {
                   <button
                     data-aos="fade-up"
                     data-aos-duration="800"
-                    className="w-full lg:w-auto px-10 py-[18px] rounded-xl bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white text-xl font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center lg:justify-start gap-3 shadow-lg hover:shadow-xl"
+                    className="w-full lg:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white text-base font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center lg:justify-start gap-3 shadow-lg hover:shadow-xl"
                   >
-                    <FileText className="w-6 h-6" /> {t("Download CV", "Télécharger le CV")}
+                    <FileText className="w-5 h-5" /> {t("Download CV", "Télécharger le CV")}
                   </button>
                 </a>
               )}
@@ -297,9 +285,9 @@ const AboutPage = () => {
                 <button
                   data-aos="fade-up"
                   data-aos-duration="1000"
-                  className="w-full lg:w-auto px-10 py-[18px] rounded-xl border border-[#a855f7]/50 text-[#a855f7] text-xl font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center lg:justify-start gap-3 hover:bg-[#a855f7]/10"
+                  className="w-full lg:w-auto px-6 py-3 rounded-xl border border-[#a855f7]/50 text-[#a855f7] text-base font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center lg:justify-start gap-3 hover:bg-[#a855f7]/10"
                 >
-                  <Code className="w-6 h-6" /> {t("View Projects", "Voir les projets")}
+                  <Code className="w-5 h-5" /> {t("View Projects", "Voir les projets")}
                 </button>
               </a>
             </div>
@@ -309,7 +297,7 @@ const AboutPage = () => {
         </div>
 
         <a href="#Portfolio">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-20 cursor-pointer">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-16 cursor-pointer">
             {statsData.map((stat) => (
               <StatCard key={stat.label} {...stat} />
             ))}

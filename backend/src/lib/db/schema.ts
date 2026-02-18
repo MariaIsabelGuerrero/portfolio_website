@@ -90,12 +90,10 @@ export const messages = pgTable("messages", {
 export const testimonials = pgTable("testimonials", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
-  position: text("position").default(""),
-  company: text("company").default(""),
+  relationship: text("relationship").default(""),
   content: text("content").notNull(),
   date: timestamp("date").defaultNow().notNull(),
   status: text("status").notNull().default("pending"), // pending | approved | rejected
-  isPinned: boolean("is_pinned").default(false),
 }, (table) => [
   index("idx_testimonials_status").on(table.status),
 ]);
@@ -106,15 +104,6 @@ export const resumes = pgTable("resumes", {
   fileUrl: text("file_url").notNull(),
   isActive: boolean("is_active").default(false),
   language: text("language").default("en"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-export const certificates = pgTable("certificates", {
-  id: text("id").primaryKey(),
-  title: text("title").notNull(),
-  fileUrl: text("file_url").notNull(),
-  fileType: text("file_type").default("image"), // "image" or "pdf"
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

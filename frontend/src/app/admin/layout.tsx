@@ -19,8 +19,7 @@ import {
   LogOut,
   ChevronLeft,
   MessageSquare,
-  Quote,
-  Award
+  Quote
 } from "lucide-react";
 import { useAdminAccess } from "@/lib/hooks/useAdminAccess";
 import { authClient } from "@/lib/auth-client";
@@ -34,7 +33,6 @@ const sidebarLinks = [
   { nameEn: "Experience", nameFr: "Expérience", href: "/admin/experience", icon: Briefcase },
   { nameEn: "Education", nameFr: "Formation", href: "/admin/education", icon: GraduationCap },
   { nameEn: "Resume", nameFr: "CV", href: "/admin/resume", icon: FileText },
-  { nameEn: "Certificates", nameFr: "Certificats", href: "/admin/certificates", icon: Award },
   { nameEn: "Contact", nameFr: "Contact", href: "/admin/contact", icon: Mail },
   { nameEn: "Hobbies", nameFr: "Loisirs", href: "/admin/hobbies", icon: Heart },
   { nameEn: "Messages", nameFr: "Messages", href: "/admin/messages", icon: MessageSquare },
@@ -104,13 +102,13 @@ export default function AdminLayout({
       <aside
         className={`
           fixed lg:sticky top-0 left-0 z-50 h-screen bg-[#0f0520] border-r border-[#5227FF]/30
-          transition-all duration-300 ease-in-out
+          transition-all duration-300 ease-in-out flex flex-col
           ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
           ${sidebarOpen ? "w-64" : "w-20"}
         `}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-[#5227FF]/30">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-[#5227FF]/30 flex-shrink-0">
           <Link href="/admin" className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#5227FF] to-[#FF9FFC] flex items-center justify-center">
               <span className="text-white font-bold text-lg">M</span>
@@ -134,7 +132,7 @@ export default function AdminLayout({
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-2">
+        <nav className="p-3 space-y-1 overflow-y-auto flex-1">
           {sidebarLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
@@ -144,7 +142,7 @@ export default function AdminLayout({
                 onClick={() => setMobileMenuOpen(false)}
                 title={!sidebarOpen ? t(link.nameEn, link.nameFr) : undefined}
                 className={`
-                  flex items-center gap-3 px-4 py-3 rounded-xl transition-all
+                  flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all
                   ${isActive
                     ? "bg-[#5227FF] text-white shadow-lg shadow-[#5227FF]/30"
                     : "text-[#B19EEF] hover:bg-[#5227FF]/20 hover:text-white"
@@ -153,7 +151,7 @@ export default function AdminLayout({
               >
                 <link.icon className="w-5 h-5 flex-shrink-0" />
                 {sidebarOpen && (
-                  <span className="font-medium">{t(link.nameEn, link.nameFr)}</span>
+                  <span className="font-medium text-sm">{t(link.nameEn, link.nameFr)}</span>
                 )}
               </Link>
             );
@@ -161,20 +159,20 @@ export default function AdminLayout({
         </nav>
 
         {/* Bottom Actions */}
-        <div className="absolute bottom-4 left-0 right-0 px-4 space-y-2">
+        <div className="border-t border-[#5227FF]/30 px-3 py-3 space-y-1 flex-shrink-0">
           <Link
             href="/"
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-[#B19EEF] hover:bg-[#5227FF]/20 hover:text-white transition-all"
+            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-[#B19EEF] hover:bg-[#5227FF]/20 hover:text-white transition-all"
           >
             <ChevronLeft className="w-5 h-5 flex-shrink-0" />
-            {sidebarOpen && <span className="font-medium">{t("Back to Site", "Retour au site")}</span>}
+            {sidebarOpen && <span className="font-medium text-sm">{t("Back to Site", "Retour au site")}</span>}
           </Link>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-[#FF9FFC] hover:bg-red-500/20 hover:text-red-400 transition-all"
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-[#FF9FFC] hover:bg-red-500/20 hover:text-red-400 transition-all"
           >
             <LogOut className="w-5 h-5 flex-shrink-0" />
-            {sidebarOpen && <span className="font-medium">{t("Logout", "Déconnexion")}</span>}
+            {sidebarOpen && <span className="font-medium text-sm">{t("Logout", "Déconnexion")}</span>}
           </button>
         </div>
       </aside>

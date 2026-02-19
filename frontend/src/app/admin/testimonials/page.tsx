@@ -190,7 +190,6 @@ export default function TestimonialsPage() {
             className="px-4 py-3 bg-[#0f0520] border border-[#5227FF]/30 rounded-xl text-white focus:outline-none focus:border-[#FF9FFC] transition-colors"
           >
             <option value="all">{t("All Testimonials", "Tous les témoignages")}</option>
-            <option value="pending">{t("Pending", "En attente")}</option>
             <option value="approved">{t("Approved", "Approuvé")}</option>
             <option value="rejected">{t("Rejected", "Rejeté")}</option>
           </select>

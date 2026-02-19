@@ -76,7 +76,8 @@ export default function SignIn() {
 
       const tokenResult = await authClient.token();
       if (tokenResult.data?.token) {
-        router.push("/admin");
+        // Full page reload so the admin layout re-mounts and useAdminAccess re-runs with the new session
+        window.location.href = "/admin";
         return;
       } else {
         setError(

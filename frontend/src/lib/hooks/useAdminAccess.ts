@@ -14,11 +14,16 @@ export function useAdminAccess() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const checkAccess = async () => {
+    const checkAccess = async (attempt = 0): Promise<void> => {
       try {
         // Check if session exists
         const session = await authClient.getSession();
         if (!session.data?.session) {
+          // Retry a few times in case we just came from login and cookies are still propagating
+          if (attempt < 3) {
+            await new Promise((r) => setTimeout(r, 500));
+            return checkAccess(attempt + 1);
+          }
           router.push("/admin/login");
           setLoading(false);
           return;
@@ -60,6 +65,10 @@ export function useAdminAccess() {
         setAuthorized(true);
         setLoading(false);
       } catch {
+        if (attempt < 3) {
+          await new Promise((r) => setTimeout(r, 500));
+          return checkAccess(attempt + 1);
+        }
         router.push("/admin/login");
         setLoading(false);
       }

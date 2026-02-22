@@ -144,8 +144,8 @@ export default function AdminDashboard() {
                 <Quote className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-white font-semibold text-lg">{t("Pending Testimonials", "Témoignages en attente")}</p>
-                <p className="text-[#B19EEF] text-sm">{t("Awaiting your review", "En attente de votre avis")}</p>
+                <p className="text-white font-semibold text-lg">{t("Testimonials", "Témoignages")}</p>
+                <p className="text-[#B19EEF] text-sm">{t("Manage testimonials", "Gérer les témoignages")}</p>
               </div>
             </div>
             <p className="text-3xl font-bold text-white">{stats?.pendingTestimonials ?? 0}</p>

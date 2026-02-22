@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
       [educationCount],
       [hobbyCount],
       [unreadMessageCount],
-      [pendingTestimonialCount],
+      [testimonialCount],
     ] = await Promise.all([
       db.select({ count: count() }).from(skills),
       db.select({ count: count() }).from(projects),
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       db.select({ count: count() }).from(education),
       db.select({ count: count() }).from(hobbies),
       db.select({ count: count() }).from(messages).where(eq(messages.read, false)),
-      db.select({ count: count() }).from(testimonials).where(eq(testimonials.status, "pending")),
+      db.select({ count: count() }).from(testimonials),
     ]);
 
     return NextResponse.json({
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
         education: educationCount.count,
         hobbies: hobbyCount.count,
         unreadMessages: unreadMessageCount.count,
-        pendingTestimonials: pendingTestimonialCount.count,
+        pendingTestimonials: testimonialCount.count,
       },
     });
   } catch (error) {

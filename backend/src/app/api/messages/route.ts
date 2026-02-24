@@ -7,11 +7,47 @@ import { requireAdmin } from "@/lib/auth/require-admin";
 
 export const runtime = "nodejs";
 
+// ---- Rate Limiting ----
+const rateLimitMap = new Map<string, { count: number; lastReset: number }>();
+const RATE_LIMIT_MAX = 3;         // max 3 messages
+const RATE_LIMIT_WINDOW = 60000;  // per 1 minute (60 seconds)
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+
+  if (!entry || now - entry.lastReset > RATE_LIMIT_WINDOW) {
+    rateLimitMap.set(ip, { count: 1, lastReset: now });
+    return false;
+  }
+
+  entry.count++;
+  if (entry.count > RATE_LIMIT_MAX) {
+    return true;
+  }
+
+  return false;
+}
+
+// Clean up old entries every 5 minutes to prevent memory leaks
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of rateLimitMap.entries()) {
+    if (now - entry.lastReset > RATE_LIMIT_WINDOW * 2) {
+      rateLimitMap.delete(ip);
+    }
+  }
+}, 5 * 60 * 1000);
+
+// ---- Routes ----
+
 export async function GET(request: NextRequest) {
   const auth = requireAdmin(request);
   if (auth.error) return auth.error;
+
   try {
     const status = request.nextUrl.searchParams.get("status");
+
     let result;
     if (status === "read") {
       result = await db.select().from(messages).where(eq(messages.read, true)).orderBy(desc(messages.date));
@@ -20,6 +56,7 @@ export async function GET(request: NextRequest) {
     } else {
       result = await db.select().from(messages).orderBy(desc(messages.date));
     }
+
     return NextResponse.json({ data: result, count: result.length });
   } catch (error) {
     console.error("Failed to fetch messages:", error);
@@ -30,8 +67,26 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   // Public endpoint - contact form submission (no auth required)
   try {
+    // Rate limiting by IP
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      request.headers.get("x-real-ip") ||
+      "unknown";
+
+    if (isRateLimited(ip)) {
+      return NextResponse.json(
+        { error: "Too many messages. Please wait a minute before trying again." },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
-    const { name, email, message, turnstileToken } = body;
+    const { name, email, message, turnstileToken, website } = body;
+
+    // Honeypot check - real users never fill this hidden field
+    if (website) {
+      return NextResponse.json({ error: "Spam detected" }, { status: 403 });
+    }
 
     if (!name || !email || !message) {
       return NextResponse.json(

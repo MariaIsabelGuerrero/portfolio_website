@@ -12,6 +12,8 @@ import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { submitMessage } from "@/lib/public-api";
 import { useLanguage } from "@/lib/i18n";
 
+const COOLDOWN_SECONDS = 60;
+
 const ContactPage = () => {
   const { t } = useLanguage();
   const [formData, setFormData] = useState({
@@ -24,12 +26,22 @@ const ContactPage = () => {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const turnstileRef = useRef<TurnstileInstance>(null);
+  const [cooldown, setCooldown] = useState(0);
 
   useEffect(() => {
     AOS.init({
       once: false,
     });
   }, []);
+
+  // Cooldown timer
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => {
+      setCooldown((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
 
   const validateField = (name: string, value: string): string | null => {
     if (name === "email") {
@@ -68,6 +80,21 @@ const ContactPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check cooldown
+    if (cooldown > 0) {
+      Swal.fire({
+        title: t('Please wait', 'Veuillez patienter'),
+        text: t(
+          `You can send another message in ${cooldown} seconds.`,
+          `Vous pouvez envoyer un autre message dans ${cooldown} secondes.`
+        ),
+        icon: 'info',
+        confirmButtonColor: '#6366f1',
+      });
+      return;
+    }
+
     setTouched({ name: true, email: true, message: true });
     const errors: Record<string, string> = {};
     if (!formData.name.trim()) errors.name = "Required";
@@ -140,6 +167,9 @@ const ContactPage = () => {
       setTurnstileToken(null);
       turnstileRef.current?.reset();
 
+      // Start cooldown
+      setCooldown(COOLDOWN_SECONDS);
+
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.request && error.request.status === 0) {
         Swal.fire({
@@ -156,6 +186,7 @@ const ContactPage = () => {
           email: "",
           message: "",
         });
+        setCooldown(COOLDOWN_SECONDS);
       } else {
         Swal.fire({
           title: t('Failed!', 'Echec !'),
@@ -176,7 +207,7 @@ const ContactPage = () => {
         <h2
           data-aos="fade-down"
           data-aos-duration="1000"
-          className="inline-block text-3xl md:text-4xl lg:text-5xl font-bold text-center mx-auto text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]"
+          className="inline-block text-4xl md:text-5xl lg:text-6xl font-bold text-center mx-auto text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]"
         >
           <span
             style={{
@@ -194,7 +225,7 @@ const ContactPage = () => {
         <p
           data-aos="fade-up"
           data-aos-duration="1100"
-          className="text-slate-400 max-w-2xl mx-auto text-sm md:text-base lg:text-lg mt-3"
+          className="text-slate-400 max-w-2xl mx-auto text-base md:text-lg lg:text-xl mt-4"
         >
           {t(
             "Have a question? Send me a message, and I'll get back to you soon.",
@@ -214,10 +245,10 @@ const ContactPage = () => {
           >
             <div className="flex justify-between items-start mb-10">
               <div>
-                <h2 className="text-2xl lg:text-3xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]">
+                <h2 className="text-3xl lg:text-4xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-[#6366f1] to-[#a855f7]">
                   {t("Get in Touch", "Prenez contact")}
                 </h2>
-                <p className="text-gray-400 text-sm lg:text-base">
+                <p className="text-gray-400 text-base lg:text-lg">
                   {t(
                     "Want to discuss something? Send me a message and let's talk.",
                     "Vous souhaitez discuter ? Envoyez-moi un message et parlons-en."
@@ -245,9 +276,9 @@ const ContactPage = () => {
                   value={formData.name}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || cooldown > 0}
                   maxLength={100}
-                  className={`w-full p-3 pl-11 text-sm bg-white/10 rounded-xl border ${formErrors.name ? "border-red-500/50" : "border-white/20"} placeholder-gray-500 text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1]/30 transition-all duration-300 hover:border-[#6366f1]/30 disabled:opacity-50`}
+                  className={`w-full p-4 pl-12 text-base bg-white/10 rounded-xl border ${formErrors.name ? "border-red-500/50" : "border-white/20"} placeholder-gray-500 text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1]/30 transition-all duration-300 hover:border-[#6366f1]/30 disabled:opacity-50`}
                 />
                 {formErrors.name && <p className="text-red-400 text-xs mt-1">{t("This field is required", "Ce champ est requis")}</p>}
               </div>
@@ -264,9 +295,9 @@ const ContactPage = () => {
                   value={formData.email}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || cooldown > 0}
                   maxLength={254}
-                  className={`w-full p-3 pl-11 text-sm bg-white/10 rounded-xl border ${formErrors.email ? "border-red-500/50" : "border-white/20"} placeholder-gray-500 text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1]/30 transition-all duration-300 hover:border-[#6366f1]/30 disabled:opacity-50`}
+                  className={`w-full p-4 pl-12 text-base bg-white/10 rounded-xl border ${formErrors.email ? "border-red-500/50" : "border-white/20"} placeholder-gray-500 text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1]/30 transition-all duration-300 hover:border-[#6366f1]/30 disabled:opacity-50`}
                 />
                 {formErrors.email && <p className="text-red-400 text-xs mt-1">{formErrors.email === "Invalid" ? t("Please enter a valid email", "Veuillez entrer un e-mail valide") : t("This field is required", "Ce champ est requis")}</p>}
               </div>
@@ -282,9 +313,9 @@ const ContactPage = () => {
                   value={formData.message}
                   onChange={handleChange}
                   onBlur={handleBlur}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || cooldown > 0}
                   maxLength={1000}
-                  className={`w-full resize-none p-3 pl-11 text-sm bg-white/10 rounded-xl border ${formErrors.message ? "border-red-500/50" : "border-white/20"} placeholder-gray-500 text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1]/30 transition-all duration-300 hover:border-[#6366f1]/30 h-[8rem] disabled:opacity-50`}
+                  className={`w-full resize-none p-4 pl-12 text-base bg-white/10 rounded-xl border ${formErrors.message ? "border-red-500/50" : "border-white/20"} placeholder-gray-500 text-white focus:outline-none focus:ring-2 focus:ring-[#6366f1]/30 transition-all duration-300 hover:border-[#6366f1]/30 h-[10rem] disabled:opacity-50`}
                 />
                 {formErrors.message && <p className="text-red-400 text-xs mt-1">{t("This field is required", "Ce champ est requis")}</p>}
               </div>
@@ -319,11 +350,16 @@ const ContactPage = () => {
                 data-aos="fade-up"
                 data-aos-delay="400"
                 type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white py-3 rounded-xl text-sm font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-[#6366f1]/20 active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                disabled={isSubmitting || cooldown > 0}
+                className="w-full bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white py-4 rounded-xl text-base font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-[#6366f1]/20 active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 <Send className="w-5 h-5" />
-                {isSubmitting ? t('Sending...', 'Envoi...') : t('Send Message', 'Envoyer le message')}
+                {isSubmitting
+                  ? t('Sending...', 'Envoi...')
+                  : cooldown > 0
+                    ? t(`Wait ${cooldown}s`, `Attendre ${cooldown}s`)
+                    : t('Send Message', 'Envoyer le message')
+                }
               </button>
             </form>
 

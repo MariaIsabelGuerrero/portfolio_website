@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, memo } from "react"
+import React, { useState, useEffect, useCallback, memo, useMemo } from "react"
 import { Github, Linkedin, Mail, ExternalLink, Sparkles } from "lucide-react"
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 import { useLanguage } from '@/lib/i18n'
+import { useProfile, useContact } from '@/lib/site-content'
 
 // Memoized Components
 const StatusBadge = memo(function StatusBadge({ label }: { label: string }) {
@@ -85,29 +86,33 @@ const SocialLink = memo(function SocialLink({ icon: Icon, link }: { icon: React.
   );
 });
 
-// Constants
 const TYPING_SPEED = 100;
 const ERASING_SPEED = 50;
 const PAUSE_DURATION = 6000;
-const WORDS_EN = ["Computer Science Student", "Tech Enthusiast"];
-const WORDS_FR = ["Étudiante en informatique", "Passionnée de technologie"];
-const TECH_STACK = ["React", "Javascript", "Node.js", "Tailwind"];
-const SOCIAL_LINKS = [
-  { icon: Github, link: "https://github.com/MariaIsabelGuerrero" },
-  { icon: Linkedin, link: "https://www.linkedin.com/in/maria-isabel-guerrero-754114303/" },
-];
 
 const Home = () => {
   const { t, language } = useLanguage()
-  const WORDS = language === "fr" ? WORDS_FR : WORDS_EN
+  const profile = useProfile()
+  const contact = useContact()
+
+  const WORDS = useMemo(() => {
+    const list = language === "fr" ? profile.typingWords_fr : profile.typingWords_en
+    return list && list.length > 0 ? list : [""]
+  }, [language, profile.typingWords_en, profile.typingWords_fr])
+
+  const socialLinks = useMemo(() => {
+    return [
+      contact.github ? { icon: Github, link: contact.github } : null,
+      contact.linkedin ? { icon: Linkedin, link: contact.linkedin } : null,
+    ].filter((s): s is { icon: typeof Github; link: string } => s !== null)
+  }, [contact.github, contact.linkedin])
+
   const [text, setText] = useState("")
   const [isTyping, setIsTyping] = useState(true)
   const [wordIndex, setWordIndex] = useState(0)
   const [charIndex, setCharIndex] = useState(0)
   const [isLoaded, setIsLoaded] = useState(false)
-  const [isHovering, setIsHovering] = useState(false)
 
-  // Optimize AOS initialization
   useEffect(() => {
     const initAOS = () => {
       AOS.init({
@@ -126,19 +131,19 @@ const Home = () => {
     return () => setIsLoaded(false);
   }, []);
 
-  // Reset typing when language changes
+  // Reset typing when language or word list changes
   useEffect(() => {
     setText("");
     setCharIndex(0);
     setWordIndex(0);
     setIsTyping(true);
-  }, [language]);
+  }, [language, WORDS]);
 
-  // Optimize typing effect
   const handleTyping = useCallback(() => {
+    const currentWord = WORDS[wordIndex] || ""
     if (isTyping) {
-      if (charIndex < WORDS[wordIndex].length) {
-        setText(prev => prev + WORDS[wordIndex][charIndex]);
+      if (charIndex < currentWord.length) {
+        setText(prev => prev + currentWord[charIndex]);
         setCharIndex(prev => prev + 1);
       } else {
         setTimeout(() => setIsTyping(false), PAUSE_DURATION);
@@ -152,7 +157,7 @@ const Home = () => {
         setIsTyping(true);
       }
     }
-  }, [charIndex, isTyping, wordIndex]);
+  }, [charIndex, isTyping, wordIndex, WORDS]);
 
   useEffect(() => {
     const timeout = setTimeout(
@@ -160,20 +165,22 @@ const Home = () => {
       isTyping ? TYPING_SPEED : ERASING_SPEED
     );
     return () => clearTimeout(timeout);
-  }, [handleTyping]);
+  }, [handleTyping, isTyping]);
 
   return (
     <div className="min-h-screen bg-[#030014] overflow-hidden px-[5%] sm:px-[5%] lg:px-[10%]" id="Home">
       <div className={`relative z-10 transition-all duration-1000 ${isLoaded ? "opacity-100" : "opacity-0"}`}>
         <div className="min-h-screen">
-          <div className="flex flex-col lg:flex-row items-center justify-center min-h-screen md:justify-between gap-8 lg:gap-12 pt-24">
-            {/* Left Column */}
-            <div className="w-full lg:w-1/2 space-y-4 sm:space-y-5 text-left lg:text-left order-1 lg:order-1 lg:mt-0"
+          <div className="flex flex-col items-center justify-center min-h-screen gap-8 pt-24">
+            <div className="w-full max-w-3xl mx-auto space-y-4 sm:space-y-5 text-left lg:text-left"
               data-aos="fade-right"
               data-aos-delay="200">
               <div className="space-y-4">
-                <StatusBadge label={t("Ready to Innovate", "Prête à innover")} />
-                <MainTitle line1={t("Full Stack", "Full Stack")} line2={t("Developer", "Développeuse")} />
+                <StatusBadge label={t(profile.heroBadge_en, profile.heroBadge_fr)} />
+                <MainTitle
+                  line1={t(profile.heroTitleLine1_en, profile.heroTitleLine1_fr)}
+                  line2={t(profile.heroTitleLine2_en, profile.heroTitleLine2_fr)}
+                />
 
                 {/* Typing Effect */}
                 <div className="h-10 sm:h-12 flex items-center mb-2 overflow-visible" data-aos="fade-up" data-aos-delay="800">
@@ -187,12 +194,12 @@ const Home = () => {
                 <p className="text-base sm:text-lg lg:text-xl text-gray-400 max-w-2xl leading-relaxed font-light"
                   data-aos="fade-up"
                   data-aos-delay="1000">
-                  {t("Building Scalable, Clean, and User-Focused Applications for Real-World Solutions.", "Créer des applications évolutives, propres et centrées sur l'utilisateur pour des solutions concrètes.")}
+                  {t(profile.heroDescription_en, profile.heroDescription_fr)}
                 </p>
 
                 {/* Tech Stack */}
                 <div className="flex flex-wrap gap-2 sm:gap-3 justify-start" data-aos="fade-up" data-aos-delay="1200">
-                  {TECH_STACK.map((tech, index) => (
+                  {profile.techStack.map((tech, index) => (
                     <TechStack key={index} tech={tech} />
                   ))}
                 </div>
@@ -204,49 +211,13 @@ const Home = () => {
                 </div>
 
                 {/* Social Links */}
-                <div className="hidden sm:flex gap-3 justify-start" data-aos="fade-up" data-aos-delay="1600">
-                  {SOCIAL_LINKS.map((social, index) => (
-                    <SocialLink key={index} {...social} />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column - WebM Video */}
-            <div className="w-full py-0 md:py-[10%] sm:py-0 lg:w-1/2 h-[300px] sm:h-[350px] lg:h-[500px] xl:h-[600px] relative flex items-center justify-center order-2 lg:order-2 mt-5 sm:mt-0"
-              onMouseEnter={() => setIsHovering(true)}
-              onMouseLeave={() => setIsHovering(false)}
-              data-aos="fade-left"
-              data-aos-delay="600">
-              <div className="relative w-full opacity-90">
-                <div className={`absolute inset-0 bg-gradient-to-r from-[#6366f1]/10 to-[#a855f7]/10 rounded-3xl blur-3xl transition-all duration-700 ease-in-out ${
-                  isHovering ? "opacity-50 scale-105" : "opacity-20 scale-100"
-                }`}>
-                </div>
-
-                <div className={`relative lg:left-12 z-10 w-full opacity-90 transform transition-transform duration-500 ${
-                  isHovering ? "scale-105" : "scale-100"
-                }`}>
-
-                  <img
-                    src="Animation1.gif"
-                    alt="Developer Animation"
-                    className={`w-full h-full object-contain transition-all duration-500 ${
-                      isHovering
-                        ? "scale-[95%] sm:scale-[90%] md:scale-[90%] lg:scale-[90%] rotate-2"
-                        : "scale-[90%] sm:scale-[80%] md:scale-[80%] lg:scale-[80%]"
-                    }`}
-                  />
-                </div>
-
-                <div className={`absolute inset-0 pointer-events-none transition-all duration-700 ${
-                  isHovering ? "opacity-50" : "opacity-20"
-                }`}>
-                  <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-gradient-to-br from-indigo-500/10 to-purple-500/10 blur-3xl animate-[pulse_6s_cubic-bezier(0.4,0,0.6,1)_infinite] transition-all duration-700 ${
-                    isHovering ? "scale-110" : "scale-100"
-                  }`}>
+                {socialLinks.length > 0 && (
+                  <div className="hidden sm:flex gap-3 justify-start" data-aos="fade-up" data-aos-delay="1600">
+                    {socialLinks.map((social, index) => (
+                      <SocialLink key={index} {...social} />
+                    ))}
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>

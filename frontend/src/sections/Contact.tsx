@@ -11,11 +11,13 @@ import axios from "axios";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { submitMessage } from "@/lib/public-api";
 import { useLanguage } from "@/lib/i18n";
+import { useContact } from "@/lib/site-content";
 
 const COOLDOWN_SECONDS = 60;
 
 const ContactPage = () => {
   const { t } = useLanguage();
+  const contact = useContact();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -131,23 +133,25 @@ const ContactPage = () => {
         turnstileToken: turnstileToken!,
       });
 
-      // Also send via FormSubmit for email notification
-      const formSubmitUrl = 'https://formsubmit.co/mariaigs2005@gmail.com';
-      const submitData = new FormData();
-      submitData.append('name', formData.name);
-      submitData.append('email', formData.email);
-      submitData.append('message', formData.message);
-      submitData.append('_subject', 'New Message from Portfolio Website');
-      submitData.append('_captcha', 'false');
-      submitData.append('_template', 'table');
+      // Also send via FormSubmit for email notification 
+      if (contact.email) {
+        const formSubmitUrl = `https://formsubmit.co/${encodeURIComponent(contact.email)}`;
+        const submitData = new FormData();
+        submitData.append('name', formData.name);
+        submitData.append('email', formData.email);
+        submitData.append('message', formData.message);
+        submitData.append('_subject', 'New Message from Portfolio Website');
+        submitData.append('_captcha', 'false');
+        submitData.append('_template', 'table');
 
-      await axios.post(formSubmitUrl, submitData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      }).catch(() => {
-        // FormSubmit may fail silently - message is already saved to DB
-      });
+        await axios.post(formSubmitUrl, submitData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }).catch(() => {
+          // FormSubmit may fail silently - message is already saved to DB
+        });
+      }
 
       Swal.fire({
         title: t('Success!', 'Succes !'),

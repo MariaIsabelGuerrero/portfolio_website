@@ -4,12 +4,14 @@ import React, { useState, useEffect } from "react";
 import { Menu, X, Globe } from "lucide-react";
 import Link from "next/link";
 import { useLanguage } from "@/lib/i18n";
+import { useProfile } from "@/lib/site-content";
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [activeSection, setActiveSection] = useState("Home");
     const { language, setLanguage, t } = useLanguage();
+    const profile = useProfile();
 
     const navItems = [
         { href: "#Home", label: t("Home", "Accueil") },
@@ -93,7 +95,7 @@ const Navbar = () => {
                             onClick={(e) => scrollToSection(e, "#Home")}
                             className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-[#a855f7] to-[#6366f1] bg-clip-text text-transparent"
                         >
-                            Maria
+                            {profile.shortName || profile.fullName || ""}
                         </a>
                     </div>
 

@@ -5,6 +5,7 @@ import { FileText, Code, Globe, ArrowUpRight, Sparkles } from "lucide-react"
 import { fetchResumes, type ResumeFile } from "@/lib/api-client"
 import { getProjects } from "@/lib/public-api"
 import { useLanguage } from "@/lib/i18n"
+import { useProfile } from "@/lib/site-content"
 import AOS from 'aos'
 import 'aos/dist/aos.css'
 
@@ -34,7 +35,7 @@ const Header = memo(function Header({ t }: { t: (en: string, fr: string) => stri
   );
 });
 
-const ProfileImage = memo(function ProfileImage() {
+const ProfileImage = memo(function ProfileImage({ src, alt }: { src: string; alt: string }) {
   return (
     <div className="flex justify-end items-center sm:p-12 sm:py-0 sm:pb-0 p-0 py-2 pb-2">
       <div
@@ -57,13 +58,15 @@ const ProfileImage = memo(function ProfileImage() {
             <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 z-10 transition-opacity duration-700 group-hover:opacity-0 hidden sm:block" />
             <div className="absolute inset-0 bg-gradient-to-t from-purple-500/20 via-transparent to-blue-500/20 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-700 hidden sm:block" />
 
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/Photo.jpeg"
-              alt="Profile"
-              className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:rotate-2"
-              loading="lazy"
-            />
+            {src && (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={src}
+                alt={alt}
+                className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:rotate-2"
+                loading="lazy"
+              />
+            )}
 
             {/* Advanced hover effects - desktop only */}
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-700 z-20 hidden sm:block">
@@ -134,7 +137,8 @@ const StatCard = memo(function StatCard({ icon: Icon, color, value, label, descr
 });
 
 const AboutPage = () => {
-  const { t, language } = useLanguage();
+  const { t, l, language } = useLanguage();
+  const profile = useProfile();
   const [activeResumes, setActiveResumes] = useState<ResumeFile[]>([]);
   const [totalProjects, setTotalProjects] = useState(0);
 
@@ -151,11 +155,13 @@ const AboutPage = () => {
   const frResume = activeResumes.find((r) => r.language === "fr");
 
   const YearExperience = useMemo(() => {
-    const startDate = new Date("2021-11-06");
+    if (!profile.experienceSince) return 0;
+    const startDate = new Date(profile.experienceSince);
+    if (isNaN(startDate.getTime())) return 0;
     const today = new Date();
     return today.getFullYear() - startDate.getFullYear() -
       (today < new Date(today.getFullYear(), startDate.getMonth(), startDate.getDate()) ? 1 : 0);
-  }, []);
+  }, [profile.experienceSince]);
 
   // Optimized AOS initialization
   useEffect(() => {
@@ -224,7 +230,7 @@ const AboutPage = () => {
                 data-aos="fade-right"
                 data-aos-duration="1300"
               >
-                Maria Isabel Guerrero
+                {profile.fullName}
               </span>
             </h2>
 
@@ -233,10 +239,7 @@ const AboutPage = () => {
               data-aos="fade-right"
               data-aos-duration="1500"
             >
-              {t(
-                "A Computer Science Technology student with a strong focus on full-stack development. I specialize in building robust backend systems and modern web applications, always striving to turn complex problems into elegant, efficient solutions in every project I work on.",
-                "Une étudiante en techniques de l'informatique avec un fort intérêt pour le développement full-stack. Je me spécialise dans la création de systèmes backend robustes et d'applications web modernes, cherchant toujours à transformer des problèmes complexes en solutions élégantes et efficaces dans chaque projet."
-              )}
+              {l(profile.bio_en, profile.bio_fr)}
             </p>
 
             {/* Quote Section */}
@@ -257,10 +260,7 @@ const AboutPage = () => {
               </div>
 
               <blockquote className="text-gray-300 text-center lg:text-left italic font-medium text-sm lg:text-base relative z-10 pl-8">
-                &quot;{t(
-                  "Driven by curiosity, fueled by clean code, and committed to continuous learning.",
-                  "Guidée par la curiosité, alimentée par un code propre, et engagée dans l'apprentissage continu."
-                )}&quot;
+                &quot;{l(profile.quote_en, profile.quote_fr)}&quot;
               </blockquote>
             </div>
 
@@ -293,7 +293,7 @@ const AboutPage = () => {
             </div>
           </div>
 
-          <ProfileImage />
+          <ProfileImage src={profile.profileImage} alt={profile.fullName || "Profile"} />
         </div>
 
         <a href="#Portfolio">

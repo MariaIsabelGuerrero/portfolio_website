@@ -6,6 +6,7 @@ import { Code2, Github, Globe, User } from 'lucide-react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { useLanguage } from '@/lib/i18n';
+import { useProfile } from '@/lib/site-content';
 
 const TypewriterEffect = ({ text }) => {
   const [displayText, setDisplayText] = useState('');
@@ -51,6 +52,9 @@ const IconButton = ({ Icon }) => (
 const WelcomeScreen = ({ onLoadingComplete }) => {
   const [isLoading, setIsLoading] = useState(true);
   const { t } = useLanguage();
+  const profile = useProfile();
+  const siteUrl = profile.siteUrl || "";
+  const siteDisplay = siteUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
 
   useEffect(() => {
     AOS.init({
@@ -149,27 +153,29 @@ const WelcomeScreen = ({ onLoadingComplete }) => {
               </motion.div>
 
               {/* Website Link */}
-              <motion.div 
-                className="text-center"
-                variants={childVariants}
-                data-aos="fade-up"
-                data-aos-delay="1200"
-              >
-                <a
-                  href="https://www.mariaguerrero.me"
-                  className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-full relative group hover:scale-105 transition-transform duration-300"
-                  target="_blank"
-                  rel="noopener noreferrer"
+              {siteUrl && (
+                <motion.div
+                  className="text-center"
+                  variants={childVariants}
+                  data-aos="fade-up"
+                  data-aos-delay="1200"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 rounded-full blur-md group-hover:blur-lg transition-all duration-300" />
-                  <div className="relative flex items-center gap-2 text-base sm:text-lg md:text-xl">
-                    <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-600" />
-                    <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                      <TypewriterEffect text="www.mariaguerrero.me" />
-                    </span>
-                  </div>
-                </a>
-              </motion.div>
+                  <a
+                    href={siteUrl}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-5 sm:py-2.5 rounded-full relative group hover:scale-105 transition-transform duration-300"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 rounded-full blur-md group-hover:blur-lg transition-all duration-300" />
+                    <div className="relative flex items-center gap-2 text-base sm:text-lg md:text-xl">
+                      <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-600" />
+                      <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                        <TypewriterEffect text={siteDisplay} />
+                      </span>
+                    </div>
+                  </a>
+                </motion.div>
+              )}
             </div>
           </div>
         </motion.div>

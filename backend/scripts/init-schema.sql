@@ -1,5 +1,4 @@
 -- Portfolio Backend Database Schema
--- This script is idempotent (safe to run multiple times)
 
 -- Skills table
 CREATE TABLE IF NOT EXISTS skills (
@@ -65,7 +64,7 @@ CREATE TABLE IF NOT EXISTS hobbies (
     updated_at TIMESTAMP DEFAULT NOW() NOT NULL
 );
 
--- Contact table (singleton)
+-- Contact table 
 CREATE TABLE IF NOT EXISTS contact (
     id TEXT PRIMARY KEY,
     email TEXT DEFAULT '',
@@ -145,12 +144,42 @@ ALTER TABLE resumes DROP COLUMN IF EXISTS size;
 ALTER TABLE resumes DROP COLUMN IF EXISTS key;
 ALTER TABLE resumes DROP COLUMN IF EXISTS uploaded_at;
 
+-- Profile table 
+CREATE TABLE IF NOT EXISTS profile (
+    id TEXT PRIMARY KEY DEFAULT 'default',
+    full_name TEXT NOT NULL DEFAULT '',
+    short_name TEXT NOT NULL DEFAULT '',
+    site_url TEXT DEFAULT '',
+    profile_image TEXT DEFAULT '',
+    hero_badge_en TEXT DEFAULT '',
+    hero_badge_fr TEXT DEFAULT '',
+    hero_title_line1_en TEXT DEFAULT '',
+    hero_title_line1_fr TEXT DEFAULT '',
+    hero_title_line2_en TEXT DEFAULT '',
+    hero_title_line2_fr TEXT DEFAULT '',
+    hero_description_en TEXT DEFAULT '',
+    hero_description_fr TEXT DEFAULT '',
+    typing_words_en JSONB DEFAULT '[]'::jsonb,
+    typing_words_fr JSONB DEFAULT '[]'::jsonb,
+    tech_stack JSONB DEFAULT '[]'::jsonb,
+    bio_en TEXT DEFAULT '',
+    bio_fr TEXT DEFAULT '',
+    quote_en TEXT DEFAULT '',
+    quote_fr TEXT DEFAULT '',
+    experience_since TIMESTAMP,
+    meta_title TEXT DEFAULT '',
+    meta_description TEXT DEFAULT '',
+    updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+);
+
+ALTER TABLE profile DROP COLUMN IF EXISTS hero_animation;
+
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_messages_read ON messages (read);
 CREATE INDEX IF NOT EXISTS idx_messages_date ON messages (date);
 CREATE INDEX IF NOT EXISTS idx_testimonials_status ON testimonials (status);
 
--- Seed contact singleton row
+-- Seed contact 
 INSERT INTO contact (id, email, phone, location, github, linkedin, twitter)
 VALUES ('default', '', '', '', '', '', '')
 ON CONFLICT (id) DO NOTHING;

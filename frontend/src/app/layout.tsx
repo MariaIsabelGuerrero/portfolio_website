@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import { Providers } from '@/components/Providers';
+import { getProfile } from '@/lib/public-api';
 
 const poppins = localFont({
   src: [
@@ -14,10 +15,38 @@ const poppins = localFont({
   variable: '--font-poppins',
 });
 
-export const metadata: Metadata = {
-  title: 'Portfolio',
-  description: 'Portfolio',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const { data } = await getProfile();
+
+    const title =
+      data.metaTitle ||
+      (data.fullName ? `${data.fullName} | Portfolio` : 'Portfolio');
+    const description = data.metaDescription || data.bio_en || 'Portfolio';
+    const siteUrl = data.siteUrl || undefined;
+    const image = data.profileImage || undefined;
+
+    return {
+      title,
+      description,
+      metadataBase: siteUrl ? new URL(siteUrl) : undefined,
+      openGraph: {
+        title,
+        description,
+        url: siteUrl,
+        images: image ? [{ url: image }] : undefined,
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description,
+        images: image ? [image] : undefined,
+      },
+    };
+  } catch {
+    return { title: 'Portfolio', description: 'Portfolio' };
+  }
+}
 
 export default function RootLayout({
   children,

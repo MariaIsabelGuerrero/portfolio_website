@@ -182,6 +182,18 @@ export async function updateContact(data: ContactInfo) {
   });
 }
 
+// ---- Profile ----
+export async function fetchProfile() {
+  return apiFetch<{ data: ProfileInfo }>("/api/profile");
+}
+
+export async function updateProfile(data: Partial<ProfileInfo>) {
+  return apiFetch<{ data: ProfileInfo }>("/api/profile", {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+}
+
 // ---- Messages ----
 export async function fetchMessages(status?: string) {
   const params = status ? `?status=${status}` : "";
@@ -392,6 +404,32 @@ export interface ContactInfo {
   location: string;
   github: string;
   linkedin: string;
+}
+
+export interface ProfileInfo {
+  id: string;
+  fullName: string;
+  shortName: string;
+  siteUrl: string;
+  profileImage: string;
+  heroBadge_en: string;
+  heroBadge_fr: string;
+  heroTitleLine1_en: string;
+  heroTitleLine1_fr: string;
+  heroTitleLine2_en: string;
+  heroTitleLine2_fr: string;
+  heroDescription_en: string;
+  heroDescription_fr: string;
+  typingWords_en: string[];
+  typingWords_fr: string[];
+  techStack: string[];
+  bio_en: string;
+  bio_fr: string;
+  quote_en: string;
+  quote_fr: string;
+  experienceSince: string | null;
+  metaTitle: string;
+  metaDescription: string;
 }
 
 export interface Message {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import {
   Linkedin,
   Github,
@@ -9,36 +9,66 @@ import {
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { useLanguage } from "@/lib/i18n";
+import { useContact, useProfile } from "@/lib/site-content";
 
 const SocialLinks = () => {
   const { t } = useLanguage();
+  const contact = useContact();
+  const profile = useProfile();
 
-  const socialLinks = [
-    {
-      name: "LinkedIn",
-      displayName: t("Let's Connect", "Connectons-nous"),
-      subText: t("on LinkedIn", "sur LinkedIn"),
-      icon: Linkedin,
-      url: "https://www.linkedin.com/in/maria-isabel-guerrero-754114303/",
-      color: "#0A66C2",
-      gradient: "from-[#0A66C2] to-[#0077B5]",
-    },
-    {
-      name: "GitHub",
-      displayName: "Github",
-      subText: "@MariaG",
-      icon: Github,
-      url: "https://github.com/MariaIsabelGuerrero",
-      color: "#ffffff",
-      gradient: "from-[#333] to-[#24292e]",
-    },
-  ];
+  const githubHandle = useMemo(() => {
+    if (!contact.github) return "";
+    try {
+      const url = new URL(contact.github);
+      const handle = url.pathname.split("/").filter(Boolean)[0];
+      return handle ? `@${handle}` : "";
+    } catch {
+      return "";
+    }
+  }, [contact.github]);
+
+  const shortName = profile.shortName || profile.fullName.split(" ")[0] || "";
+
+  const socialLinks = useMemo(
+    () =>
+      [
+        contact.linkedin && {
+          name: "LinkedIn",
+          displayName: t("Let's Connect", "Connectons-nous"),
+          subText: t("on LinkedIn", "sur LinkedIn"),
+          icon: Linkedin,
+          url: contact.linkedin,
+          color: "#0A66C2",
+          gradient: "from-[#0A66C2] to-[#0077B5]",
+        },
+        contact.github && {
+          name: "GitHub",
+          displayName: "Github",
+          subText: githubHandle || (shortName ? `@${shortName}` : ""),
+          icon: Github,
+          url: contact.github,
+          color: "#ffffff",
+          gradient: "from-[#333] to-[#24292e]",
+        },
+      ].filter(Boolean) as Array<{
+        name: string;
+        displayName: string;
+        subText: string;
+        icon: typeof Linkedin;
+        url: string;
+        color: string;
+        gradient: string;
+      }>,
+    [contact.linkedin, contact.github, githubHandle, shortName, t]
+  );
 
   useEffect(() => {
     AOS.init({
       offset: 10,
     });
   }, []);
+
+  if (socialLinks.length === 0) return null;
 
   return (
     <div className="w-full bg-gradient-to-br from-white/10 to-white/5 rounded-2xl p-6 py-8 backdrop-blur-xl">
@@ -63,15 +93,12 @@ const SocialLinks = () => {
             data-aos="fade-up"
             data-aos-delay={100 + index * 100}
           >
-            {/* Hover Gradient Background */}
             <div
               className={`absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500
                          bg-gradient-to-r ${link.gradient}`}
             />
 
-            {/* Content Container */}
             <div className="relative flex items-center gap-4">
-              {/* Icon Container */}
               <div className="relative flex items-center justify-center">
                 <div
                   className="absolute inset-0 opacity-20 rounded-md transition-all duration-500
@@ -86,7 +113,6 @@ const SocialLinks = () => {
                 </div>
               </div>
 
-              {/* Text Container */}
               <div className="flex flex-col">
                 <span className="text-lg font-bold pt-[0.2rem] text-gray-200 tracking-tight leading-none group-hover:text-white transition-colors duration-300">
                   {link.displayName}
@@ -97,14 +123,12 @@ const SocialLinks = () => {
               </div>
             </div>
 
-            {/* External Link */}
             <ExternalLink
               className="relative w-5 h-5 text-gray-500 group-hover:text-white
                          opacity-0 group-hover:opacity-100 transition-all duration-300
                          transform group-hover:translate-x-0 -translate-x-1"
             />
 
-            {/* Shine Effect */}
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 pointer-events-none overflow-hidden">
               <div
                 className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent

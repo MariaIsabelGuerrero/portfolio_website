@@ -19,15 +19,18 @@ import {
   LogOut,
   ChevronLeft,
   MessageSquare,
-  Quote
+  Quote,
+  UserCog
 } from "lucide-react";
 import { useAdminAccess } from "@/lib/hooks/useAdminAccess";
 import { authClient } from "@/lib/auth-client";
 import { useLanguage } from "@/lib/i18n";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { useProfile } from "@/lib/site-content";
 
 const sidebarLinks = [
   { nameEn: "Dashboard", nameFr: "Tableau de bord", href: "/admin", icon: LayoutDashboard },
+  { nameEn: "Profile", nameFr: "Profil", href: "/admin/profile", icon: UserCog },
   { nameEn: "Skills", nameFr: "Compétences", href: "/admin/skills", icon: Lightbulb },
   { nameEn: "Projects", nameFr: "Projets", href: "/admin/projects", icon: FolderKanban },
   { nameEn: "Experience", nameFr: "Expérience", href: "/admin/experience", icon: Briefcase },
@@ -50,6 +53,15 @@ export default function AdminLayout({
   const router = useRouter();
   const { authorized, loading } = useAdminAccess();
   const { t } = useLanguage();
+  const profile = useProfile();
+  const displayName = profile.fullName || "";
+  const initials = displayName
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("") || "A";
+  const logoInitial = (profile.shortName || profile.fullName || "A").charAt(0).toUpperCase();
 
   // Login page: render without sidebar/topbar and skip auth guard
   if (pathname === "/admin/login") {
@@ -111,10 +123,10 @@ export default function AdminLayout({
         <div className="h-16 flex items-center justify-between px-4 border-b border-[#5227FF]/30 flex-shrink-0">
           <Link href="/admin" className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#5227FF] to-[#FF9FFC] flex items-center justify-center">
-              <span className="text-white font-bold text-lg">M</span>
+              <span className="text-white font-bold text-lg">{logoInitial}</span>
             </div>
             {sidebarOpen && (
-              <span className="text-white font-semibold text-lg">Admin</span>
+              <span className="text-white font-semibold text-lg">{t("Admin", "Admin")}</span>
             )}
           </Link>
           <button
@@ -193,11 +205,11 @@ export default function AdminLayout({
           <div className="flex items-center gap-4">
             <LanguageToggle />
             <div className="text-right hidden sm:block">
-              <p className="text-white font-medium text-sm">Maria Isabel</p>
+              <p className="text-white font-medium text-sm">{displayName}</p>
               <p className="text-[#B19EEF] text-xs">{t("Administrator", "Administratrice")}</p>
             </div>
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#5227FF] to-[#FF9FFC] flex items-center justify-center">
-              <span className="text-white font-semibold">MI</span>
+              <span className="text-white font-semibold">{initials}</span>
             </div>
           </div>
         </header>

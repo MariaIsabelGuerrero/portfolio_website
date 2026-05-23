@@ -39,6 +39,14 @@ export async function getHobbies() {
   return publicFetch<{ data: HobbyData[] }>("/api/hobbies");
 }
 
+export async function getContact() {
+  return publicFetch<{ data: ContactData }>("/api/contact");
+}
+
+export async function getProfile() {
+  return publicFetch<{ data: ProfileData }>("/api/profile");
+}
+
 export async function getTestimonials() {
   return publicFetch<{ data: TestimonialData[] }>("/api/testimonials");
 }
@@ -130,5 +138,39 @@ export interface MessageData {
   message: string;
   date: string;
   read: boolean;
+}
+
+export interface ContactData {
+  email: string;
+  phone: string;
+  location: string;
+  github: string;
+  linkedin: string;
+}
+
+export interface ProfileData {
+  id: string;
+  fullName: string;
+  shortName: string;
+  siteUrl: string;
+  profileImage: string;
+  heroBadge_en: string;
+  heroBadge_fr: string;
+  heroTitleLine1_en: string;
+  heroTitleLine1_fr: string;
+  heroTitleLine2_en: string;
+  heroTitleLine2_fr: string;
+  heroDescription_en: string;
+  heroDescription_fr: string;
+  typingWords_en: string[];
+  typingWords_fr: string[];
+  techStack: string[];
+  bio_en: string;
+  bio_fr: string;
+  quote_en: string;
+  quote_fr: string;
+  experienceSince: string | null;
+  metaTitle: string;
+  metaDescription: string;
 }
 

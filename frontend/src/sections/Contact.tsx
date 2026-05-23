@@ -7,17 +7,15 @@ import Testimonials from "./Testimonials";
 import Swal from "sweetalert2";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import axios from "axios";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { submitMessage } from "@/lib/public-api";
 import { useLanguage } from "@/lib/i18n";
-import { useContact } from "@/lib/site-content";
 
 const COOLDOWN_SECONDS = 60;
+const TURNSTILE_CONFIGURED = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
 
 const ContactPage = () => {
   const { t } = useLanguage();
-  const contact = useContact();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -28,6 +26,7 @@ const ContactPage = () => {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const turnstileRef = useRef<TurnstileInstance>(null);
+  const honeypotRef = useRef<HTMLInputElement>(null);
   const [cooldown, setCooldown] = useState(0);
 
   useEffect(() => {
@@ -104,8 +103,15 @@ const ContactPage = () => {
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errors.email = "Invalid";
     if (!formData.message.trim()) errors.message = "Required";
 
-    if (!turnstileToken) {
+    if (!TURNSTILE_CONFIGURED) {
       errors.turnstile = "Required";
+    } else if (!turnstileToken) {
+      errors.turnstile = "Required";
+    }
+
+    const honeypotValue = honeypotRef.current?.value.trim() ?? "";
+    if (honeypotValue) {
+      return;
     }
 
     if (Object.keys(errors).length > 0) {
@@ -125,33 +131,13 @@ const ContactPage = () => {
     });
 
     try {
-      // Save to backend database
       await submitMessage({
         name: formData.name,
         email: formData.email,
         message: formData.message,
         turnstileToken: turnstileToken!,
+        website: honeypotValue,
       });
-
-      // Also send via FormSubmit for email notification 
-      if (contact.email) {
-        const formSubmitUrl = `https://formsubmit.co/${encodeURIComponent(contact.email)}`;
-        const submitData = new FormData();
-        submitData.append('name', formData.name);
-        submitData.append('email', formData.email);
-        submitData.append('message', formData.message);
-        submitData.append('_subject', 'New Message from Portfolio Website');
-        submitData.append('_captcha', 'false');
-        submitData.append('_template', 'table');
-
-        await axios.post(formSubmitUrl, submitData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }).catch(() => {
-          // FormSubmit may fail silently - message is already saved to DB
-        });
-      }
 
       Swal.fire({
         title: t('Success!', 'Succes !'),
@@ -170,35 +156,20 @@ const ContactPage = () => {
       setTouched({});
       setTurnstileToken(null);
       turnstileRef.current?.reset();
+      if (honeypotRef.current) {
+        honeypotRef.current.value = "";
+      }
 
       // Start cooldown
       setCooldown(COOLDOWN_SECONDS);
 
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error) && error.request && error.request.status === 0) {
-        Swal.fire({
-          title: t('Success!', 'Succes !'),
-          text: t('Your message has been sent successfully!', 'Votre message a ete envoye avec succes !'),
-          icon: 'success',
-          confirmButtonColor: '#6366f1',
-          timer: 2000,
-          timerProgressBar: true
-        });
-
-        setFormData({
-          name: "",
-          email: "",
-          message: "",
-        });
-        setCooldown(COOLDOWN_SECONDS);
-      } else {
-        Swal.fire({
-          title: t('Failed!', 'Echec !'),
-          text: t('An error occurred. Please try again later.', 'Une erreur est survenue. Veuillez reessayer plus tard.'),
-          icon: 'error',
-          confirmButtonColor: '#6366f1'
-        });
-      }
+    } catch {
+      Swal.fire({
+        title: t('Failed!', 'Echec !'),
+        text: t('An error occurred. Please try again later.', 'Une erreur est survenue. Veuillez reessayer plus tard.'),
+        icon: 'error',
+        confirmButtonColor: '#6366f1'
+      });
     } finally {
       setIsSubmitting(false);
       turnstileRef.current?.reset();
@@ -265,8 +236,22 @@ const ContactPage = () => {
             <form
               onSubmit={handleSubmit}
               noValidate
-              className="space-y-6"
+              className="space-y-6 relative"
             >
+              {/* Honeypot — hidden from users, bots fill this and get rejected */}
+              <div aria-hidden="true" className="absolute -left-[9999px] top-auto h-px w-px overflow-hidden">
+                <label htmlFor="contact-website">Website</label>
+                <input
+                  ref={honeypotRef}
+                  type="text"
+                  id="contact-website"
+                  name="website"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  defaultValue=""
+                />
+              </div>
+
               <div
                 data-aos="fade-up"
                 data-aos-delay="100"
@@ -326,7 +311,7 @@ const ContactPage = () => {
 
               {/* Cloudflare Turnstile Widget */}
               <div data-aos="fade-up" data-aos-delay="350">
-                {process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ? (
+                {TURNSTILE_CONFIGURED ? (
                   <Turnstile
                     ref={turnstileRef}
                     siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
@@ -354,7 +339,7 @@ const ContactPage = () => {
                 data-aos="fade-up"
                 data-aos-delay="400"
                 type="submit"
-                disabled={isSubmitting || cooldown > 0}
+                disabled={isSubmitting || cooldown > 0 || !TURNSTILE_CONFIGURED}
                 className="w-full bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white py-4 rounded-xl text-base font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-[#6366f1]/20 active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 <Send className="w-5 h-5" />

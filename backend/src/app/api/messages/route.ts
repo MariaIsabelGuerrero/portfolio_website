@@ -1,11 +1,40 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { db } from "@/lib/db";
-import { messages } from "@/lib/db/schema";
+import { contact, messages } from "@/lib/db/schema";
 import { desc, eq } from "drizzle-orm";
 import { requireAdmin } from "@/lib/auth/require-admin";
 
 export const runtime = "nodejs";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+async function sendFormSubmitNotification(
+  recipientEmail: string,
+  name: string,
+  email: string,
+  message: string
+): Promise<void> {
+  const formData = new FormData();
+  formData.append("name", name);
+  formData.append("email", email);
+  formData.append("message", message);
+  formData.append("_subject", "New Message from Portfolio Website");
+  formData.append("_captcha", "false");
+  formData.append("_template", "table");
+
+  try {
+    const response = await fetch(
+      `https://formsubmit.co/${encodeURIComponent(recipientEmail)}`,
+      { method: "POST", body: formData }
+    );
+    if (!response.ok) {
+      console.error("FormSubmit notification failed:", response.status);
+    }
+  } catch (error) {
+    console.error("FormSubmit notification failed:", error);
+  }
+}
 
 // ---- Rate Limiting ----
 const rateLimitMap = new Map<string, { count: number; lastReset: number }>();
@@ -81,16 +110,33 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, email, message, turnstileToken, website } = body;
+    const { turnstileToken, website } = body;
+    const name = typeof body.name === "string" ? body.name.trim() : "";
+    const email = typeof body.email === "string" ? body.email.trim() : "";
+    const message = typeof body.message === "string" ? body.message.trim() : "";
 
     // Honeypot check - real users never fill this hidden field
-    if (website) {
+    if (typeof website === "string" && website.trim()) {
       return NextResponse.json({ error: "Spam detected" }, { status: 403 });
     }
 
     if (!name || !email || !message) {
       return NextResponse.json(
         { error: "Name, email, and message are required" },
+        { status: 400 }
+      );
+    }
+
+    if (name.length > 100 || email.length > 254 || message.length > 1000) {
+      return NextResponse.json(
+        { error: "One or more fields exceed the maximum length" },
+        { status: 400 }
+      );
+    }
+
+    if (!EMAIL_REGEX.test(email)) {
+      return NextResponse.json(
+        { error: "Please enter a valid email address" },
         { status: 400 }
       );
     }
@@ -121,6 +167,7 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({
           secret: turnstileSecretKey,
           response: turnstileToken,
+          remoteip: ip !== "unknown" ? ip : undefined,
         }),
       }
     );
@@ -143,6 +190,16 @@ export async function POST(request: NextRequest) {
       email,
       message,
     }).returning();
+
+    const [contactRow] = await db
+      .select({ email: contact.email })
+      .from(contact)
+      .where(eq(contact.id, "default"))
+      .limit(1);
+
+    if (contactRow?.email) {
+      await sendFormSubmitNotification(contactRow.email, name, email, message);
+    }
 
     return NextResponse.json({ data: created }, { status: 201 });
   } catch (error) {

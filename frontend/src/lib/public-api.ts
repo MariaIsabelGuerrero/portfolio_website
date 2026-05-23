@@ -58,7 +58,13 @@ export async function submitTestimonial(data: { name: string; relationship: stri
   });
 }
 
-export async function submitMessage(data: { name: string; email: string; message: string; turnstileToken: string }) {
+export async function submitMessage(data: {
+  name: string;
+  email: string;
+  message: string;
+  turnstileToken: string;
+  website?: string;
+}) {
   return publicFetch<{ data: MessageData }>("/api/messages", {
     method: "POST",
     body: JSON.stringify(data),
